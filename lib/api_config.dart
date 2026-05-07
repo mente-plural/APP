@@ -7,9 +7,9 @@ class ApiConfig {
       return "https://api-maoamiga.up.railway.app";
     } else {
       if (Platform.isAndroid) {
-        return "http://10.0.2.2:3000";
+        return "https://api-maoamiga.up.railway.app";
       } else {
-        return "http://localhost:3000";
+        return "https://api-maoamiga.up.railway.app";
       }
     }
   }
