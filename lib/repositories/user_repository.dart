@@ -1,14 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../api_config.dart';
 import '../models/user_model.dart';
 
 class UserRepository {
-  final String _baseUrl = "http://10.0.2.2:3000/v1";
+  final String _baseUrl = ApiConfig.baseUrl;
 
   Future<void> createUser(UserModel user) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl/users'),
+        Uri.parse('$_baseUrl/v1/users'),
         headers: {
           'Content-Type': 'application/json',
         },
