@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "1016061063081",
+    "project_id": "maoamiga-990da",
+    "storage_bucket": "maoamiga-990da.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016061063081:android:77428494653b6e5b995eb8",
+        "android_client_info": {
+          "package_name": "com.maoamiga.app.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1016061063081-25k4afthsdoe9em0r4h1u1cr6fkp2olp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.maoamiga.app.app",
+            "certificate_hash": "2e9de1746afd9c9af8691cde8ff155cff3e26ad2"
+          }
+        },
+        {
+          "client_id": "1016061063081-mv2acljdr72gk2049p76sk4ipubonlss.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZ3zJu6s7TP2z8YTrp4xQ8Xpe_UGWo0S4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1016061063081-mv2acljdr72gk2049p76sk4ipubonlss.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1016061063081-b9v5lg0qjmvsjl9fr3la44j3fljapmud.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.maoamiga.app.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
