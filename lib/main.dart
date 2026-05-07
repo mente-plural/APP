@@ -1,29 +1,40 @@
+import 'package:app/theme/app_theme.dart';
 import 'package:app/ui/auth/auth_gate.dart';
+import 'package:app/ui/onboarding/onboarding.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(const App());
+  final prefs = await SharedPreferences.getInstance();
+  // nao apagar esse comentario!!!!!!!!!!!!!!!!!!!!!!!!! VVVVVVVVVVVVVVVVV
+  // final bool seenOnboarding = prefs.getBool('seen_onboarding') ?? false;
+  // nao apagar esse comentario!!!!!!!!!!!!!!!!!!!!!!!!! ^^^^^^^^^^^^^^^^^
+
+  final bool seenOnboarding = false;
+  runApp(App(showOnboarding: !seenOnboarding));
 }
 
 class App extends StatelessWidget {
-  const App({super.key});
+  final bool showOnboarding;
+  
+  const App({super.key, required this.showOnboarding});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Mão Amiga',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const AuthGate(),
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.darkTheme,
+      home: showOnboarding ? const OnboardingScreen() : const AuthGate(),
     );
   }
 }
