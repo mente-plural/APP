@@ -27,92 +27,125 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  Future<void> _handleAction(Future<bool> Function() action) async {
-    final success = await action();
-    if (!success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_controller.errorMessage ?? 'Erro desconhecido')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      // 1. Mudamos a cor de fundo para o Dark do layout
+      backgroundColor: const Color(0xFF000510),
       body: ListenableBuilder(
         listenable: _controller,
         builder: (context, child) {
           return Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (_controller.isLoading)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 16.0),
-                    child: LinearProgressIndicator(),
-                  ),
-                TextField(
+                // 2. Títulos "Entrar" e "Bem-vindo"
+                const Text(
+                  'Entrar',
+                  style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Bem-vindo de volta!',
+                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                ),
+                const SizedBox(height: 48),
+
+                // 3. Campo de Email Estilizado
+                _buildTextField(
+                  label: 'Email',
+                  hint: 'seu@email.com',
                   controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  enabled: !_controller.isLoading,
                 ),
-                const SizedBox(height: 12),
-                TextField(
+                const SizedBox(height: 24),
+
+                // 4. Campo de Senha Estilizado
+                _buildTextField(
+                  label: 'Senha',
+                  hint: '********',
                   controller: _passwordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Senha',
-                    border: OutlineInputBorder(),
-                  ),
                   obscureText: true,
-                  enabled: !_controller.isLoading,
                 ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: _controller.isLoading
-                          ? null
-                          : () => _handleAction(() => _controller.signInWithEmail(
-                                _emailController.text.trim(),
-                                _passwordController.text.trim(),
-                              )),
-                      child: const Text('Entrar'),
+                const SizedBox(height: 32),
+
+                // 5. Botão "Entrar" Principal (Verde Água)
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: () {}, // Sua lógica de login aqui
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF00CBB0),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    OutlinedButton(
-                      onPressed: _controller.isLoading
-                          ? null
-                          : () => _handleAction(() => _controller.signUpWithEmail(
-                                _emailController.text.trim(),
-                                _passwordController.text.trim(),
-                              )),
-                      child: const Text('Cadastrar'),
+                    child: const Text('Entrar', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+                const Text('ou continue com', style: TextStyle(color: Colors.grey)),
+                const SizedBox(height: 24),
+
+                // 6. Botões Sociais (Google e Apple)
+                _buildSocialButton(icon: Icons.g_mobiledata, label: 'Continuar com Google'),
+                const SizedBox(height: 12),
+                _buildSocialButton(icon: Icons.apple, label: 'Continuar com Apple'),
+
+                const SizedBox(height: 32),
+                // 7. Rodapé "Criar conta"
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Ainda não tem conta? ', style: TextStyle(color: Colors.white)),
+                    TextButton(
+                      onPressed: () {},
+                      child: const Text('Criar conta', style: TextStyle(color: Color(0xFF00CBB0))),
                     ),
                   ],
-                ),
-                const Divider(height: 40),
-                ElevatedButton.icon(
-                  onPressed: _controller.isLoading
-                      ? null
-                      : () => _handleAction(_controller.signInWithGoogle),
-                  icon: const Icon(Icons.login),
-                  label: const Text('Entrar com Google'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
                 ),
               ],
             ),
           );
         },
+      ),
+    );
+  }
+
+  // Função auxiliar para não repetir código de TextField
+  Widget _buildTextField({required String label, required String hint, required TextEditingController controller, bool obscureText = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          obscureText: obscureText,
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(color: Colors.grey),
+            filled: true,
+            fillColor: const Color(0xFF0B1220),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Função auxiliar para os botões do Google/Apple
+  Widget _buildSocialButton({required IconData icon, required String label}) {
+    return OutlinedButton.icon(
+      onPressed: () {},
+      icon: Icon(icon, color: Colors.white),
+      label: Text(label, style: const TextStyle(color: Colors.white)),
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(double.infinity, 56),
+        side: const BorderSide(color: Color(0xFF1E2737)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
