@@ -63,7 +63,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1016061063081',
     projectId: 'maoamiga-990da',
     storageBucket: 'maoamiga-990da.firebasestorage.app',
-    iosClientId: '1016061063081-b9v5lg0qjmvsjl9fr3la44j3fljapmud.apps.googleusercontent.com',
+    iosClientId:
+        '1016061063081-b9v5lg0qjmvsjl9fr3la44j3fljapmud.apps.googleusercontent.com',
     iosBundleId: 'com.maoamiga.app.app',
   );
 }

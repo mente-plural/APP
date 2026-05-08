@@ -57,8 +57,14 @@ class AppTheme {
       dividerColor: AppColors.borderEscuro,
       textTheme: const TextTheme(
         bodyLarge: TextStyle(color: AppColors.textAccentEscuro, fontSize: 16),
-        headlineMedium: TextStyle(color: AppColors.textAccentEscuro, fontWeight: FontWeight.bold),
-        bodyMedium: TextStyle(color: AppColors.textSecundarioEscuro, fontSize: 14),
+        headlineMedium: TextStyle(
+          color: AppColors.textAccentEscuro,
+          fontWeight: FontWeight.bold,
+        ),
+        bodyMedium: TextStyle(
+          color: AppColors.textSecundarioEscuro,
+          fontSize: 14,
+        ),
       ),
       elevatedButtonTheme: _buttonTheme(AppColors.primaryEscuro, Colors.white),
     );

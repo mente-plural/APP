@@ -1,6 +1,6 @@
 class UserModel {
   final String id;
-  final String firebaseUid;
+  final String? firebaseUid;
   final String email;
   final String? name;
   final String? phone;
@@ -21,19 +21,22 @@ class UserModel {
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
-      id: map['id'] as String,
-      firebaseUid: map['firebaseUid'] as String,
-      email: map['email'] as String,
-      name: map['name'] as String?,
-      phone: map['phone'] as String?,
-      photoUrl: map['photoUrl'] as String?,
-      createdAt: map['created_at'] is String 
-          ? DateTime.parse(map['created_at']) 
-          : map['created_at'] as DateTime,
-      updatedAt: map['updated_at'] is String 
-          ? DateTime.parse(map['updated_at']) 
-          : map['updated_at'] as DateTime,
+      id: (map['id'] ?? map['uuid'] ?? '').toString(),
+      firebaseUid: map['firebaseUid']?.toString(),
+      email: (map['email'] ?? '').toString(),
+      name: map['name']?.toString(),
+      phone: map['phone']?.toString(),
+      photoUrl: map['photoUrl']?.toString(),
+      createdAt: _parseDate(map['created_at'] ?? map['createdAt']),
+      updatedAt: _parseDate(map['updated_at'] ?? map['updatedAt']),
     );
+  }
+
+  static DateTime _parseDate(dynamic date) {
+    if (date == null) return DateTime.now();
+    if (date is DateTime) return date;
+    if (date is String) return DateTime.parse(date);
+    return DateTime.now();
   }
 
   Map<String, dynamic> toMap() {
@@ -49,11 +52,7 @@ class UserModel {
     };
   }
 
-  UserModel copyWith({
-    String? name,
-    String? phone,
-    String? photoUrl,
-  }) {
+  UserModel copyWith({String? name, String? phone, String? photoUrl}) {
     return UserModel(
       id: id,
       firebaseUid: firebaseUid,

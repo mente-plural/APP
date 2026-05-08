@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../theme/app_theme.dart';
 import '../auth/auth_gate.dart';
 
@@ -19,9 +20,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     await prefs.setBool('seen_onboarding', true);
 
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const AuthGate()),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthGate()));
     }
   }
 
@@ -40,17 +41,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             children: const [
               OnboardingPage(
                 title: "Bem-vindo",
-                description: "Um espaço pensado para o seu ritmo. Simples, calmo e acolhedor.",
+                description:
+                    "Um espaço pensado para o seu ritmo. Simples, calmo e acolhedor.",
                 icon: Icons.auto_awesome,
               ),
               OnboardingPage(
                 title: "Foco e Organização",
-                description: "Ferramentas para ajudar no dia a dia, com baixo estímulo visual.",
+                description:
+                    "Ferramentas para ajudar no dia a dia, com baixo estímulo visual.",
                 icon: Icons.event_note,
               ),
               OnboardingPage(
                 title: "Apoio Constante",
-                description: "Para você e quem cuida de você. Vamos descobrir juntos?",
+                description:
+                    "Para você e quem cuida de você. Vamos descobrir juntos?",
                 icon: Icons.check_circle_outline,
               ),
             ],
@@ -63,7 +67,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(3, (index) => _buildIndicator(index, theme)),
+                  children: List.generate(
+                    3,
+                    (index) => _buildIndicator(index, theme),
+                  ),
                 ),
                 const SizedBox(height: AppSizes.radiusLG * 2),
 
@@ -108,6 +115,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 }
+
 class OnboardingPage extends StatelessWidget {
   final String title;
   final String description;
@@ -154,5 +162,3 @@ class OnboardingPage extends StatelessWidget {
     );
   }
 }
-
-

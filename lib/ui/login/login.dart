@@ -1,7 +1,9 @@
 import 'package:app/ui/home/home_page.dart';
+import 'package:app/ui/register/register.dart';
 import 'package:flutter/material.dart';
-import '../../theme/app_theme.dart';
+
 import '../../services/auth_service.dart';
+import '../../theme/app_theme.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,7 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   final _authService = AuthService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -44,12 +46,15 @@ class _LoginPageState extends State<LoginPage> {
 
       if (mounted) {
         _showSnackBar("Login realizado com sucesso!");
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomePage()),
-        );      }
+        Navigator.of(
+          context,
+        ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+      }
     } catch (e) {
       if (mounted) {
         final errorMsg = e.toString().replaceAll('Exception: ', '');
+        debugPrint(e.toString());
+
         _showSnackBar(errorMsg);
       }
     } finally {
@@ -79,9 +84,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -138,17 +143,17 @@ class _LoginPageState extends State<LoginPage> {
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : const Text('Entrar'),
               ),
             ),
 
             const SizedBox(height: 24),
-            Text(
-              'ou continue com',
-              style: theme.textTheme.bodyMedium,
-            ),
+            Text('ou continue com', style: theme.textTheme.bodyMedium),
             const SizedBox(height: 24),
 
             _buildSocialButton(
@@ -164,11 +169,7 @@ class _LoginPageState extends State<LoginPage> {
               context,
               icon: Icons.apple,
               label: 'Continuar com Apple',
-              onPressed: _isLoading
-                  ? () {}
-                  : () {
-                Navigator.pushNamed(context, '/register');
-                    },
+              onPressed: _isLoading ? () {} : () {},
             ),
 
             const SizedBox(height: 32),
@@ -181,6 +182,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 TextButton(
                   onPressed: () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (_) => const RegisterPage()),
+                    );
                   },
                   child: Text(
                     'Criar conta',
@@ -198,20 +202,19 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildTextField(BuildContext context,
-      {required String label,
-      required String hint,
-      required TextEditingController controller,
-      bool obscureText = false}) {
+  Widget _buildTextField(
+    BuildContext context, {
+    required String label,
+    required String hint,
+    required TextEditingController controller,
+    bool obscureText = false,
+  }) {
     final theme = Theme.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium,
-        ),
+        Text(label, style: theme.textTheme.bodyMedium),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
@@ -219,7 +222,9 @@ class _LoginPageState extends State<LoginPage> {
           style: TextStyle(color: theme.colorScheme.onSurface),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.4)),
+            hintStyle: TextStyle(
+              color: theme.colorScheme.onSurface.withOpacity(0.4),
+            ),
             filled: true,
             fillColor: theme.colorScheme.surface,
             contentPadding: const EdgeInsets.all(16),
@@ -229,7 +234,9 @@ class _LoginPageState extends State<LoginPage> {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSizes.radiusLG),
-              borderSide: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+              borderSide: BorderSide(
+                color: theme.dividerColor.withOpacity(0.1),
+              ),
             ),
           ),
         ),
@@ -237,18 +244,30 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildSocialButton(BuildContext context,
-      {required IconData icon, required String label, required VoidCallback onPressed}) {
+  Widget _buildSocialButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
     final theme = Theme.of(context);
 
     return OutlinedButton.icon(
       onPressed: onPressed,
       icon: _isLoading
-          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
           : Icon(icon, color: theme.colorScheme.onSurface),
       label: Text(
         label,
-        style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(_isLoading ? 0.5 : 1.0)),
+        style: TextStyle(
+          color: theme.colorScheme.onSurface.withOpacity(
+            _isLoading ? 0.5 : 1.0,
+          ),
+        ),
       ),
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(double.infinity, 56),

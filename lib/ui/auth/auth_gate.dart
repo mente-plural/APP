@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../home/home_page.dart';
@@ -10,7 +11,7 @@ class AuthGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authService = AuthService();
-    
+
     return StreamBuilder<UserModel?>(
       stream: authService.userStream,
       builder: (context, snapshot) {
@@ -19,11 +20,11 @@ class AuthGate extends StatelessWidget {
             body: Center(child: CircularProgressIndicator()),
           );
         }
-        
+
         if (snapshot.hasData && snapshot.data != null) {
           return const HomePage();
         }
-        
+
         return const LoginPage();
       },
     );

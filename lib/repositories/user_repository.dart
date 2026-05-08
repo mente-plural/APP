@@ -1,5 +1,7 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
+
 import '../api_config.dart';
 import '../models/user_model.dart';
 
@@ -53,6 +55,7 @@ class UserRepository {
       rethrow;
     }
   }
+
   Future<void> createUser(UserModel user) async {
     try {
       final response = await http.post(
