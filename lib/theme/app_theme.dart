@@ -64,7 +64,6 @@ class AppTheme {
     );
   }
 
-  // Helper para manter os botões consistentes
   static ElevatedButtonThemeData _buttonTheme(Color bg, Color text) {
     return ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
