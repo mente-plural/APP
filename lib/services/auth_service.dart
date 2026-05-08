@@ -15,7 +15,15 @@ class AuthService {
 
 
   Future<void> loginWithEmail(String email, String password) async {
-    await _auth.signInWithEmailAndPassword(email: email, password: password);
+    await _userRepository.login(email, password);
+  }
+
+
+  Future<void> registerWithEmail(String email, String password) async {
+    await _userRepository.register(
+      email,
+      password,
+    );
   }
 
   Future<void> loginWithGoogle() async {
@@ -42,17 +50,6 @@ class AuthService {
     }
   }
 
-
-  Future<void> registerWithEmail(String email, String password) async {
-    final credential = await _auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-
-    if (credential.user != null) {
-      await _syncUserWithApi(credential.user);
-    }
-  }
 
 
   Future<void> logout() async {
