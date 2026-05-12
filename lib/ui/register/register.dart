@@ -80,13 +80,27 @@ class _RegisterPageState extends State<RegisterPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
+          onPressed: () {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const LoginPage()),
+            );
+          },
+        ),
+      ),
       body: SingleChildScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.all(AppSizes.radiusLG * 1.5),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 60),
+            const SizedBox(height: 80),
             Text(
               'Criar Conta',
               style: theme.textTheme.headlineLarge?.copyWith(
@@ -106,6 +120,8 @@ class _RegisterPageState extends State<RegisterPage> {
               label: 'Nome Completo',
               hint: 'Digite seu nome completo',
               controller: _nomeController,
+              textCapitalization: TextCapitalization.words,
+              textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 20),
 
@@ -114,14 +130,16 @@ class _RegisterPageState extends State<RegisterPage> {
               hint: 'seu@email.com',
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 20),
 
             CustomTextField(
               label: 'Telefone',
-              hint: '(00) 00000-0000',
+              hint: '(00) 0 0000-0000',
               controller: _telefoneController,
               keyboardType: TextInputType.phone,
+              textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 20),
 
@@ -130,6 +148,7 @@ class _RegisterPageState extends State<RegisterPage> {
               hint: '********',
               controller: _senhaController,
               isPassword: true,
+              textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 20),
 
@@ -138,6 +157,7 @@ class _RegisterPageState extends State<RegisterPage> {
               hint: '********',
               controller: _confirmarSenhaController,
               isPassword: true,
+              textInputAction: TextInputAction.done,
             ),
             const SizedBox(height: 40),
 

@@ -105,6 +105,7 @@ class _LoginPageState extends State<LoginPage> {
               hint: 'seu@email.com',
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: 24),
 
@@ -113,6 +114,7 @@ class _LoginPageState extends State<LoginPage> {
               hint: '********',
               controller: _passwordController,
               isPassword: true,
+              textInputAction: TextInputAction.done,
             ),
             const SizedBox(height: 32),
 
