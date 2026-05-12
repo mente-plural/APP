@@ -1,11 +1,9 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
-
 import '../api_config.dart';
 import '../models/user_model.dart';
 
-class UserRepository {
+class ApiClient {
   final String _baseUrl = ApiConfig.baseUrl;
 
   void _handleErrorResponse(http.Response response) {
@@ -18,12 +16,22 @@ class UserRepository {
     }
   }
 
-  Future<Map<String, dynamic>> register(String email, String password) async {
+  Future<Map<String, dynamic>> signUp({
+    required String email,
+    required String password,
+    String? name,
+    String? phone,
+  }) async {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/v1/auth/register'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+          if (name != null) 'name': name,
+          if (phone != null) 'phone': phone,
+        }),
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -37,7 +45,10 @@ class UserRepository {
     }
   }
 
-  Future<Map<String, dynamic>> login(String email, String password) async {
+  Future<Map<String, dynamic>> signIn({
+    required String email,
+    required String password,
+  }) async {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/v1/auth/login'),
@@ -56,7 +67,7 @@ class UserRepository {
     }
   }
 
-  Future<void> createUser(UserModel user) async {
+  Future<void> syncProfile(UserModel user) async {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/v1/users'),

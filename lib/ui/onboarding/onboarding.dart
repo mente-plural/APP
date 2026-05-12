@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../theme/app_theme.dart';
-import '../auth/auth_gate.dart';
+import '../../app_theme.dart';
+import '../../core/auth_gate.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});

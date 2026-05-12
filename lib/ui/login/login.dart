@@ -1,9 +1,10 @@
-import 'package:app/ui/home/home_page.dart';
-import 'package:app/ui/register/register.dart';
 import 'package:flutter/material.dart';
-
-import '../../services/auth_service.dart';
-import '../../theme/app_theme.dart';
+import '../../core/auth_service.dart';
+import '../../app_theme.dart';
+import '../../shared/utils/ui_utils.dart';
+import '../../shared/widgets/custom_text_field.dart';
+import '../../shared/widgets/primary_button.dart';
+import '../register/register.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,7 +19,6 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
-  String? _errorMessage;
 
   @override
   void dispose() {
@@ -32,30 +32,21 @@ class _LoginPageState extends State<LoginPage> {
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      _showSnackBar("Por favor, preencha todos os campos.");
+      UiUtils.showSnackBar(context, "Por favor, preencha todos os campos.", isError: true);
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    setState(() => _isLoading = true);
 
     try {
       await _authService.loginWithEmail(email, password);
-
       if (mounted) {
-        _showSnackBar("Login realizado com sucesso!");
-        Navigator.of(
-          context,
-        ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+        UiUtils.showSnackBar(context, "Login realizado com sucesso!");
       }
     } catch (e) {
       if (mounted) {
         final errorMsg = e.toString().replaceAll('Exception: ', '');
-        debugPrint(e.toString());
-
-        _showSnackBar(errorMsg);
+        UiUtils.showSnackBar(context, errorMsg, isError: true);
       }
     } finally {
       if (mounted) {
@@ -65,16 +56,13 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _handleGoogleSignIn() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    setState(() => _isLoading = true);
 
     try {
       await _authService.loginWithGoogle();
     } catch (e) {
       if (mounted) {
-        _showSnackBar("Erro no Google Login: $e");
+        UiUtils.showSnackBar(context, "Erro no Google Login: $e", isError: true);
       }
     } finally {
       if (mounted) {
@@ -83,16 +71,9 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -106,90 +87,73 @@ class _LoginPageState extends State<LoginPage> {
               'Entrar',
               style: theme.textTheme.headlineLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Bem-vindo de volta!',
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withOpacity(0.6),
               ),
             ),
             const SizedBox(height: 48),
 
-            _buildTextField(
-              context,
+            CustomTextField(
               label: 'Email',
               hint: 'seu@email.com',
               controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 24),
 
-            _buildTextField(
-              context,
+            CustomTextField(
               label: 'Senha',
               hint: '********',
               controller: _passwordController,
-              obscureText: true,
+              isPassword: true,
             ),
             const SizedBox(height: 32),
 
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _handleEmailSignIn,
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text('Entrar'),
-              ),
+            PrimaryButton(
+              label: 'Entrar',
+              onPressed: _handleEmailSignIn,
+              isLoading: _isLoading,
             ),
 
             const SizedBox(height: 24),
             Text('ou continue com', style: theme.textTheme.bodyMedium),
             const SizedBox(height: 24),
 
-            _buildSocialButton(
-              context,
+            _SocialAuthButton(
               icon: Icons.g_mobiledata,
               label: 'Continuar com Google',
-              onPressed: _isLoading ? () {} : _handleGoogleSignIn,
+              onPressed: _handleGoogleSignIn,
+              isLoading: _isLoading,
             ),
 
             const SizedBox(height: 12),
 
-            _buildSocialButton(
-              context,
+            _SocialAuthButton(
               icon: Icons.apple,
               label: 'Continuar com Apple',
-              onPressed: _isLoading ? () {} : () {},
+              onPressed: () {},
+              isLoading: _isLoading,
             ),
 
             const SizedBox(height: 32),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Ainda não tem conta? ',
-                  style: TextStyle(color: colorScheme.onSurface),
-                ),
+                const Text('Ainda não tem conta? '),
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(builder: (_) => const RegisterPage()),
                     );
                   },
-                  child: Text(
+                  child: const Text(
                     'Criar conta',
                     style: TextStyle(
-                      color: colorScheme.primary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -201,60 +165,28 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+}
 
-  Widget _buildTextField(
-    BuildContext context, {
-    required String label,
-    required String hint,
-    required TextEditingController controller,
-    bool obscureText = false,
-  }) {
-    final theme = Theme.of(context);
+class _SocialAuthButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+  final bool isLoading;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: theme.textTheme.bodyMedium),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          obscureText: obscureText,
-          style: TextStyle(color: theme.colorScheme.onSurface),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: theme.colorScheme.onSurface.withOpacity(0.4),
-            ),
-            filled: true,
-            fillColor: theme.colorScheme.surface,
-            contentPadding: const EdgeInsets.all(16),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppSizes.radiusLG),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppSizes.radiusLG),
-              borderSide: BorderSide(
-                color: theme.dividerColor.withOpacity(0.1),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  const _SocialAuthButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.isLoading = false,
+  });
 
-  Widget _buildSocialButton(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-  }) {
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: _isLoading
+      onPressed: isLoading ? null : onPressed,
+      icon: isLoading
           ? const SizedBox(
               width: 20,
               height: 20,
@@ -265,7 +197,7 @@ class _LoginPageState extends State<LoginPage> {
         label,
         style: TextStyle(
           color: theme.colorScheme.onSurface.withOpacity(
-            _isLoading ? 0.5 : 1.0,
+            isLoading ? 0.5 : 1.0,
           ),
         ),
       ),

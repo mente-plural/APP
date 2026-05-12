@@ -1,5 +1,5 @@
-import 'package:app/theme/app_theme.dart';
-import 'package:app/ui/auth/auth_gate.dart';
+import 'package:app/app_theme.dart';
+import 'package:app/core/auth_gate.dart';
 import 'package:app/ui/onboarding/onboarding.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
