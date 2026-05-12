@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../../core/auth_service.dart';
 import '../../app_theme.dart';
@@ -131,14 +133,15 @@ class _LoginPageState extends State<LoginPage> {
               isLoading: _isLoading,
             ),
 
-            const SizedBox(height: 12),
-
-            _SocialAuthButton(
-              icon: Icons.apple,
-              label: 'Continuar com Apple',
-              onPressed: () {},
-              isLoading: _isLoading,
-            ),
+            if (!kIsWeb && Platform.isIOS) ...[
+              const SizedBox(height: 12),
+              _SocialAuthButton(
+                icon: Icons.apple,
+                label: 'Continuar com Apple',
+                onPressed: () {},
+                isLoading: _isLoading,
+              ),
+            ],
 
             const SizedBox(height: 32),
             Row(
