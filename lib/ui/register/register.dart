@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import '../../core/auth_service.dart';
+import 'package:provider/provider.dart';
+
 import '../../app_theme.dart';
+import '../../core/auth_service.dart';
+import '../../core/providers/profile_provider.dart';
 import '../../shared/utils/ui_utils.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../login/login.dart';
-import '../profile_selection/profile_selection.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -51,6 +53,10 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
+    final profileProvider = Provider.of<ProfileProvider>(
+        context, listen: false);
+    final profileId = profileProvider.selectedProfile?.id;
+
     setState(() => _isLoading = true);
 
     try {
@@ -59,12 +65,16 @@ class _RegisterPageState extends State<RegisterPage> {
         password: senha,
         name: nome,
         phone: telefone,
+        profile: profileId,
       );
 
       if (mounted) {
-        UiUtils.showSnackBar(context, "Conta criada com sucesso!");
+        UiUtils.showSnackBar(
+            context, "Conta criada com sucesso! Por favor, faça login.");
+        await _authService.logout();
+
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const ProfileSelectionPage()),
+          MaterialPageRoute(builder: (_) => const LoginPage()),
           (route) => false,
         );
       }

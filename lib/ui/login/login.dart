@@ -1,11 +1,16 @@
 import 'dart:io' show Platform;
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import '../../core/auth_service.dart';
+import 'package:provider/provider.dart';
+
 import '../../app_theme.dart';
+import '../../core/auth_service.dart';
+import '../../core/providers/profile_provider.dart';
 import '../../shared/utils/ui_utils.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
+import '../home/home_page.dart';
 import '../register/register.dart';
 
 class LoginPage extends StatefulWidget {
@@ -38,12 +43,21 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
+    final profileProvider = Provider.of<ProfileProvider>(
+        context, listen: false);
+    final profileId = profileProvider.selectedProfile?.id;
+
     setState(() => _isLoading = true);
 
     try {
-      await _authService.loginWithEmail(email, password);
+      await _authService.loginWithEmail(email, password, profile: profileId);
+
       if (mounted) {
         UiUtils.showSnackBar(context, "Login realizado com sucesso!");
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomePage()),
+              (route) => false,
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -58,10 +72,21 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _handleGoogleSignIn() async {
+    final profileProvider = Provider.of<ProfileProvider>(
+        context, listen: false);
+    final profileId = profileProvider.selectedProfile?.id;
+
     setState(() => _isLoading = true);
 
     try {
-      await _authService.loginWithGoogle();
+      await _authService.loginWithGoogle(profile: profileId);
+      if (mounted) {
+        UiUtils.showSnackBar(context, "Login social realizado com sucesso!");
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomePage()),
+              (route) => false,
+        );
+      }
     } catch (e) {
       if (mounted) {
         UiUtils.showSnackBar(context, "Erro no Google Login: $e", isError: true);

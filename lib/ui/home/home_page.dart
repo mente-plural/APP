@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/auth_service.dart';
+import '../login/login.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -15,7 +16,15 @@ class HomePage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => authService.logout(),
+            onPressed: () async {
+              await authService.logout();
+              if (context.mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                  (route) => false,
+                );
+              }
+            },
           ),
         ],
       ),
@@ -41,7 +50,15 @@ class HomePage extends StatelessWidget {
                 const Text('Você está logado com sucesso.'),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: () => authService.logout(),
+                  onPressed: () async {
+                    await authService.logout();
+                    if (context.mounted) {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                        (route) => false,
+                      );
+                    }
+                  },
                   child: const Text('Sair da Conta'),
                 ),
               ],

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../app_theme.dart';
 import '../../core/providers/profile_provider.dart';
-import '../home/home_page.dart';
+import '../login/login.dart';
 
 class ProfileSelectionPage extends StatelessWidget {
   const ProfileSelectionPage({super.key});
@@ -16,7 +17,6 @@ class ProfileSelectionPage extends StatelessWidget {
           child: Container(
             constraints: const BoxConstraints(maxWidth: 448),
             padding: const EdgeInsets.all(24.0),
-            // Deslocamento de -64px para cima conforme solicitado
             transform: Matrix4.translationValues(0, -64, 0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -238,7 +238,7 @@ class _ProfileCardState extends State<_ProfileCard> with SingleTickerProviderSta
     provider.setProfile(widget.profile);
     
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const HomePage()),
+      MaterialPageRoute(builder: (_) => const LoginPage()),
       (route) => false,
     );
   }

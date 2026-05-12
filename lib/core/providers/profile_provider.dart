@@ -9,16 +9,19 @@ enum UserProfile {
   String get id {
     switch (this) {
       case UserProfile.paraMim:
-        return 'para_mim';
+        return 'FOR_ME';
       case UserProfile.tutorFamiliar:
-        return 'tutor_familiar';
+        return 'TUTOR';
       case UserProfile.aprenderMais:
-        return 'aprender_mais';
+        return 'LEARN_MORE';
     }
   }
 
   static UserProfile fromId(String id) {
-    return UserProfile.values.firstWhere((e) => e.id == id, orElse: () => UserProfile.paraMim);
+    return UserProfile.values.firstWhere(
+            (e) => e.id == id,
+        orElse: () => UserProfile.paraMim
+    );
   }
 }
 

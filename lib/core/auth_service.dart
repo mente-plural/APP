@@ -38,7 +38,6 @@ class AuthService {
         _userController.add(_currentUser);
         _saveSession(_currentUser!);
       } else {
-        // Se o Firebase deslogar e tínhamos um usuário Firebase, limpamos tudo
         if (_currentUser?.firebaseUid != null) {
           await logout();
         }
@@ -70,8 +69,10 @@ class AuthService {
     }
   }
 
-  Future<void> loginWithEmail(String email, String password) async {
-    final response = await _apiClient.signIn(email: email, password: password);
+  Future<void> loginWithEmail(String email, String password,
+      {String? profile}) async {
+    final response = await _apiClient.signIn(
+        email: email, password: password, profile: profile);
     final userData = response['user'] ?? response;
     _currentUser = UserModel.fromMap(userData);
     _userController.add(_currentUser);
@@ -83,12 +84,14 @@ class AuthService {
     required String password,
     String? name,
     String? phone,
+    String? profile,
   }) async {
     final response = await _apiClient.signUp(
       email: email,
       password: password,
       name: name,
       phone: phone,
+      profile: profile,
     );
     final userData = response['user'] ?? response;
     _currentUser = UserModel.fromMap(userData);
@@ -96,7 +99,7 @@ class AuthService {
     await _saveSession(_currentUser!);
   }
 
-  Future<void> loginWithGoogle() async {
+  Future<void> loginWithGoogle({String? profile}) async {
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
     if (googleUser == null) return;
 
@@ -107,9 +110,8 @@ class AuthService {
     );
 
     final userCredential = await _auth.signInWithCredential(credential);
-    if (userCredential.additionalUserInfo?.isNewUser == true) {
-      await _syncUserWithApi(userCredential.user);
-    }
+
+    await _syncUserWithApi(userCredential.user, profile: profile);
   }
 
   Future<void> logout() async {
@@ -128,14 +130,22 @@ class AuthService {
     debugPrint("Logout local concluído.");
   }
 
-  Future<void> _syncUserWithApi(User? firebaseUser) async {
+  Future<void> _syncUserWithApi(User? firebaseUser, {String? profile}) async {
     if (firebaseUser == null) return;
     final userModel = _mapFirebaseUser(firebaseUser);
     if (userModel != null) {
       try {
-        await _apiClient.syncProfile(userModel);
+        final response = await _apiClient.syncProfile(
+            userModel, profile: profile);
+        final userData = response['user'] ?? response;
+        if (userData is Map && userData.isNotEmpty) {
+          _currentUser = UserModel.fromMap(userData as Map<String, dynamic>);
+          _userController.add(_currentUser);
+          await _saveSession(_currentUser!);
+        }
       } catch (e) {
-        debugPrint("Aviso: Falha na sincronização social: $e");
+        debugPrint("Erro na sincronização social: $e");
+        _userController.add(userModel);
       }
     }
   }

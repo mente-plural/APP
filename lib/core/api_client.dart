@@ -1,5 +1,7 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
+
 import '../api_config.dart';
 import '../models/user_model.dart';
 
@@ -21,6 +23,7 @@ class ApiClient {
     required String password,
     String? name,
     String? phone,
+    String? profile,
   }) async {
     try {
       final response = await http.post(
@@ -31,6 +34,7 @@ class ApiClient {
           'password': password,
           if (name != null) 'name': name,
           if (phone != null) 'phone': phone,
+          if (profile != null) 'profile_type': profile,
         }),
       );
 
@@ -48,12 +52,17 @@ class ApiClient {
   Future<Map<String, dynamic>> signIn({
     required String email,
     required String password,
+    String? profile,
   }) async {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/v1/auth/login'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+          if (profile != null) 'profile_type': profile,
+        }),
       );
 
       if (response.statusCode == 200) {
@@ -67,7 +76,8 @@ class ApiClient {
     }
   }
 
-  Future<void> syncProfile(UserModel user) async {
+  Future<Map<String, dynamic>> syncProfile(UserModel user,
+      {String? profile}) async {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/v1/users'),
@@ -77,11 +87,15 @@ class ApiClient {
           'email': user.email,
           'name': user.name,
           'photoUrl': user.photoUrl,
+          if (profile != null) 'profile_type': profile,
         }),
       );
 
-      if (response.statusCode != 200 && response.statusCode != 201) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else {
         _handleErrorResponse(response);
+        return {};
       }
     } catch (e) {
       rethrow;
