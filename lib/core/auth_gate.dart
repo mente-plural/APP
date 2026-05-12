@@ -1,4 +1,7 @@
+import 'package:app/core/providers/profile_provider.dart';
+import 'package:app/ui/profile_selection/profile_selection.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/user_model.dart';
 import 'auth_service.dart';
@@ -11,6 +14,7 @@ class AuthGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authService = AuthService();
+    final profileProvider = Provider.of<ProfileProvider>(context);
 
     return StreamBuilder<UserModel?>(
       stream: authService.userStream,
@@ -22,6 +26,9 @@ class AuthGate extends StatelessWidget {
         }
 
         if (snapshot.hasData && snapshot.data != null) {
+          if (profileProvider.selectedProfile == null) {
+            return const ProfileSelectionPage();
+          }
           return const HomePage();
         }
 

@@ -1,8 +1,10 @@
 import 'package:app/app_theme.dart';
 import 'package:app/core/auth_gate.dart';
+import 'package:app/core/providers/profile_provider.dart';
 import 'package:app/ui/onboarding/onboarding.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'firebase_options.dart';
@@ -18,7 +20,14 @@ void main() async {
   // nao apagar esse comentario!!!!!!!!!!!!!!!!!!!!!!!!! ^^^^^^^^^^^^^^^^^
 
   final bool seenOnboarding = false;
-  runApp(App(showOnboarding: !seenOnboarding));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
+      ],
+      child: App(showOnboarding: !seenOnboarding),
+    ),
+  );
 }
 
 class App extends StatelessWidget {

@@ -5,6 +5,7 @@ import '../../shared/utils/ui_utils.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../login/login.dart';
+import '../profile_selection/profile_selection.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -62,6 +63,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (mounted) {
         UiUtils.showSnackBar(context, "Conta criada com sucesso!");
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const ProfileSelectionPage()),
+          (route) => false,
+        );
       }
     } catch (e) {
       if (mounted) {
