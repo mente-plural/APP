@@ -12,17 +12,48 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  final PageController _controller = PageController();
   int _currentPage = 0;
+
+  final List<Map<String, dynamic>> _pagesData = [
+    {
+      "title": "Bem-vindo",
+      "description": "Um espaço pensado para o seu ritmo. Simples, calmo e acolhedor.",
+      "icon": Icons.auto_awesome,
+    },
+    {
+      "title": "Foco e Organização",
+      "description": "Ferramentas para ajudar no dia a dia, com baixo estímulo visual.",
+      "icon": Icons.event_note,
+    },
+    {
+      "title": "Apoio Constante",
+      "description": "Para você e quem cuida de você. Vamos descobrir juntos?",
+      "icon": Icons.check_circle_outline,
+    },
+  ];
 
   Future<void> _completeOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('seen_onboarding', true);
 
     if (mounted) {
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthGate()));
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const AuthGate()),
+      );
+    }
+  }
+
+  void _nextPage() {
+    if (_currentPage < _pagesData.length - 1) {
+      setState(() => _currentPage++);
+    } else {
+      _completeOnboarding();
+    }
+  }
+
+  void _previousPage() {
+    if (_currentPage > 0) {
+      setState(() => _currentPage--);
     }
   }
 
@@ -31,70 +62,56 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: Stack(
-        children: [
-          PageView(
-            controller: _controller,
-            onPageChanged: (index) {
-              setState(() => _currentPage = index);
-            },
-            children: const [
-              OnboardingPage(
-                title: "Bem-vindo",
-                description:
-                    "Um espaço pensado para o seu ritmo. Simples, calmo e acolhedor.",
-                icon: Icons.auto_awesome,
+      body: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          if (details.primaryVelocity! < 0) {
+            _nextPage();
+          } else if (details.primaryVelocity! > 0) {
+            _previousPage();
+          }
+        },
+        child: Stack(
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 600),
+              child: OnboardingPage(
+                key: ValueKey<int>(_currentPage),
+                title: _pagesData[_currentPage]["title"],
+                description: _pagesData[_currentPage]["description"],
+                icon: _pagesData[_currentPage]["icon"],
               ),
-              OnboardingPage(
-                title: "Foco e Organização",
-                description:
-                    "Ferramentas para ajudar no dia a dia, com baixo estímulo visual.",
-                icon: Icons.event_note,
-              ),
-              OnboardingPage(
-                title: "Apoio Constante",
-                description:
-                    "Para você e quem cuida de você. Vamos descobrir juntos?",
-                icon: Icons.check_circle_outline,
-              ),
-            ],
-          ),
-          Positioned(
-            bottom: AppSizes.radiusLG * 2.5,
-            left: AppSizes.radiusLG,
-            right: AppSizes.radiusLG,
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    3,
-                    (index) => _buildIndicator(index, theme),
-                  ),
-                ),
-                const SizedBox(height: AppSizes.radiusLG * 2),
-
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    key: ValueKey('onboarding_btn_$_currentPage'),
-                    onPressed: () {
-                      if (_currentPage < 2) {
-                        _controller.nextPage(
-                          duration: const Duration(milliseconds: 400),
-                          curve: Curves.easeOutCubic,
-                        );
-                      } else {
-                        _completeOnboarding();
-                      }
-                    },
-                    child: Text(_currentPage == 2 ? "Começar" : "Próximo"),
-                  ),
-                ),
-              ],
             ),
-          ),
-        ],
+            Positioned(
+              bottom: AppSizes.radiusLG * 2.5,
+              left: AppSizes.radiusLG,
+              right: AppSizes.radiusLG,
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      _pagesData.length,
+                      (index) => _buildIndicator(index, theme),
+                    ),
+                  ),
+                  const SizedBox(height: AppSizes.radiusLG * 2),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      key: ValueKey('onboarding_btn_$_currentPage'),
+                      onPressed: _nextPage,
+                      child: Text(
+                        _currentPage == _pagesData.length - 1
+                            ? "Começar"
+                            : "Próximo",
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
