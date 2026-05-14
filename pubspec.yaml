@@ -38,6 +38,9 @@ dependencies:
   http: ^1.2.1
   shared_preferences: ^2.3.5
   cupertino_icons: ^1.0.8
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^5.0.0
+  share_plus: 13.1.0
 
 dev_dependencies:
   flutter_test:

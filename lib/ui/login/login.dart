@@ -10,8 +10,6 @@ import '../../core/providers/profile_provider.dart';
 import '../../shared/utils/ui_utils.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
-import '../../shared/widgets/secondary_button.dart';
-import '../../shared/widgets/ghost_button.dart';
 import '../home/home_page.dart';
 import '../register/register.dart';
 
@@ -107,32 +105,28 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: SingleChildScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        padding: const EdgeInsets.all(AppSizes.radiusLG),
+        padding: const EdgeInsets.all(AppSizes.radiusLG * 1.5),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 80),
-            Icon(
-              Icons.app_registration,
-              color: theme.colorScheme.primary,
-              size: 80,
-            ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 100),
             Text(
-              'Bem-vindo(a)',
+              'Entrar',
               style: theme.textTheme.headlineLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Acesse sua conta para continuar',
-              style: theme.textTheme.bodyLarge
+              'Bem-vindo de volta!',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.onSurface.withOpacity(0.6),
+              ),
             ),
             const SizedBox(height: 48),
 
             CustomTextField(
-              label: 'E-mail',
+              label: 'Email',
               hint: 'seu@email.com',
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
@@ -154,40 +148,94 @@ class _LoginPageState extends State<LoginPage> {
               onPressed: _handleEmailSignIn,
               isLoading: _isLoading,
             ),
-            const SizedBox(height: 24),
 
-            GhostButton(
-              label: 'Criar nova conta',
-              onPressed: () {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const RegisterPage()),
-                );
-              },
-            ),
             const SizedBox(height: 24),
-
             Text('ou continue com', style: theme.textTheme.bodyMedium),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
 
-            SecondaryButton(
-              icon: Icons.mail_outline_rounded,
-              label: 'Google',
+            _SocialAuthButton(
+              icon: Icons.g_mobiledata,
+              label: 'Continuar com Google',
               onPressed: _handleGoogleSignIn,
               isLoading: _isLoading,
             ),
 
-            // if (!kIsWeb && Platform.isIOS) ...[
+            if (!kIsWeb && Platform.isIOS) ...[
               const SizedBox(height: 12),
-              SecondaryButton(
-                icon: Icons.apple_rounded,
-                label: 'Apple',
+              _SocialAuthButton(
+                icon: Icons.apple,
+                label: 'Continuar com Apple',
                 onPressed: () {},
                 isLoading: _isLoading,
               ),
-            // ],
+            ],
 
-
+            const SizedBox(height: 32),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Ainda não tem conta? '),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (_) => const RegisterPage()),
+                    );
+                  },
+                  child: const Text(
+                    'Criar conta',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SocialAuthButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+  final bool isLoading;
+
+  const _SocialAuthButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.isLoading = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return OutlinedButton.icon(
+      onPressed: isLoading ? null : onPressed,
+      icon: isLoading
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Icon(icon, color: theme.colorScheme.onSurface),
+      label: Text(
+        label,
+        style: TextStyle(
+          color: theme.colorScheme.onSurface.withOpacity(
+            isLoading ? 0.5 : 1.0,
+          ),
+        ),
+      ),
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(double.infinity, 56),
+        side: BorderSide(color: theme.dividerColor),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radiusLG),
         ),
       ),
     );
