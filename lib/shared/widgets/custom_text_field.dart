@@ -28,7 +28,6 @@ class CustomTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Determina formatadores automáticos baseados no tipo
     List<TextInputFormatter> effectiveFormatters = [];
     if (inputFormatters != null) {
       effectiveFormatters.addAll(inputFormatters!);
@@ -43,14 +42,17 @@ class CustomTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w500,
-            color: theme.colorScheme.onSurface.withOpacity(0.8),
+        Padding(
+          padding: const EdgeInsets.only(left: 15),
+          child: Text(
+            label,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 3),
         TextField(
           controller: controller,
           obscureText: isPassword,
@@ -65,7 +67,7 @@ class CustomTextField extends StatelessWidget {
             hintText: hint,
             hintStyle: TextStyle(
               color: theme.colorScheme.onSurface.withOpacity(0.4),
-              fontSize: 14,
+              fontSize: 16,
             ),
             filled: true,
             fillColor: theme.colorScheme.surface,
@@ -86,7 +88,7 @@ class CustomTextField extends StatelessWidget {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSizes.radiusLG),
               borderSide: BorderSide(
-                color: theme.colorScheme.primary.withOpacity(0.5),
+                color: theme.colorScheme.primary,
                 width: 2,
               ),
             ),

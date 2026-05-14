@@ -9,16 +9,16 @@ class AppColors {
   static const Color textMutedClaro = Color(0xFF57534E);
 
   // --- MODO ESCURO ---
-  static const Color primaryEscuro = Color(0xFF01BBA6);
-  static const Color bgEscuro = Color(0xFF020618);
-  static const Color surfaceEscuro = Color(0xFF0F172A);
-  static const Color textAccentEscuro = Color(0xFFFFFFFF);
-  static const Color textSecundarioEscuro = Color(0xFF9fb1d1);
+  static const Color primaryEscuro = Color(0xFF14b8a6);
+  static const Color bgEscuro = Color(0xFF020617);
+  static const Color surfaceEscuro = Color(0xFF0f172a);
+  static const Color textAccentEscuro = Color(0xFFf1f5f9);
+  static const Color textSecundarioEscuro = Color(0xFF94a3b8);
   static const Color borderEscuro = Color(0xFF1E293B);
 }
 
 class AppSizes {
-  static const double radiusLG = 16.0;
+  static const double radiusLG = 30.0;
 }
 
 class AppTheme {
@@ -26,6 +26,7 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
+      fontFamily: 'sans-serif',
       brightness: Brightness.light,
       colorScheme: const ColorScheme.light(
         primary: AppColors.primaryClaro,
@@ -46,6 +47,7 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
+      fontFamily: 'sans-serif',
       brightness: Brightness.dark,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primaryEscuro,
@@ -55,12 +57,14 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.bgEscuro,
       dividerColor: AppColors.borderEscuro,
-      textTheme: const TextTheme(
-        bodyLarge: TextStyle(color: AppColors.textAccentEscuro, fontSize: 16),
+      textTheme: const TextTheme(bodyLarge: TextStyle(
+          color: AppColors.textSecundarioEscuro, fontSize: 18),
         headlineMedium: TextStyle(
           color: AppColors.textAccentEscuro,
           fontWeight: FontWeight.bold,
         ),
+        headlineLarge: TextStyle(
+          color: AppColors.textAccentEscuro, fontWeight: FontWeight.bold,),
         bodyMedium: TextStyle(
           color: AppColors.textSecundarioEscuro,
           fontSize: 14,

@@ -1,8 +1,9 @@
+import 'package:app/ui/login/login.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../app_theme.dart';
-import '../profile_selection/profile_selection.dart';
+import '../../shared/widgets/primary_button.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -12,6 +13,8 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
+
+  final PageController _pageController = PageController();
   int _currentPage = 0;
 
   final List<Map<String, dynamic>> _pagesData = [
@@ -32,28 +35,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     },
   ];
 
-  Future<void> _completeOnboarding() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('seen_onboarding', true);
-
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const ProfileSelectionPage()),
-      );
-    }
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   void _nextPage() {
     if (_currentPage < _pagesData.length - 1) {
-      setState(() => _currentPage++);
+      _pageController.nextPage(duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOutQuart,);
     } else {
       _completeOnboarding();
     }
   }
 
-  void _previousPage() {
-    if (_currentPage > 0) {
-      setState(() => _currentPage--);
+  Future<void> _completeOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('seen_onboarding', true);
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
     }
   }
 
@@ -61,57 +64,36 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
-      body: GestureDetector(
-        onHorizontalDragEnd: (details) {
-          if (details.primaryVelocity! < 0) {
-            _nextPage();
-          } else if (details.primaryVelocity! > 0) {
-            _previousPage();
-          }
-        },
-        child: Stack(
-          children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 600),
-              child: OnboardingPage(
-                key: ValueKey<int>(_currentPage),
-                title: _pagesData[_currentPage]["title"],
-                description: _pagesData[_currentPage]["description"],
-                icon: _pagesData[_currentPage]["icon"],
-              ),
+    return Scaffold(body: Stack(children: [
+      PageView.builder(controller: _pageController, onPageChanged: (int page) {
+        setState(() => _currentPage = page);
+      }, itemCount: _pagesData.length,
+
+        itemBuilder: (context, index) {
+          return OnboardingPage(title: _pagesData[index]["title"],
+            description: _pagesData[index]["description"],
+            icon: _pagesData[index]["icon"],);
+        },),
+
+
+      Positioned(bottom: AppSizes.radiusLG * 2.5,
+        left: AppSizes.radiusLG,
+        right: AppSizes.radiusLG,
+        child: Column(children: [
+          Row(mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              _pagesData.length, (index) => _buildIndicator(index, theme),),),
+          const SizedBox(height: AppSizes.radiusLG * 2),
+          SizedBox(width: double.infinity,
+            child: PrimaryButton(
+              onPressed: _nextPage,
+              label: _currentPage == _pagesData.length - 1
+                  ? "Começar"
+                  : "Próximo",
             ),
-            Positioned(
-              bottom: AppSizes.radiusLG * 2.5,
-              left: AppSizes.radiusLG,
-              right: AppSizes.radiusLG,
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      _pagesData.length,
-                      (index) => _buildIndicator(index, theme),
-                    ),
-                  ),
-                  const SizedBox(height: AppSizes.radiusLG * 2),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      key: ValueKey('onboarding_btn_$_currentPage'),
-                      onPressed: _nextPage,
-                      child: Text(
-                        _currentPage == _pagesData.length - 1
-                            ? "Começar"
-                            : "Próximo",
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],),),
+    ],
       ),
     );
   }
@@ -124,9 +106,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       height: 8,
       width: isSelected ? 24 : 8,
       decoration: BoxDecoration(
-        color: isSelected
-            ? theme.colorScheme.primary
-            : theme.dividerColor.withOpacity(0.3),
+        color: isSelected ? theme.colorScheme.primary : theme.dividerColor
+            .withOpacity(0.3),
         borderRadius: BorderRadius.circular(AppSizes.radiusLG),
       ),
     );
@@ -148,31 +129,23 @@ class OnboardingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final primaryColor = theme.colorScheme.primary;
-    final bgColor = theme.scaffoldBackgroundColor;
-    return Container(
-      color: bgColor,
-      padding: const EdgeInsets.all(AppSizes.radiusLG * 1.5),
+    return Padding(padding: const EdgeInsets.all(AppSizes.radiusLG * 2),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 100, color: primaryColor),
-          const SizedBox(height: AppSizes.radiusLG * 1.5),
+          Icon(icon, size: 120, color: theme.colorScheme.primary),
+          const SizedBox(height: 40),
           Text(
             title,
-            style: theme.textTheme.headlineLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.onSurface,
-            ),
             textAlign: TextAlign.center,
+            style: theme.textTheme.headlineLarge?.copyWith(
+                fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: AppSizes.radiusLG),
+          const SizedBox(height: 16),
           Text(
             description,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(1),
-            ),
             textAlign: TextAlign.center,
+            style: theme.textTheme.bodyLarge?.copyWith(fontSize: 18),
           ),
         ],
       ),
