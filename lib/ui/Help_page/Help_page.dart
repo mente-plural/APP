@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class HelpPage extends StatelessWidget {
   const HelpPage({super.key});
 
-  
+
   final Color bgColor = const Color(0xFF030712);
   final Color cardColor = const Color(0xFF111827);
   final Color tealAccent = const Color(0xFF00D4C8);
@@ -18,7 +18,7 @@ class HelpPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Título da Tela
+
             const Padding(
               padding: EdgeInsets.fromLTRB(24, 40, 24, 24),
               child: Text(
