@@ -36,6 +36,10 @@ class UserModel {
     );
   }
 
+  String? get theme => null;
+
+  Iterable<dynamic>? get neurodivergenceTypes => null;
+
   static DateTime _parseDate(dynamic date) {
     if (date == null) return DateTime.now();
     if (date is DateTime) return date;
