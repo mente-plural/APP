@@ -4,6 +4,7 @@ import '../../core/auth_service.dart';
 import '../../models/user_model.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../login/login.dart';
+import '../qrpage/qrpage.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -31,15 +32,48 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     );
   }
 
-  @override
-  void dispose() {
-    _qrController.dispose();
-    super.dispose();
+
+  Future<void> _confirmLogout() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceEscuro,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Sair da conta?',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: const Text('Você precisará fazer login novamente.',
+            style: TextStyle(color: AppColors.textSecundarioEscuro)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar',
+                style: TextStyle(color: AppColors.textSecundarioEscuro)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Sair',
+                style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      await _authService.logout();
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+            (route) => false,
+      );
+    }
   }
 
-  void _toggleQr() {
-    setState(() => _showQr = !_showQr);
-    _showQr ? _qrController.forward() : _qrController.reverse();
+  void _openPreferencesSheet(UserModel user) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _PreferencesSheet(user: user),
+    );
   }
 
   String _getProfileLabel(String? type) {
@@ -68,7 +102,24 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         actions: [
+          // QR Code
           IconButton(
+            tooltip: 'Meu QR Code',
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: const BoxDecoration(
+                color: AppColors.surfaceEscuro,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.qr_code_2,
+                  size: 16, color: AppColors.primaryEscuro),
+            ),
+            onPressed: () => Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => const qrpage())),
+          ),
+          // Sair
+          IconButton(
+            tooltip: 'Sair',
             icon: Container(
               padding: const EdgeInsets.all(8),
               decoration: const BoxDecoration(
@@ -131,7 +182,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppColors.surfaceEscuro,
         borderRadius: BorderRadius.circular(24),
@@ -212,12 +262,32 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _chip(String label, {required Color color, Color? bg}) {
+    final bgColor = bg ?? color;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      decoration: BoxDecoration(
+        color: bgColor.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: bgColor.withOpacity(0.35)),
+      ),
+      child: Text(label,
+          style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+              letterSpacing: 0.3)),
+    );
+  }
+
+  Widget _infoRow(IconData icon, String label, String value,
+      {Color iconColor = AppColors.primaryEscuro,
+        Color iconBg = AppColors.primaryEscuro}) {
     return Row(
       children: [
         Container(
-          width: 40,
-          height: 40,
+          width: 38,
+          height: 38,
           decoration: BoxDecoration(
             color: AppColors.primaryEscuro.withOpacity(0.10),
             borderRadius: BorderRadius.circular(12),
@@ -268,14 +338,19 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
               color: Colors.white,
               size: 20,
             ),
-            const SizedBox(width: 8),
-            Text(
-              _showQr ? 'Ocultar QR Code' : 'Mostrar QR Code',
+          ),
+          _divider(),
+
+          // Tipo de perfil
+          _prefRow(
+            icon: Icons.person_outline,
+            iconBg: AppColors.primaryEscuro,
+            iconColor: AppColors.primaryEscuro,
+            label: 'TIPO DE PERFIL',
+            child: Text(
+              _getProfileLabel(user.profileType),
               style: const TextStyle(
-                fontSize: 15,
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
+                  color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
             ),
             const SizedBox(width: 8),
             AnimatedRotation(
@@ -287,8 +362,8 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                 size: 20,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -333,7 +408,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
