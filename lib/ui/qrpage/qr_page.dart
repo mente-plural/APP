@@ -15,12 +15,11 @@ class QrPage extends StatefulWidget {
   @override
   State<QrPage> createState() => _QrPageState();
 }
-
+enum _B { top, bottom, left, right }
 class _QrPageState extends State<QrPage> {
   _QrMode _mode = _QrMode.myQr;
   final _authService = AuthService();
 
-  // Controller do scanner (descomente ao integrar mobile_scanner)
   late final MobileScannerController _scannerController;
 
   @override
@@ -31,14 +30,13 @@ class _QrPageState extends State<QrPage> {
 
   @override
   void dispose() {
-    // _scannerController.dispose();
+    _scannerController.dispose();
     super.dispose();
   }
 
   void _switchMode(_QrMode mode) {
     if (_mode == mode) return;
     setState(() => _mode = mode);
-    // Pausar/retomar câmera conforme o modo
     if (mode == _QrMode.scan) {
        _scannerController.start();
      } else {
@@ -49,8 +47,8 @@ class _QrPageState extends State<QrPage> {
   void _onQrDetected(String uid) {
     // TODO: buscar usuário por uid na API e navegar para o perfil dele
     // Navigator.of(context).push(
-       MaterialPageRoute(builder: (_) => UserProfileViewPage(uid: uid)),
-     );
+    //    MaterialPageRoute(builder: (_) => UserProfileViewPage(uid: uid)),
+    //  );
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Usuário encontrado: $uid'),
@@ -561,7 +559,7 @@ class _ScanView extends StatelessWidget {
   }
 
   // Cantos do viewfinder
-  enum _B { top, bottom, left, right }
+
 
   Widget _corner({
     double? top,

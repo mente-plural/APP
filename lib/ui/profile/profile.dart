@@ -103,7 +103,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   size: 16, color: AppColors.primaryEscuro),
             ),
             onPressed: () => Navigator.of(context)
-                .push(MaterialPageRoute(builder: (_) => const qrpage())),
+                .push(MaterialPageRoute(builder: (_) => const QrPage())),
           ),
           // Sair
           IconButton(
