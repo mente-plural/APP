@@ -7,6 +7,7 @@ import '../../core/providers/profile_provider.dart';
 import '../../shared/utils/ui_utils.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
+import '../../shared/widgets/ghost_button.dart';
 import '../login/login.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -184,24 +185,13 @@ class _RegisterPageState extends State<RegisterPage> {
 
             const SizedBox(height: 32),
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('Já tem uma conta? '),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const LoginPage()),
-                    );
-                  },
-                  child: const Text(
-                    'Fazer login',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
+            GhostButton(
+              label: 'Já tem uma conta? Fazer login',
+              onPressed: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                );
+              },
             ),
             const SizedBox(height: 20),
           ],

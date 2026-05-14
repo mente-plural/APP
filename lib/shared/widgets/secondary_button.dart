@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'base_button.dart';
 
-class PrimaryButton extends StatelessWidget {
+class SecondaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final bool isLoading;
   final IconData? icon;
 
-  const PrimaryButton({
+  const SecondaryButton({
     super.key,
     required this.label,
     this.onPressed,
@@ -22,9 +22,9 @@ class PrimaryButton extends StatelessWidget {
       onPressed: onPressed,
       isLoading: isLoading,
       icon: icon,
-      backgroundColor: const Color(0xFF14b8a6), // bg-teal-600
-      foregroundColor: const Color(0xFF020617), // Slate 950
-      hoverColor: const Color(0xFF0F766E), // hover:bg-teal-700
+      backgroundColor: const Color(0xFF1E293B),
+      foregroundColor: const Color(0xFFF1F5F9), // Slate 100
+      hoverColor: const Color(0xFF334155),
     );
   }
 }
