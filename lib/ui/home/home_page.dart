@@ -1,39 +1,96 @@
 import 'package:flutter/material.dart';
+import '../../app_theme.dart';
+import '../profile/profile.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
 
-  final Color bgColor = const Color(0xFF030712); // Fundo bem escuro
-  final Color cardColor = const Color(0xFF111827); // Fundo dos cards
-  final Color tealAccent = const Color(0xFF0D9488); // Verde/Teal
-  final Color textSecondary = const Color(0xFF94A3B8); // Cinza claro
+class _HomePageState extends State<HomePage> {
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = [
+    const HomeView(),
+    const Center(child: Text("Rotina", style: TextStyle(color: Colors.white))),
+    const Center(child: Text("Educação", style: TextStyle(color: Colors.white))),
+    const ProfilePage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
-
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 32),
-              _buildMomentoFocoCard(),
-              const SizedBox(height: 32),
-              _buildProximoRotinaSection(),
-              const SizedBox(height: 32),
-              _buildDicaTdahSection(),
-            ],
+      backgroundColor: AppColors.bgEscuro,
+      body: _pages[_currentIndex],
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          border: Border(
+            top: BorderSide(color: AppColors.borderEscuro, width: 1),
           ),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) => setState(() => _currentIndex = index),
+          backgroundColor: AppColors.bgEscuro,
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: AppColors.primaryEscuro,
+          unselectedItemColor: AppColors.textSecundarioEscuro,
+          selectedFontSize: 12,
+          unselectedFontSize: 12,
+          elevation: 0,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_filled),
+              activeIcon: Icon(Icons.home_filled),
+              label: 'Início',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.calendar_today_outlined),
+              activeIcon: Icon(Icons.calendar_today),
+              label: 'Rotina',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.auto_stories_outlined),
+              activeIcon: Icon(Icons.auto_stories),
+              label: 'Aprender',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              activeIcon: Icon(Icons.person),
+              label: 'Perfil',
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
+class HomeView extends StatelessWidget {
+  const HomeView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(),
+            const SizedBox(height: 32),
+            _buildMomentoFocoCard(),
+            const SizedBox(height: 32),
+            _buildProximoRotinaSection(),
+            const SizedBox(height: 32),
+            _buildDicaTdahSection(),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildHeader() {
     return Row(
@@ -61,21 +118,20 @@ class HomePage extends StatelessWidget {
   Widget _buildIconButton(IconData icon) {
     return Container(
       padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: cardColor,
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceEscuro,
         shape: BoxShape.circle,
       ),
       child: Icon(icon, color: Colors.white, size: 20),
     );
   }
 
-
   Widget _buildMomentoFocoCard() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: tealAccent,
+        color: AppColors.primaryEscuro,
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -86,7 +142,7 @@ class HomePage extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Color(0xFF020617), // Contraste alto
             ),
           ),
           const SizedBox(height: 12),
@@ -94,22 +150,21 @@ class HomePage extends StatelessWidget {
             "Vamos iniciar uma sessão\nde Pomodoro?",
             style: TextStyle(
               fontSize: 16,
-              color: Colors.white,
+              color: Color(0xFF020617),
               height: 1.4,
+              fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: () {
-
-            },
+            onPressed: () {},
             icon: const Icon(Icons.play_arrow, color: Colors.white),
             label: const Text(
               "Iniciar",
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: bgColor, // Botão escuro
+              backgroundColor: AppColors.bgEscuro,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
@@ -121,7 +176,6 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
-
 
   Widget _buildProximoRotinaSection() {
     return Column(
@@ -140,10 +194,10 @@ class HomePage extends StatelessWidget {
             ),
             Text(
               "Ver tudo",
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: tealAccent,
+                color: AppColors.primaryEscuro,
               ),
             ),
           ],
@@ -152,24 +206,23 @@ class HomePage extends StatelessWidget {
         Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: cardColor,
+            color: AppColors.surfaceEscuro,
             borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.borderEscuro),
           ),
           child: Container(
-
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               border: Border(
-                left: BorderSide(color: tealAccent, width: 4),
+                left: BorderSide(color: AppColors.primaryEscuro, width: 4),
               ),
             ),
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: bgColor,
+                    color: AppColors.bgEscuro,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Text(
@@ -182,11 +235,10 @@ class HomePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-
-                Column(
+                const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       "Pausa Consciente",
                       style: TextStyle(
                         color: Colors.white,
@@ -194,11 +246,11 @@ class HomePage extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       "15 min de alongamento",
                       style: TextStyle(
-                        color: textSecondary,
+                        color: AppColors.textSecundarioEscuro,
                         fontSize: 14,
                       ),
                     ),
@@ -211,7 +263,6 @@ class HomePage extends StatelessWidget {
       ],
     );
   }
-
 
   Widget _buildDicaTdahSection() {
     return Column(
@@ -229,25 +280,26 @@ class HomePage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: cardColor,
+            color: AppColors.surfaceEscuro,
             borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.borderEscuro),
           ),
-          child: Row(
+          child: const Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(
                 Icons.info_outline,
-                color: tealAccent,
+                color: AppColors.primaryEscuro,
                 size: 24,
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
               Expanded(
                 child: Text(
                   "Divida grandes tarefas em passos menores. Isso ajuda a reduzir a ansiedade e dá uma sensação de progresso constante.",
                   style: TextStyle(
-                    color: textSecondary,
+                    color: AppColors.textSecundarioEscuro,
                     fontSize: 14,
-                    height: 1.5, 
+                    height: 1.5,
                   ),
                 ),
               ),

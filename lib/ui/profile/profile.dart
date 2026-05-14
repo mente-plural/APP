@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../app_theme.dart';
-import '../../core/providers/profile_provider.dart';
+import '../../core/auth_service.dart';
+import '../../models/user_model.dart';
+import '../../shared/widgets/primary_button.dart';
 import '../login/login.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -11,17 +12,11 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage>
-    with SingleTickerProviderStateMixin {
+class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStateMixin {
   bool _showQr = false;
   late AnimationController _qrController;
   late Animation<double> _qrAnimation;
-
-  // Design tokens
-  static const Color _bg = Color(0xFF0B0F19);
-  static const Color _card = Color(0xFF151A25);
-  static const Color _primary = Color(0xFF00C896);
-  static const Color _divider = Color(0x1AFFFFFF);
+  final _authService = AuthService();
 
   @override
   void initState() {
@@ -34,10 +29,6 @@ class _ProfilePageState extends State<ProfilePage>
       parent: _qrController,
       curve: Curves.easeInOut,
     );
-    // Busca perfil ao abrir a tela
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProfileProvider>().fetchProfile();
-    });
   }
 
   @override
@@ -51,13 +42,27 @@ class _ProfilePageState extends State<ProfilePage>
     _showQr ? _qrController.forward() : _qrController.reverse();
   }
 
+  String _getProfileLabel(String? type) {
+    switch (type) {
+      case 'FOR_ME':
+        return 'Para Mim';
+      case 'TUTOR':
+        return 'Tutor ou Familiar';
+      case 'LEARN_MORE':
+        return 'Aprender Mais';
+      default:
+        return 'Perfil do Usuário';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: AppColors.bgEscuro,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        centerTitle: true,
         title: const Text(
           'Meu Perfil',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
@@ -66,37 +71,51 @@ class _ProfilePageState extends State<ProfilePage>
           IconButton(
             icon: Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: _card, shape: BoxShape.circle),
-              child: const Icon(Icons.edit, size: 16, color: Colors.grey),
+              decoration: const BoxDecoration(
+                color: AppColors.surfaceEscuro,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.edit, size: 16, color: AppColors.textSecundarioEscuro),
             ),
-            onPressed: () {},
+            onPressed: () {
+              // TODO: Implementar edição de perfil
+            },
           ),
           const SizedBox(width: 8),
         ],
       ),
-      body: Consumer<ProfileProvider>(
-        builder: (context, provider, _) {
-          if (provider.isLoading) {
+      body: StreamBuilder<UserModel?>(
+        stream: _authService.userStream,
+        builder: (context, snapshot) {
+          final user = snapshot.data;
+
+          if (user == null) {
             return const Center(
-              child: CircularProgressIndicator(color: _primary),
+              child: CircularProgressIndicator(color: AppColors.primaryEscuro),
             );
           }
-
-          if (provider.errorMessage != null) {
-            return _buildError(provider);
-          }
-
-          final profile = provider.profile;
-          if (profile == null) return const SizedBox.shrink();
 
           return SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
             child: Column(
               children: [
-                _buildMainCard(profile),
+                _buildMainCard(user),
                 const SizedBox(height: 16),
                 _buildQrToggleButton(),
-                _buildQrSection(profile),
+                _buildQrSection(user),
+                const SizedBox(height: 32),
+                PrimaryButton(
+                  label: 'Sair da Conta',
+                  onPressed: () async {
+                    await _authService.logout();
+                    if (mounted) {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                        (route) => false,
+                      );
+                    }
+                  },
+                ),
               ],
             ),
           );
@@ -105,46 +124,52 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
-  // ── Card principal: avatar + nome + infos ──
-  Widget _buildMainCard(UserProfile profile) {
-    final initials = profile.name.isNotEmpty
-        ? profile.name[0].toUpperCase()
-        : '?';
+  Widget _buildMainCard(UserModel user) {
+    final initials = (user.name != null && user.name!.isNotEmpty)
+        ? user.name![0].toUpperCase()
+        : user.email.isNotEmpty ? user.email[0].toUpperCase() : '?';
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: _card,
+        color: AppColors.surfaceEscuro,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: _divider),
+        border: Border.all(color: AppColors.borderEscuro),
       ),
       child: Column(
         children: [
           // Avatar
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: _primary,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                initials,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+          if (user.photoUrl != null && user.photoUrl!.isNotEmpty)
+            CircleAvatar(
+              radius: 40,
+              backgroundImage: NetworkImage(user.photoUrl!),
+            )
+          else
+            Container(
+              width: 80,
+              height: 80,
+              decoration: const BoxDecoration(
+                color: AppColors.primaryEscuro,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  initials,
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF020617), // Slate 950 para contraste
+                  ),
                 ),
               ),
             ),
-          ),
           const SizedBox(height: 14),
 
           // Nome
           Text(
-            profile.name,
+            user.name ?? 'Usuário',
+            textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -153,44 +178,35 @@ class _ProfilePageState extends State<ProfilePage>
           ),
           const SizedBox(height: 4),
 
-          // Role (ex: Paciente)
-          Text(
-            profile.role,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: _primary,
-            ),
-          ),
-          const SizedBox(height: 6),
-
-          // Badge de neurodivergência
+          // Tipo de Perfil (Badge)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: _primary.withOpacity(0.12),
+              color: AppColors.primaryEscuro.withOpacity(0.12),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: _primary.withOpacity(0.35)),
+              border: Border.all(color: AppColors.primaryEscuro.withOpacity(0.35)),
             ),
             child: Text(
-              profile.neurodivergenceType,
+              _getProfileLabel(user.profileType),
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: _primary,
+                color: AppColors.primaryEscuro,
                 letterSpacing: 0.4,
               ),
             ),
           ),
 
           const SizedBox(height: 24),
-          const Divider(color: _divider, height: 1),
+          const Divider(color: AppColors.borderEscuro, height: 1),
           const SizedBox(height: 20),
 
           // Informações de contato
-          _buildInfoRow(Icons.email_outlined, 'Email', profile.email),
-          const SizedBox(height: 16),
-          _buildInfoRow(Icons.phone_outlined, 'Telefone', profile.phone),
+          _buildInfoRow(Icons.email_outlined, 'Email', user.email),
+          if (user.phone != null && user.phone!.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            _buildInfoRow(Icons.phone_outlined, 'Telefone', user.phone!),
+          ],
         ],
       ),
     );
@@ -203,35 +219,36 @@ class _ProfilePageState extends State<ProfilePage>
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: _primary.withOpacity(0.10),
+            color: AppColors.primaryEscuro.withOpacity(0.10),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, size: 18, color: _primary),
+          child: new Icon(icon, size: 18, color: AppColors.primaryEscuro),
         ),
         const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(fontSize: 11, color: Colors.grey),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(fontSize: 11, color: AppColors.textSecundarioEscuro),
               ),
-            ),
-          ],
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  // ── Botão de toggle do QR ──
   Widget _buildQrToggleButton() {
     return GestureDetector(
       onTap: _toggleQr,
@@ -241,7 +258,7 @@ class _ProfilePageState extends State<ProfilePage>
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white24),
+          border: Border.all(color: AppColors.borderEscuro),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -266,7 +283,7 @@ class _ProfilePageState extends State<ProfilePage>
               duration: const Duration(milliseconds: 320),
               child: const Icon(
                 Icons.keyboard_arrow_down,
-                color: Colors.white54,
+                color: AppColors.textSecundarioEscuro,
                 size: 20,
               ),
             ),
@@ -276,8 +293,7 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
-  // ── QR animado (expande/colapsa) ──
-  Widget _buildQrSection(UserProfile profile) {
+  Widget _buildQrSection(UserModel user) {
     return SizeTransition(
       sizeFactor: _qrAnimation,
       axisAlignment: -1,
@@ -287,65 +303,36 @@ class _ProfilePageState extends State<ProfilePage>
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
           decoration: BoxDecoration(
-            color: _card,
+            color: AppColors.surfaceEscuro,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: _divider),
+            border: Border.all(color: AppColors.borderEscuro),
           ),
           child: Column(
             children: [
               Container(
                 width: 180,
                 height: 180,
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Center(
+                child: const Center(
                   child: Icon(
                     Icons.qr_code_2,
                     size: 140,
-                    color: _bg,
+                    color: AppColors.bgEscuro,
                   ),
                 ),
               ),
               const SizedBox(height: 16),
               const Text(
-                'Escaneie para ver informações de suporte',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                'Escaneie para compartilhar seu perfil de saúde',
+                style: TextStyle(fontSize: 12, color: AppColors.textSecundarioEscuro),
                 textAlign: TextAlign.center,
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  // ── Estado de erro ──
-  Widget _buildError(ProfileProvider provider) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
-            const SizedBox(height: 16),
-            Text(
-              provider.errorMessage!,
-              style: const TextStyle(color: Colors.white70),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: _primary),
-              onPressed: () => provider.fetchProfile(),
-              child: const Text(
-                'Tentar novamente',
-                style: TextStyle(color: Colors.black),
-              ),
-            ),
-          ],
         ),
       ),
     );
