@@ -174,12 +174,12 @@ class _ProfileCardState extends State<_ProfileCard> with SingleTickerProviderSta
                   ),
                   boxShadow: _isHovered
                       ? [
-                          BoxShadow(
-                            color: teal400.withOpacity(0.1),
-                            blurRadius: 10,
-                            spreadRadius: 2,
-                          )
-                        ]
+                    BoxShadow(
+                      color: teal400.withOpacity(0.1),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    )
+                  ]
                       : [],
                 ),
                 child: Row(
@@ -236,10 +236,10 @@ class _ProfileCardState extends State<_ProfileCard> with SingleTickerProviderSta
   void _handleSelect(BuildContext context) {
     final provider = Provider.of<ProfileProvider>(context, listen: false);
     provider.setProfile(widget.profile);
-    
+
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginPage()),
-      (route) => false,
+          (route) => false,
     );
   }
 }
