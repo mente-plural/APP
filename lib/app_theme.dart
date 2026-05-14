@@ -84,4 +84,28 @@ class AppTheme {
       ),
     );
   }
+
+  // --- TEMA ALTO CONTRASTE ---
+  static ThemeData get highContrastTheme {
+    return ThemeData(
+      useMaterial3: true,
+      fontFamily: 'sans-serif',
+      brightness: Brightness.dark,
+      colorScheme: const ColorScheme.dark(
+        primary: Colors.yellow,
+        surface: Colors.black,
+        onPrimary: Colors.black,
+        onSurface: Colors.white,
+      ),
+      scaffoldBackgroundColor: Colors.black,
+      dividerColor: Colors.white,
+      textTheme: const TextTheme(
+        bodyLarge: TextStyle(color: Colors.white, fontSize: 18),
+        headlineMedium: TextStyle(color: Colors.yellow, fontWeight: FontWeight.bold),
+        headlineLarge: TextStyle(color: Colors.yellow, fontWeight: FontWeight.bold),
+        bodyMedium: TextStyle(color: Colors.white, fontSize: 14),
+      ),
+      elevatedButtonTheme: _buttonTheme(Colors.yellow, Colors.black),
+    );
+  }
 }

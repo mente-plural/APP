@@ -5,7 +5,6 @@ import '../../core/auth_service.dart';
 import '../../models/user_model.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:share_plus/share_plus.dart';
 
 enum _QrMode { myQr, scan }
 
@@ -222,14 +221,14 @@ class _MyQrView extends StatelessWidget {
                               fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 4),
-                        if (user?.neurodivergenceTypes != null)
+                        if (user?.preferences.neurodivergencies != null)
                           Wrap(
                             spacing: 5,
                             children: [
-                              _chip(user!.profileType == 'FOR_ME'
+                              _chip(user!.preferences.profileType == 'FOR_ME'
                                   ? 'Para Mim'
-                                  : user.profileType ?? ''),
-                              ...user.neurodivergenceTypes!
+                                  : user.preferences.profileType ?? ''),
+                              ...user.preferences.neurodivergencies
                                   .map((n) => _chip(n, purple: true)),
                             ],
                           ),
@@ -259,23 +258,23 @@ class _MyQrView extends StatelessWidget {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Center(
-                        // Substitua por:
-                        // QrImageView(
-                        //   data: user?.uid ?? '',
-                        //   version: QrVersions.auto,
-                        //   size: 182,
-                        //   backgroundColor: Colors.white,
-                        //   eyeStyle: QrEyeStyle(
-                        //     eyeShape: QrEyeShape.square,
-                        //     color: AppColors.bgEscuro,
-                        //   ),
-                        // ),
-                        child: Icon(
-                          Icons.qr_code_2,
-                          size: 182,
-                          color: AppColors.bgEscuro,
-                        ),
+                      child: Center(
+                        child: user != null
+                            ? QrImageView(
+                                data: user.id,
+                                version: QrVersions.auto,
+                                size: 182,
+                                backgroundColor: Colors.white,
+                                eyeStyle: const QrEyeStyle(
+                                  eyeShape: QrEyeShape.square,
+                                  color: AppColors.bgEscuro,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.qr_code_2,
+                                size: 182,
+                                color: AppColors.bgEscuro,
+                              ),
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -392,9 +391,9 @@ class _MyQrView extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: bg.withOpacity(0.12),
+        color: bg.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: bg.withOpacity(0.35)),
+        border: Border.all(color: bg.withValues(alpha: 0.35)),
       ),
       child: Text(label,
           style: TextStyle(
@@ -428,24 +427,14 @@ class _ScanView extends StatelessWidget {
               aspectRatio: 1,
               child: Stack(
                 children: [
-                  // Substitua por:
-                  // MobileScanner(
-                  //   controller: scannerController,
-                  //   onDetect: (capture) {
-                  //     final barcode = capture.barcodes.first;
-                  //     if (barcode.rawValue != null) {
-                  //       onDetected(barcode.rawValue!);
-                  //     }
-                  //   },
-                  // ),
-                  Container(
-                    color: AppColors.surfaceEscuro,
-                    child: const Center(
-                      child: Icon(Icons.camera_alt_outlined,
-                          size: 64, color: AppColors.borderEscuro),
-                    ),
+                  MobileScanner(
+                    onDetect: (capture) {
+                      final barcode = capture.barcodes.first;
+                      if (barcode.rawValue != null) {
+                        onDetected(barcode.rawValue!);
+                      }
+                    },
                   ),
-
                   // Overlay de mira
                   Center(
                     child: SizedBox(
@@ -644,14 +633,14 @@ class _ScanLineState extends State<_ScanLine>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _anim,
-      builder: (_, __) => Positioned(
+      builder: (_, child) => Positioned(
         top: _anim.value * 196,
         left: 0,
         right: 0,
         child: Container(
           height: 2,
           decoration: BoxDecoration(
-            color: AppColors.primaryEscuro.withOpacity(0.75),
+            color: AppColors.primaryEscuro.withValues(alpha: 0.75),
             borderRadius: BorderRadius.circular(1),
           ),
         ),

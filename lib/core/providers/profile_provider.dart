@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../models/user_model.dart';
+import '../auth_service.dart';
+
 enum UserProfile {
   paraMim,
   tutorFamiliar,
@@ -32,6 +35,19 @@ class ProfileProvider with ChangeNotifier {
 
   ProfileProvider() {
     _loadProfile();
+    _listenToAuth();
+  }
+
+  void _listenToAuth() {
+    AuthService().userStream.listen((UserModel? user) {
+      if (user != null && user.preferences.profileType != null) {
+        final profile = UserProfile.fromId(user.preferences.profileType!);
+        if (_selectedProfile != profile) {
+          _selectedProfile = profile;
+          notifyListeners();
+        }
+      }
+    });
   }
 
   Future<void> _loadProfile() async {

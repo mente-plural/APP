@@ -7,7 +7,7 @@ import '../../core/providers/profile_provider.dart';
 import '../../shared/utils/ui_utils.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
-import '../login/login.dart';
+import '../login/login_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

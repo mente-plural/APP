@@ -15,7 +15,6 @@ class TempoFocoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bgColor,
-      bottomNavigationBar: const BottomNav(),
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -355,7 +354,7 @@ class StepPomodoro extends StatelessWidget {
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
-            ),
+ ),
           ),
         ),
         const SizedBox(height: 12),
