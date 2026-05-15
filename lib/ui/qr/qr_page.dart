@@ -5,8 +5,11 @@ import '../../core/auth_service.dart';
 import '../../models/user_model.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:share_plus/share_plus.dart';
 
+// Enums devem ficar fora das classes (Top-level)
 enum _QrMode { myQr, scan }
+enum _B { top, bottom, left, right }
 
 class QrPage extends StatefulWidget {
   const QrPage({super.key});
@@ -14,17 +17,16 @@ class QrPage extends StatefulWidget {
   @override
   State<QrPage> createState() => _QrPageState();
 }
-enum _B { top, bottom, left, right }
+
 class _QrPageState extends State<QrPage> {
   _QrMode _mode = _QrMode.myQr;
   final _authService = AuthService();
-
   late final MobileScannerController _scannerController;
 
   @override
   void initState() {
     super.initState();
-    _scannerController = MobileScannerController();
+    _scannerController = MobileScannerController(autoStart: false);
   }
 
   @override
@@ -36,18 +38,20 @@ class _QrPageState extends State<QrPage> {
   void _switchMode(_QrMode mode) {
     if (_mode == mode) return;
     setState(() => _mode = mode);
+
     if (mode == _QrMode.scan) {
-       _scannerController.start();
-     } else {
-       _scannerController.stop();
-     }
+      _scannerController.start();
+    } else {
+      _scannerController.stop();
+    }
   }
 
   void _onQrDetected(String uid) {
-    // TODO: buscar usuário por uid na API e navegar para o perfil dele
+    // Exemplo de navegação (certifique-se que UserProfileViewPage existe no seu projeto)
     // Navigator.of(context).push(
-    //    MaterialPageRoute(builder: (_) => UserProfileViewPage(uid: uid)),
-    //  );
+    //  MaterialPageRoute(builder: (_) => UserProfileViewPage(uid: uid)),
+    // );
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Usuário encontrado: $uid'),
@@ -92,7 +96,10 @@ class _QrPageState extends State<QrPage> {
               duration: const Duration(milliseconds: 250),
               child: _mode == _QrMode.myQr
                   ? _MyQrView(authService: _authService)
-                  : _ScanView(onDetected: _onQrDetected),
+                  : _ScanView(
+                  onDetected: _onQrDetected,
+                  controller: _scannerController
+              ),
             ),
           ),
         ],
@@ -171,7 +178,7 @@ class _QrPageState extends State<QrPage> {
   }
 }
 
-// ── Aba: Meu QR ──────────────────────────────
+// Aba: Meu QR
 class _MyQrView extends StatelessWidget {
   final AuthService authService;
   const _MyQrView({required this.authService});
@@ -190,7 +197,6 @@ class _MyQrView extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
           child: Column(
             children: [
-              // Identificação do usuário
               Row(
                 children: [
                   Container(
@@ -221,25 +227,23 @@ class _MyQrView extends StatelessWidget {
                               fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 4),
-                        if (user?.preferences.neurodivergencies != null)
-                          Wrap(
-                            spacing: 5,
-                            children: [
-                              _chip(user!.preferences.profileType == 'FOR_ME'
-                                  ? 'Para Mim'
-                                  : user.preferences.profileType ?? ''),
-                              ...user.preferences.neurodivergencies
-                                  .map((n) => _chip(n, purple: true)),
-                            ],
-                          ),
+                        // if (user?.neurodivergenceTypes != null)
+                        //   Wrap(
+                        //     spacing: 5,
+                        //     children: [
+                        //       _chip(user!.profileType == 'FOR_ME'
+                        //           ? 'Para Mim'
+                        //           : user.profileType ?? ''),
+                        //       ...user.neurodivergenceTypes!
+                        //           .map((n) => _chip(n, purple: true)),
+                        //     ],
+                        //   ),
                       ],
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
-
-              // QR Box
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
@@ -259,29 +263,22 @@ class _MyQrView extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Center(
-                        child: user != null
-                            ? QrImageView(
-                                data: user.id,
-                                version: QrVersions.auto,
-                                size: 182,
-                                backgroundColor: Colors.white,
-                                eyeStyle: const QrEyeStyle(
-                                  eyeShape: QrEyeShape.square,
-                                  color: AppColors.bgEscuro,
-                                ),
-                              )
-                            : const Icon(
-                                Icons.qr_code_2,
-                                size: 182,
-                                color: AppColors.bgEscuro,
-                              ),
+                        child: QrImageView(
+                          data: user?.id ?? '',
+                          version: QrVersions.auto,
+                          size: 182,
+                          backgroundColor: Colors.white,
+                          eyeStyle: const QrEyeStyle(
+                            eyeShape: QrEyeShape.square,
+                            color: AppColors.bgEscuro,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 14),
-                    // UID formatado
                     Text(
-                      user?.id != null
-                          ? 'USR-${user!.id.substring(0, 4).toUpperCase()}'
+                      user?.id != null && user!.id.length >= 4
+                          ? 'USR-${user.id.substring(0, 4).toUpperCase()}'
                           : '---',
                       style: const TextStyle(
                         fontSize: 12,
@@ -294,8 +291,6 @@ class _MyQrView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 14),
-
-              // Dica
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
@@ -322,8 +317,6 @@ class _MyQrView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Botão compartilhar
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -339,14 +332,10 @@ class _MyQrView extends StatelessWidget {
                   label: const Text('Compartilhar QR Code',
                       style: TextStyle(
                           fontSize: 15, fontWeight: FontWeight.bold)),
-                  onPressed: () {
-                    // TODO: Share.shareXFiles([XFile(qrImagePath)]);
-                  },
+                  onPressed: () {},
                 ),
               ),
               const SizedBox(height: 10),
-
-              // Botão copiar link
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -364,15 +353,6 @@ class _MyQrView extends StatelessWidget {
                   onPressed: () {
                     Clipboard.setData(const ClipboardData(
                         text: 'https://seuapp.com/perfil/id'));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('Link copiado!'),
-                        backgroundColor: AppColors.surfaceEscuro,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                      ),
-                    );
                   },
                 ),
               ),
@@ -384,16 +364,14 @@ class _MyQrView extends StatelessWidget {
   }
 
   Widget _chip(String label, {bool purple = false}) {
-    final color =
-        purple ? const Color(0xFFa5b4fc) : AppColors.primaryEscuro;
-    final bg =
-        purple ? const Color(0xFF6366f1) : AppColors.primaryEscuro;
+    final color = purple ? const Color(0xFFa5b4fc) : AppColors.primaryEscuro;
+    final bg = purple ? const Color(0xFF6366f1) : AppColors.primaryEscuro;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: bg.withValues(alpha: 0.12),
+        color: bg.withOpacity(0.12),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: bg.withValues(alpha: 0.35)),
+        border: Border.all(color: bg.withOpacity(0.35)),
       ),
       child: Text(label,
           style: TextStyle(
@@ -402,12 +380,16 @@ class _MyQrView extends StatelessWidget {
   }
 }
 
-// ── Aba: Escanear ─────────────────────────────
+// Aba: Escanear
 class _ScanView extends StatelessWidget {
   final void Function(String uid) onDetected;
-  const _ScanView({required this.onDetected});
+  final MobileScannerController controller;
 
-  // Mock de histórico recente (substitua por dados reais)
+  const _ScanView({
+    required this.onDetected,
+    required this.controller
+  });
+
   static const _recent = [
     {'name': 'Maria', 'time': 'Hoje, 14:32', 'initial': 'M', 'uid': 'uid-001'},
     {'name': 'Carlos', 'time': 'Ontem, 09:15', 'initial': 'C', 'uid': 'uid-002'},
@@ -420,7 +402,6 @@ class _ScanView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Viewfinder da câmera
           ClipRRect(
             borderRadius: BorderRadius.circular(24),
             child: AspectRatio(
@@ -428,6 +409,7 @@ class _ScanView extends StatelessWidget {
               child: Stack(
                 children: [
                   MobileScanner(
+                    controller: controller,
                     onDetect: (capture) {
                       final barcode = capture.barcodes.first;
                       if (barcode.rawValue != null) {
@@ -442,15 +424,10 @@ class _ScanView extends StatelessWidget {
                       height: 200,
                       child: Stack(
                         children: [
-                          _corner(top: 0, left: 0,
-                              borders: {_B.top, _B.left}),
-                          _corner(top: 0, right: 0,
-                              borders: {_B.top, _B.right}),
-                          _corner(bottom: 0, left: 0,
-                              borders: {_B.bottom, _B.left}),
-                          _corner(bottom: 0, right: 0,
-                              borders: {_B.bottom, _B.right}),
-                          // Linha de scan animada
+                          _corner(top: 0, left: 0, borders: {_B.top, _B.left}),
+                          _corner(top: 0, right: 0, borders: {_B.top, _B.right}),
+                          _corner(bottom: 0, left: 0, borders: {_B.bottom, _B.left}),
+                          _corner(bottom: 0, right: 0, borders: {_B.bottom, _B.right}),
                           const _ScanLine(),
                         ],
                       ),
@@ -461,7 +438,6 @@ class _ScanView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-
           const Center(
             child: Text(
               'Aponte a câmera para o QR Code\nde outro usuário do app',
@@ -473,8 +449,6 @@ class _ScanView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-
-          // Histórico
           if (_recent.isNotEmpty) ...[
             const Text(
               'ESCANEADOS RECENTEMENTE',
@@ -546,9 +520,6 @@ class _ScanView extends StatelessWidget {
       ),
     );
   }
-
-  // Cantos do viewfinder
-
 
   Widget _corner({
     double? top,
@@ -633,14 +604,14 @@ class _ScanLineState extends State<_ScanLine>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _anim,
-      builder: (_, child) => Positioned(
+      builder: (_, __) => Positioned(
         top: _anim.value * 196,
         left: 0,
         right: 0,
         child: Container(
           height: 2,
           decoration: BoxDecoration(
-            color: AppColors.primaryEscuro.withValues(alpha: 0.75),
+            color: AppColors.primaryEscuro.withOpacity(0.75),
             borderRadius: BorderRadius.circular(1),
           ),
         ),

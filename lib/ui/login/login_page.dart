@@ -55,10 +55,7 @@ class _LoginPageState extends State<LoginPage> {
 
       if (mounted) {
         UiUtils.showSnackBar(context, "Login realizado com sucesso!");
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const ProfileSelectionPage()),
-              (route) => false,
-        );
+        // A navegação será tratada automaticamente pelo AuthGate
       }
     } catch (e) {
       if (mounted) {
@@ -83,10 +80,7 @@ class _LoginPageState extends State<LoginPage> {
       await _authService.loginWithGoogle(profile: profileId);
       if (mounted) {
         UiUtils.showSnackBar(context, "Login social realizado com sucesso!");
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const ProfileSelectionPage()),
-              (route) => false,
-        );
+        // A navegação será tratada automaticamente pelo AuthGate
       }
     } catch (e) {
       if (mounted) {

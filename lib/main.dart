@@ -5,6 +5,7 @@ import 'package:app/core/providers/theme_provider.dart';
 import 'package:app/ui/onboarding/onboarding_page.dart';
 import 'package:app/ui/qr/qr_page.dart';
 import 'package:app/ui/home/home_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +17,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  
+  // Para resetar o login durante testes, descomente a linha abaixo e rode uma vez:
+  await FirebaseAuth.instance.signOut();
 
   final prefs = await SharedPreferences.getInstance();
   // final bool seenOnboarding = prefs.getBool('seen_onboarding') ?? false;

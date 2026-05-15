@@ -40,14 +40,35 @@ class ProfileProvider with ChangeNotifier {
 
   void _listenToAuth() {
     AuthService().userStream.listen((UserModel? user) {
-      if (user != null && user.preferences.profileType != null) {
-        final profile = UserProfile.fromId(user.preferences.profileType!);
-        if (_selectedProfile != profile) {
-          _selectedProfile = profile;
+      if (user != null) {
+
+        if (user.preferences.profileType != null) {
+          final profile = UserProfile.fromId(user.preferences.profileType!);
+          if (_selectedProfile != profile) {
+            _selectedProfile = profile;
+            _saveToPrefs(profile.id);
+            notifyListeners();
+          }
+        }
+      } else {
+
+        if (_selectedProfile != null) {
+          _selectedProfile = null;
+          _clearPrefs();
           notifyListeners();
         }
       }
     });
+  }
+
+  Future<void> _saveToPrefs(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selected_profile', id);
+  }
+
+  Future<void> _clearPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('selected_profile');
   }
 
   Future<void> _loadProfile() async {
@@ -62,7 +83,6 @@ class ProfileProvider with ChangeNotifier {
   Future<void> setProfile(UserProfile profile) async {
     _selectedProfile = profile;
     notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selected_profile', profile.id);
+    await _saveToPrefs(profile.id);
   }
 }

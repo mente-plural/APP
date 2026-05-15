@@ -175,7 +175,7 @@ class HomeView extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: theme.colorScheme.onPrimary, // Contraste alto
+              color: theme.colorScheme.onPrimary,
             ),
           ),
           const SizedBox(height: 12),

@@ -14,23 +14,29 @@ class AuthGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authService = AuthService();
-    final profileProvider = Provider.of<ProfileProvider>(context);
 
     return StreamBuilder<UserModel?>(
       stream: authService.userStream,
+      initialData: authService.currentUser,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
 
         if (snapshot.hasData && snapshot.data != null) {
-          if (profileProvider.selectedProfile == null) {
+          final user = snapshot.data!;
+          final hasProfile = user.preferences.profileType != null;
+          
+          if (!hasProfile) {
             return const ProfileSelectionPage();
           }
           return const HomePage();
         }
+
+
+        if (snapshot.connectionState == ConnectionState.waiting && snapshot.data == null) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator(color: Colors.white)),
+          );
+        }
+
 
         return const LoginPage();
       },

@@ -7,7 +7,7 @@ class RoutineTaskModel {
   final bool isCompleted;
   final String? icon;
   final String? color;
-  final List<int> weekDays; // 1 = Monday, 7 = Sunday
+  final List<int> weekDays;
 
   RoutineTaskModel({
     required this.id,

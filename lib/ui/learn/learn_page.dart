@@ -55,7 +55,7 @@ class _LearnPageState extends State<LearnPage> {
       debugPrint("Erro ao carregar conteúdos: $e");
       if (mounted) {
         setState(() => _isLoading = false);
-        // Fallback para mock apenas se a API falhar ou estiver vazia
+
         if (_allContent.isEmpty) {
           _loadMockData();
         }
@@ -112,7 +112,7 @@ class _LearnPageState extends State<LearnPage> {
       ),
       body: Column(
         children: [
-          // Search Bar
+
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
@@ -132,7 +132,7 @@ class _LearnPageState extends State<LearnPage> {
             ),
           ),
 
-          // Categories Horizontal List
+
           SizedBox(
             height: 40,
             child: ListView.builder(
@@ -167,7 +167,7 @@ class _LearnPageState extends State<LearnPage> {
 
           const SizedBox(height: 16),
 
-          // Content List
+
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -204,7 +204,7 @@ class _LearnPageState extends State<LearnPage> {
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () {
-          // TODO: Navegar para detalhes do conteúdo
+
         },
         child: Padding(
           padding: const EdgeInsets.all(16),

@@ -422,7 +422,7 @@ class BottomNav extends StatelessWidget {
       child: BottomNavigationBar(
         backgroundColor: bgColor,
         type: BottomNavigationBarType.fixed,
-        currentIndex: 2, // Foco ativo
+        currentIndex: 2,
         selectedItemColor: cyanAccent,
         unselectedItemColor: textMuted,
         showUnselectedLabels: true,

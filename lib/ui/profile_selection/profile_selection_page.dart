@@ -4,7 +4,6 @@ import '../../app_theme.dart';
 import '../../core/auth_service.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/secondary_button.dart';
-import '../home/home_page.dart';
 
 class ProfileSelectionPage extends StatefulWidget {
   const ProfileSelectionPage({super.key});
@@ -62,12 +61,8 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
         if (mounted) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('seen_onboarding', true);
-
-          // Navegar para Home
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const HomePage()),
-            (route) => false,
-          );
+          // A navegação agora é feita automaticamente pelo AuthGate
+          // pois o ProfileProvider irá reagir à mudança do usuário.
         }
       } catch (e) {
         if (mounted) {

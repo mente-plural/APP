@@ -23,7 +23,7 @@ class _RoutinePageState extends State<RoutinePage> {
 
   Future<void> _loadTasks() async {
     setState(() => _isLoading = true);
-    // Simulação de tarefas
+
     await Future.delayed(const Duration(milliseconds: 800));
     
     if (!mounted) return;
@@ -73,7 +73,7 @@ class _RoutinePageState extends State<RoutinePage> {
     setState(() {
       _tasks[index] = _tasks[index].copyWith(isCompleted: !_tasks[index].isCompleted);
     });
-    // TODO: Sincronizar com o backend via ApiClient
+
   }
 
   @override
@@ -91,7 +91,7 @@ class _RoutinePageState extends State<RoutinePage> {
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
             onPressed: () {
-              // TODO: Adicionar nova tarefa
+
             },
           ),
         ],
@@ -134,7 +134,7 @@ class _RoutinePageState extends State<RoutinePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Segunda-feira", // Ideal usar Intl para formatar data real
+            "Segunda-feira",
             style: TextStyle(
               color: isDark ? AppColors.textSecundarioEscuro : AppColors.textMutedClaro,
               fontSize: 14,

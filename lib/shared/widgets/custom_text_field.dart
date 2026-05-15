@@ -28,7 +28,7 @@ class CustomTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Determina formatadores automáticos baseados no tipo
+
     List<TextInputFormatter> effectiveFormatters = [];
     if (inputFormatters != null) {
       effectiveFormatters.addAll(inputFormatters!);

@@ -1,13 +1,29 @@
 import 'dart:convert';
-
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../api_config.dart';
 import '../models/user_model.dart';
+import 'token_manager.dart';
 
 class ApiClient {
+  static final ApiClient _instance = ApiClient._internal();
+  factory ApiClient() => _instance;
+  ApiClient._internal();
+
   final String _baseUrl = ApiConfig.baseUrl;
+  final TokenManager _tokenManager = TokenManager();
+
+
+  VoidCallback? onUnauthorized;
+
+  Future<Map<String, String>> _getHeaders() async {
+    final token = await _tokenManager.getToken();
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
 
   Future<List<Map<String, dynamic>>> fetchLearnContent({String? query, String? category}) async {
     try {
@@ -20,7 +36,7 @@ class ApiClient {
       
       final response = await http.get(
         uri,
-        headers: {'Content-Type': 'application/json'},
+        headers: await _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -39,7 +55,7 @@ class ApiClient {
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/v1/users/$userId/routine'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -58,7 +74,7 @@ class ApiClient {
     try {
       final response = await http.patch(
         Uri.parse('$_baseUrl/v1/users/$userId/routine/$taskId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await _getHeaders(),
         body: jsonEncode({'isCompleted': completed}),
       );
 
@@ -73,10 +89,41 @@ class ApiClient {
     }
   }
 
-  void _handleErrorResponse(http.Response response) {
+  Future<Map<String, dynamic>> firebaseAuth(String idToken) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/v1/auth/firebase'),
+        headers: { 'Content-Type': 'application/json' },
+        body: jsonEncode({ 'idToken': idToken }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        // Se der 401 aqui, o ID Token do Google expirou durante o processo
+        _handleErrorResponse(response);
+        return {};
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  void _handleErrorResponse(http.Response response, {bool silent = false}) {
+    debugPrint("API Error Response (${response.statusCode}): ${response.body} (silent: $silent)");
+    if (response.statusCode == 401) {
+      if (!silent) {
+        _tokenManager.deleteToken();
+        debugPrint("Sessão expirada (401). O usuário será deslogado.");
+        onUnauthorized?.call();
+      } else {
+        debugPrint("Erro 401 capturado em modo silencioso. Mantendo sessão para tentativa de recuperação.");
+      }
+      throw 'Unauthorized'; 
+    }
+
     try {
       final data = jsonDecode(response.body);
-      // Se houver detalhamento de erros (ex: AJV), tenta capturar para o log
       if (data['errors'] != null) {
         debugPrint("Detalhes do erro API: ${jsonEncode(data['errors'])}");
       }
@@ -92,7 +139,7 @@ class ApiClient {
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/v1/users/$userId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -116,7 +163,7 @@ class ApiClient {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/v1/auth/register'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await _getHeaders(),
         body: jsonEncode({
           'email': email,
           'password': password,
@@ -127,7 +174,11 @@ class ApiClient {
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        return jsonDecode(response.body);
+        final data = jsonDecode(response.body);
+        if (data['token'] != null) {
+          await _tokenManager.saveToken(data['token']);
+        }
+        return data;
       } else {
         _handleErrorResponse(response);
         return {};
@@ -145,16 +196,20 @@ class ApiClient {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/v1/auth/login'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await _getHeaders(),
         body: jsonEncode({
           'email': email,
           'password': password,
-          if (profile != null) 'profile_type': profile,
         }),
       );
-
+      debugPrint(response.statusCode as String?);
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final data = jsonDecode(response.body);
+        if (data['token'] != null) {
+          await _tokenManager.saveToken(data['token']);
+          debugPrint("Token salvo: ${data['token']} !!!!!!!!!!!!!!!!!!!!!!!!");
+        }
+        return data;
       } else {
         _handleErrorResponse(response);
         return {};
@@ -168,32 +223,38 @@ class ApiClient {
       {String? profile}) async {
     try {
       final profileType = profile ?? user.preferences.profileType;
-
       final body = {
-        'firebase_uid': user.firebaseUid,
+        'firebaseUid': user.firebaseUid,
         'email': user.email,
         'name': user.name ?? 'Usuário',
         if (user.photoUrl != null && user.photoUrl!.isNotEmpty) 'photo_url': user.photoUrl,
         if (profileType != null) 'profile_type': profileType,
         'preferences': user.preferences.copyWith(profileType: profileType).toMap(),
-        // Backend requer estes campos na raiz para criação do perfil
         'preferred_color': user.preferences.preferredColor ?? 'Tema Escuro',
         'neurodivergencies': user.preferences.neurodivergencies,
+        // Redundância para compatibilidade com o backend
+        'profileType': profileType,
+        'preferredColor': user.preferences.preferredColor ?? 'Tema Escuro',
+        'neurodivergencies_list': user.preferences.neurodivergencies,
       };
 
-      debugPrint("API Sync Request: POST /v1/users - Body: ${jsonEncode(body)}");
+      debugPrint("API Sync Request: POST /v1/users");
 
       final response = await http.post(
         Uri.parse('$_baseUrl/v1/users'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await _getHeaders(),
         body: jsonEncode(body),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return jsonDecode(response.body);
+        final data = jsonDecode(response.body);
+        // if (data['token'] != null) {
+        //   await _tokenManager.saveToken(data['token']);
+        // }
+        return data;
       } else {
         debugPrint("API Sync Error (${response.statusCode}): ${response.body}");
-        _handleErrorResponse(response);
+        _handleErrorResponse(response, silent: true);
         return {};
       }
     } catch (e) {
@@ -205,7 +266,7 @@ class ApiClient {
     try {
       final response = await http.patch(
         Uri.parse('$_baseUrl/v1/users/$userId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await _getHeaders(),
         body: jsonEncode(data),
       );
 
