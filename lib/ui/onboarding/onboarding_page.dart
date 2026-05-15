@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../app_theme.dart';
-import '../profile_selection/profile_selection.dart';
+import '../../core/auth_gate.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -38,7 +38,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     if (mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const ProfileSelectionPage()),
+        MaterialPageRoute(builder: (_) => const AuthGate()),
       );
     }
   }
@@ -126,7 +126,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       decoration: BoxDecoration(
         color: isSelected
             ? theme.colorScheme.primary
-            : theme.dividerColor.withOpacity(0.3),
+            : theme.dividerColor.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(AppSizes.radiusLG),
       ),
     );
@@ -170,7 +170,7 @@ class OnboardingPage extends StatelessWidget {
           Text(
             description,
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(1),
+              color: theme.colorScheme.onSurface,
             ),
             textAlign: TextAlign.center,
           ),

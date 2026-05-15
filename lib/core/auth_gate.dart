@@ -1,12 +1,12 @@
 import 'package:app/core/providers/profile_provider.dart';
-import 'package:app/ui/profile_selection/profile_selection.dart';
+import 'package:app/ui/profile_selection/profile_selection_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/user_model.dart';
 import 'auth_service.dart';
 import '../ui/home/home_page.dart';
-import '../ui/login/login.dart';
+import '../ui/login/login_page.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});

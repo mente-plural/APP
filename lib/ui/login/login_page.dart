@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 
+import 'package:app/ui/profile_selection/profile_selection_page.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +12,7 @@ import '../../shared/utils/ui_utils.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../home/home_page.dart';
-import '../register/register.dart';
+import '../register/register_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -55,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         UiUtils.showSnackBar(context, "Login realizado com sucesso!");
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const HomePage()),
+          MaterialPageRoute(builder: (_) => const ProfileSelectionPage()),
               (route) => false,
         );
       }
@@ -83,7 +84,7 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         UiUtils.showSnackBar(context, "Login social realizado com sucesso!");
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const HomePage()),
+          MaterialPageRoute(builder: (_) => const ProfileSelectionPage()),
               (route) => false,
         );
       }
