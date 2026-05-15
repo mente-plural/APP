@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 class HelpPage extends StatelessWidget {
   const HelpPage({super.key});
 
-
   final Color bgColor = const Color(0xFF030712);
   final Color cardColor = const Color(0xFF111827);
   final Color tealAccent = const Color(0xFF00D4C8);
@@ -18,7 +17,6 @@ class HelpPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             const Padding(
               padding: EdgeInsets.fromLTRB(24, 40, 24, 24),
               child: Text(
@@ -30,8 +28,6 @@ class HelpPage extends StatelessWidget {
                 ),
               ),
             ),
-
-
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -42,6 +38,11 @@ class HelpPage extends StatelessWidget {
                     iconColor: tealAccent,
                     title: "Guia da Condição",
                     description: "Informações detalhadas sobre neurodivergências, mitos e verdades.",
+                    // AÇÃO DO CLIQUE AQUI:
+                    onTap: () {
+                      _mostrarAviso(context, "Abrindo: Guia da Condição");
+
+                    },
                   ),
                   const SizedBox(height: 16),
                   _buildEducationCard(
@@ -49,6 +50,9 @@ class HelpPage extends StatelessWidget {
                     iconColor: indigoAccent,
                     title: "Apoio para Tutores",
                     description: "Estratégias de manejo, comunicação assertiva e redução de danos.",
+                    onTap: () {
+                      _mostrarAviso(context, "Abrindo: Apoio para Tutores");
+                    },
                   ),
                   const SizedBox(height: 16),
                   _buildEducationCard(
@@ -56,6 +60,9 @@ class HelpPage extends StatelessWidget {
                     iconColor: tealAccent,
                     title: "Gestão de Tempo",
                     description: "Como utilizar as ferramentas do app para melhorar sua organização.",
+                    onTap: () {
+                      _mostrarAviso(context, "Abrindo: Gestão de Tempo");
+                    },
                   ),
                 ],
               ),
@@ -66,58 +73,79 @@ class HelpPage extends StatelessWidget {
     );
   }
 
+  // Criei esse método rápido só para te dar o feedback visual do clique
+  void _mostrarAviso(BuildContext context, String texto) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(texto, style: const TextStyle(color: Colors.white)),
+        backgroundColor: cardColor,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   Widget _buildEducationCard({
     required IconData icon,
     required Color iconColor,
     required String title,
     required String description,
+    required VoidCallback onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: cardColor,
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: const Color(0xFF1F2937),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-
-          Icon(
-            icon,
-            color: iconColor,
-            size: 32,
-          ),
-          const SizedBox(width: 20),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  description,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: textSecondary,
-                    height: 1.4,
-                  ),
-                ),
-              ],
+        splashColor: iconColor.withOpacity(0.1),
+        highlightColor: iconColor.withOpacity(0.05),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: const Color(0xFF1F2937),
+              width: 1,
             ),
           ),
-        ],
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                icon,
+                color: iconColor,
+                size: 32,
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: textSecondary,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
