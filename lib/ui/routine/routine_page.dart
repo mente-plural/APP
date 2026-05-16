@@ -78,11 +78,12 @@ class _RoutinePageState extends State<RoutinePage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.bgEscuro : AppColors.bgClaro,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text("Minha Rotina", style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
@@ -99,9 +100,9 @@ class _RoutinePageState extends State<RoutinePage> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildDateHeader(isDark),
+          _buildDateHeader(theme),
           const SizedBox(height: 16),
-          _buildProgressCard(primaryColor, isDark),
+          _buildProgressCard(colorScheme.primary),
           const Padding(
             padding: EdgeInsets.fromLTRB(20, 24, 20, 12),
             child: Text(
@@ -118,7 +119,7 @@ class _RoutinePageState extends State<RoutinePage> {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemCount: _tasks.length,
                         itemBuilder: (context, index) {
-                          return _buildTaskItem(_tasks[index], index, isDark, primaryColor);
+                          return _buildTaskItem(_tasks[index], index, theme);
                         },
                       ),
           ),
@@ -127,7 +128,7 @@ class _RoutinePageState extends State<RoutinePage> {
     );
   }
 
-  Widget _buildDateHeader(bool isDark) {
+  Widget _buildDateHeader(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -136,7 +137,7 @@ class _RoutinePageState extends State<RoutinePage> {
           Text(
             "Segunda-feira",
             style: TextStyle(
-              color: isDark ? AppColors.textSecundarioEscuro : AppColors.textMutedClaro,
+              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
               fontSize: 14,
             ),
           ),
@@ -149,7 +150,7 @@ class _RoutinePageState extends State<RoutinePage> {
     );
   }
 
-  Widget _buildProgressCard(Color primary, bool isDark) {
+  Widget _buildProgressCard(Color primary) {
     final completed = _tasks.where((t) => t.isCompleted).length;
     final total = _tasks.length;
     final progress = total > 0 ? completed / total : 0.0;
@@ -220,18 +221,19 @@ class _RoutinePageState extends State<RoutinePage> {
     );
   }
 
-  Widget _buildTaskItem(RoutineTaskModel task, int index, bool isDark, Color primary) {
-    final taskColor = task.color != null ? Color(int.parse(task.color!)) : primary;
+  Widget _buildTaskItem(RoutineTaskModel task, int index, ThemeData theme) {
+    final colorScheme = theme.colorScheme;
+    final taskColor = task.color != null ? Color(int.parse(task.color!)) : colorScheme.primary;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceEscuro : AppColors.surfaceClaro,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: task.isCompleted 
               ? Colors.transparent 
-              : (isDark ? AppColors.borderEscuro : Colors.grey.shade200),
+              : theme.dividerColor.withValues(alpha: 0.1),
         ),
       ),
       child: ListTile(
@@ -252,12 +254,12 @@ class _RoutinePageState extends State<RoutinePage> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-            color: task.isCompleted ? Colors.grey : null,
+            color: task.isCompleted ? theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.5) : null,
           ),
         ),
         subtitle: Text(
           task.time.format(context),
-          style: TextStyle(color: Colors.grey.shade500),
+          style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6)),
         ),
         trailing: Transform.scale(
           scale: 1.2,
@@ -265,12 +267,13 @@ class _RoutinePageState extends State<RoutinePage> {
             value: task.isCompleted,
             onChanged: (_) => _toggleTask(index),
             shape: const CircleBorder(),
-            activeColor: primary,
+            activeColor: colorScheme.primary,
           ),
         ),
       ),
     );
   }
+
 
   IconData _getIconData(String? iconName) {
     switch (iconName) {

@@ -1,4 +1,6 @@
+import 'package:app/core/providers/navigation_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class MomentoFocoCard extends StatelessWidget {
   final ThemeData theme;
@@ -37,7 +39,9 @@ class MomentoFocoCard extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: () {},
+            onPressed: () {
+              Provider.of<NavigationProvider>(context, listen: false).setIndex(3);
+            },
             icon: Icon(Icons.play_arrow, color: theme.colorScheme.primary),
             label: Text(
               "Iniciar",

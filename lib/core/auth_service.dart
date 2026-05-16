@@ -16,21 +16,18 @@ class AuthService {
 
   factory AuthService() => _instance;
 
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final ApiClient _apiClient = ApiClient();
   final TokenManager _tokenManager = TokenManager();
-
-  
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   final _userController = StreamController<UserModel?>.broadcast();
   UserModel? _currentUser;
+  bool _isSocialLoginInProgress = false;
 
   UserModel? get currentUser => _currentUser;
 
   Stream<UserModel?> get userStream async* {
-
     yield _currentUser;
     yield* _userController.stream;
   }
@@ -39,44 +36,40 @@ class AuthService {
 
   AuthService._internal() {
     _init();
-
     _apiClient.onUnauthorized = () => logout();
   }
+
   void _init() {
+    // Inicializa o Google Sign In silenciosamente para preparar o SDK
+    unawaited(_googleSignIn.initialize());
 
-
-    unawaited(
-      _googleSignIn.initialize().then((_) {
-
-        _googleSignIn.authenticationEvents.listen((event) {
-          final GoogleSignInAccount? user = switch (event) {
-            GoogleSignInAuthenticationEventSignIn() => event.user,
-            GoogleSignInAuthenticationEventSignOut() => null,
-          };
-
-          if (user != null && _auth.currentUser != null) {
-            _syncUserWithApi(_auth.currentUser);
-          }
-        });
-
-
-      }),
-    );
-
+    // Ouve mudanças no estado do Firebase (Login/Logout/Restart do App)
     _auth.authStateChanges().listen((User? firebaseUser) async {
       if (firebaseUser != null) {
-        if (_currentUser == null || _currentUser!.firebaseUid != firebaseUser.uid) {
-          _currentUser = _mapFirebaseUser(firebaseUser);
-          _userController.add(_currentUser);
+        debugPrint("Firebase Auth State: Logado (${firebaseUser.email})");
+
+        // Se estivermos em um login social manual, deixamos que o fluxo de login
+        // cuide da sincronização após o handshake de tokens.
+        if (_isSocialLoginInProgress) {
+          debugPrint("Sync automático ignorado: Login social em andamento...");
+          return;
         }
-        _syncUserWithApi(firebaseUser);
+
+        // Se o usuário atual for null ou o UID mudou, precisamos sincronizar
+        // Mas se o usuário atual já for o correto e tiver um ID de banco real,
+        // podemos evitar a chamada de rede se não houver mudança de perfil.
+        if (_currentUser == null || _currentUser!.firebaseUid != firebaseUser.uid) {
+           await _syncUserWithApi(firebaseUser);
+        }
       } else {
+        debugPrint("Firebase Auth State: Deslogado");
         _currentUser = null;
         _userController.add(null);
         final prefs = await SharedPreferences.getInstance();
         await prefs.remove('user_session');
       }
     });
+
     _loadSession();
   }
 
@@ -86,12 +79,8 @@ class AuthService {
       final session = prefs.getString('user_session');
       if (session != null) {
         final Map<String, dynamic> data = jsonDecode(session);
-        final loadedUser = UserModel.fromMap(data);
-
-        if (_currentUser == null || _currentUser!.firebaseUid == loadedUser.firebaseUid) {
-           _currentUser = loadedUser;
-           _userController.add(_currentUser);
-        }
+        _currentUser = UserModel.fromMap(data);
+        _userController.add(_currentUser);
       }
     } catch (e) {
       debugPrint("Erro ao carregar sessão: $e");
@@ -101,30 +90,16 @@ class AuthService {
   Future<void> refreshUser() async {
     if (_currentUser == null) return;
 
-
-
-    if (!_currentUser!.hasValidDatabaseId) {
-      debugPrint("ID atual não é UUID (${_currentUser!.id}). Sincronizando com a API...");
-      if (_auth.currentUser != null) {
-        await _syncUserWithApi(_auth.currentUser);
-      }
-      return;
-    }
-
     try {
       final response = await _apiClient.fetchUser(_currentUser!.id);
-      debugPrint("API Refresh Response: ${jsonEncode(response)}");
-      
       final userData = response['user'] ?? response['data'] ?? response;
       if (userData is Map && userData.isNotEmpty) {
         _currentUser = UserModel.fromMap(userData as Map<String, dynamic>);
         _userController.add(_currentUser);
         await _saveSession(_currentUser!);
-        debugPrint("Usuário atualizado via API. Nome: ${_currentUser!.name}");
       }
     } catch (e) {
       debugPrint("Erro ao dar refresh no usuário: $e");
-
       if (_auth.currentUser != null) {
         await _syncUserWithApi(_auth.currentUser);
       }
@@ -133,7 +108,6 @@ class AuthService {
 
   Future<void> _saveSession(UserModel user) async {
     try {
-
       if (user.hasValidDatabaseId) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_session', jsonEncode(user.toMap()));
@@ -143,10 +117,8 @@ class AuthService {
     }
   }
 
-  Future<void> loginWithEmail(String email, String password,
-      {String? profile}) async {
-    final response = await _apiClient.signIn(
-        email: email, password: password, profile: profile);
+  Future<void> loginWithEmail(String email, String password, {String? profile}) async {
+    final response = await _apiClient.signIn(email: email, password: password, profile: profile);
     final userData = response['user'] ?? response;
     _currentUser = UserModel.fromMap(userData);
     _userController.add(_currentUser);
@@ -172,58 +144,79 @@ class AuthService {
     _userController.add(_currentUser);
     await _saveSession(_currentUser!);
   }
-  Future<void> loginWithGoogle({String? profile}) async {
+
+  Future<bool> loginWithGoogle({String? profile}) async {
+    _isSocialLoginInProgress = true;
     try {
-      // 1. Autenticação com Google
+      debugPrint("Iniciando Google Sign-In...");
       final GoogleSignInAccount? googleUser = await _googleSignIn.authenticate();
-      if (googleUser == null) return;
 
-      // 2. Credencial para o Firebase
-      final auth = await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(idToken: auth.idToken);
-
-      // 3. Login no Firebase do Flutter
-      final userCredential = await _auth.signInWithCredential(credential);
-      final firebaseUser = userCredential.user;
-      if (firebaseUser == null) throw 'Falha ao obter usuário do Firebase';
-
-      // 4. Obter o ID Token (JWT do Google) para validar no SEU backend
-      final String? idTokenJWT = await firebaseUser.getIdToken();
-
-      // 5. Trocar o Token do Firebase pelo Token do SEU Backend
-      if (idTokenJWT != null) {
-        final backendResponse = await _apiClient.firebaseAuth(idTokenJWT);
-
-        // Verificando onde o token está vindo na sua estrutura sendRes
-        final String? apiToken = backendResponse['data']?['token'] ?? backendResponse['token'];
-
-        if (apiToken != null) {
-          await _tokenManager.saveToken(apiToken);
-          debugPrint("✅ JWT do Backend salvo e pronto para uso.");
-        } else {
-          throw 'O Backend não retornou um token válido.';
-        }
+      if (googleUser == null) {
+        debugPrint("Google Sign-In cancelado pelo usuário.");
+        _isSocialLoginInProgress = false;
+        return false;
       }
 
-      // 6. Sincronização final com os dados de neurodiversidade
-      await _syncUserWithApi(firebaseUser, profile: profile);
+      final auth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        idToken: auth.idToken
+      );
 
+      final userCredential = await _auth.signInWithCredential(credential);
+      final firebaseUser = userCredential.user;
+
+      if (firebaseUser != null) {
+        await _firebaseLoginWithApi(firebaseUser, profile: profile);
+        return true;
+      }
+      return false;
     } catch (e) {
-      debugPrint("❌ Erro crítico no Login Social: $e");
+      debugPrint("❌ Erro no login com Google: $e");
+      _isSocialLoginInProgress = false;
+      rethrow;
+    } finally {
+      // Mantemos o flag por mais um tempo para garantir que eventos residuais do Firebase
+      // não disparem o sync automático antes do fim da transição.
+      Future.delayed(const Duration(seconds: 2), () => _isSocialLoginInProgress = false);
+    }
+  }
+
+  Future<void> _firebaseLoginWithApi(User user, {String? profile}) async {
+    debugPrint("Trocando token Firebase por token do Backend...");
+    final idToken = await user.getIdToken();
+    if (idToken == null) throw 'Falha ao obter ID Token do Firebase';
+
+    try {
+      // 1. Obtém o Token JWT do Backend (HS256)
+      final response = await _apiClient.firebaseAuth(idToken);
+      final String? apiToken = response['data']?['token'] ?? response['token'];
+
+      if (apiToken != null) {
+        await _tokenManager.saveToken(apiToken);
+        debugPrint("✅ JWT do Backend salvo.");
+      }
+
+      // 2. Sincroniza o perfil (Upsert) enviando o Firebase Token como prova de identidade
+      await _syncUserWithApi(user);
+      
+    } catch (e) {
+      debugPrint("❌ Falha na integração com a API: $e");
       rethrow;
     }
   }
 
-  Future<void> _syncUserWithApi(User? firebaseUser, {String? profile}) async {
+  Future<void> _syncUserWithApi(User? firebaseUser) async {
     if (firebaseUser == null) return;
+
+    final idToken = await firebaseUser.getIdToken();
 
     try {
       final userModel = _mapFirebaseUser(firebaseUser);
       if (userModel == null) return;
-
-      // Agora o ApiClient já tem o Token salvo no passo anterior,
-      // então o header 'Authorization' será enviado corretamente.
-      final response = await _apiClient.syncProfile(userModel, profile: profile);
+      final response = await _apiClient.syncProfile(
+          userModel,
+          firebaseToken: idToken
+      );
 
       final userData = response['data']?['user'] ?? response['user'] ?? response['data'];
 
@@ -231,20 +224,26 @@ class AuthService {
         _currentUser = UserModel.fromMap(userData.cast<String, dynamic>());
         _userController.add(_currentUser);
         await _saveSession(_currentUser!);
-        debugPrint("🚀 Perfil sincronizado com sucesso.");
+        debugPrint("🚀 Perfil sincronizado com o Backend. UUID: ${_currentUser!.id}");
       }
     } catch (e) {
-      debugPrint("⚠️ Erro na sincronização de perfil: $e");
+      debugPrint("⚠️ Erro na sincronização com API: $e");
+
+      await Future.delayed(const Duration(milliseconds: 2500));
+
+      if (_currentUser == null) {
+         _currentUser = _mapFirebaseUser(firebaseUser);
+         _userController.add(_currentUser);
+      }
     }
   }
+
   Future<void> logout() async {
     debugPrint("Iniciando processo de logout...");
     try {
       await _auth.signOut().catchError((e) => debugPrint("Firebase signOut: $e"));
       await _googleSignIn.signOut().catchError((e) => debugPrint("Google signOut: $e"));
-      
-
-      await TokenManager().deleteToken();
+      await _tokenManager.deleteToken();
     } catch (e) {
       debugPrint("Aviso ao deslogar serviços: $e");
     }
@@ -256,78 +255,46 @@ class AuthService {
     debugPrint("Logout local concluído.");
   }
 
-
   Future<void> updateUserProfile({
     String? name,
     String? profileType,
     String? preferredColor,
     List<String>? neurodivergencies,
   }) async {
-    if (_currentUser == null) {
-      debugPrint("Erro: Tentativa de atualizar perfil sem usuário logado.");
-      return;
-    }
+    if (_currentUser == null) return;
 
-    // 1. Prioridade total para garantir o E-mail (evita erro 400 do Fastify)
     String email = _currentUser!.email;
-
-    // Verifica se o email local está nulo ou vazio e tenta o Firebase como backup real
     if ((email.isEmpty || email == "null") && _auth.currentUser?.email != null) {
       email = _auth.currentUser!.email!;
     }
 
-    // Se após a tentativa o email continuar vazio, abortamos para não quebrar no backend
-    if (email.isEmpty || !email.contains('@')) {
-      debugPrint("❌ Erro Crítico: E-mail inválido ou ausente. Abortando sincronização.");
-      return;
-    }
-
-    // 2. Prepara as preferências atualizadas
     final updatedPreferences = _currentUser!.preferences.copyWith(
       profileType: profileType ?? _currentUser!.preferences.profileType,
       preferredColor: preferredColor ?? _currentUser!.preferences.preferredColor,
       neurodivergencies: neurodivergencies ?? _currentUser!.preferences.neurodivergencies,
     );
 
-    // 3. Cria o modelo de usuário atualizado
     final updatedUser = _currentUser!.copyWith(
       name: name ?? _currentUser!.name,
-      email: email, // Garante que o e-mail validado vá aqui
+      email: email,
       preferences: updatedPreferences,
-      phone: _currentUser!.phone,
-      photoUrl: _currentUser?.photoUrl
     );
 
-    // 4. Caso o usuário ainda não tenha um UUID do banco (Onboarding inicial)
+    // Se ainda não temos UUID, usamos o syncProfile (Upsert)
     if (!updatedUser.hasValidDatabaseId) {
-      debugPrint("🔄 ID atual não é UUID (${updatedUser.id}). Usando syncProfile como Upsert.");
-
-      try {
-        final response = await _apiClient.syncProfile(
-            updatedUser,
-            profile: profileType ?? updatedUser.preferences.profileType
-        );
-
-        final userData = response['user'] ?? response['data'] ?? response;
-        if (userData is Map && userData.isNotEmpty) {
-          _currentUser = UserModel.fromMap(userData as Map<String, dynamic>);
-          _userController.add(_currentUser);
-          await _saveSession(_currentUser!);
-          debugPrint("✅ Sincronização (Upsert) concluída. ID: ${_currentUser!.id}");
-        }
-        return;
-      } catch (e) {
-        debugPrint("❌ Erro no fallback syncProfile: $e");
-        rethrow;
-      }
+      final idToken = await _auth.currentUser?.getIdToken();
+      await _apiClient.syncProfile(
+          updatedUser,
+          firebaseToken: idToken
+      );
+      await refreshUser();
+      return;
     }
 
-    // 5. Caso já tenha UUID, faz o PATCH normal
     final updatedData = {
       'name': name ?? _currentUser!.name,
-      'email': email, // O backend exige para identificar o usuário no log/token
+      'email': email,
       'preferences': updatedPreferences.toMap(),
-      // Campos redundantes para o seu Schema do Fastify
       'profile_type': profileType ?? updatedPreferences.profileType,
       'preferred_color': preferredColor ?? updatedPreferences.preferredColor,
       'neurodivergencies': neurodivergencies ?? updatedPreferences.neurodivergencies,
@@ -341,21 +308,19 @@ class AuthService {
         _currentUser = UserModel.fromMap(userData as Map<String, dynamic>);
         _userController.add(_currentUser);
         await _saveSession(_currentUser!);
-        debugPrint("✅ Perfil atualizado via PATCH.");
       }
     } catch (e) {
-      debugPrint("❌ Erro ao atualizar perfil via PATCH: $e");
+      debugPrint("❌ Erro ao atualizar perfil: $e");
       rethrow;
     }
   }
 
   UserModel? _mapFirebaseUser(User? user) {
     if (user == null) return null;
-    final email = user.email ?? '';
     return UserModel(
       id: user.uid,
       firebaseUid: user.uid,
-      email: email,
+      email: user.email ?? '',
       name: user.displayName,
       phone: user.phoneNumber,
       photoUrl: user.photoURL,

@@ -1,4 +1,6 @@
+import 'package:app/core/providers/navigation_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ProximoRotinaSection extends StatelessWidget {
   final ThemeData theme;
@@ -21,12 +23,15 @@ class ProximoRotinaSection extends StatelessWidget {
                 color: theme.colorScheme.onSurface,
               ),
             ),
-            Text(
-              "Ver tudo",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.primary,
+            InkWell(
+              onTap: () => Provider.of<NavigationProvider>(context, listen: false).setIndex(1),
+              child: Text(
+                "Ver tudo",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.primary,
+                ),
               ),
             ),
           ],

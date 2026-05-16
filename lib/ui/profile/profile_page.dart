@@ -76,10 +76,8 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
 
     if (confirm == true && mounted) {
       await _authService.logout();
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-            (route) => false,
-      );
+      // A navegação de volta para a LoginPage será tratada automaticamente pelo AuthGate
+      // ao detectar que o fluxo de usuário no AuthService tornou-se null.
     }
   }
 
@@ -98,8 +96,9 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.bgEscuro,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -117,9 +116,9 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           ),
           onPressed: _confirmLogout,
         ),
-        title: const Text(
+        title: Text(
           'Meu Perfil',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface),
         ),
         actions: [
           // QR Code Screen Link
@@ -127,12 +126,12 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             tooltip: 'Meu QR Code',
             icon: Container(
               padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: AppColors.surfaceEscuro,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.qr_code_2,
-                  size: 32, color: AppColors.primaryEscuro),
+              child: Icon(Icons.qr_code_2,
+                  size: 32, color: theme.colorScheme.primary),
             ),
             onPressed: () => Navigator.of(context)
                 .push(MaterialPageRoute(builder: (_) => const QrPage())),
@@ -142,11 +141,11 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             tooltip: 'Editar Perfil',
             icon: Container(
               padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: AppColors.surfaceEscuro,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.edit, size: 32, color: AppColors.textSecundarioEscuro),
+              child: Icon(Icons.edit, size: 32, color: theme.textTheme.bodyMedium?.color),
             ),
             onPressed: () {
               // Lógica de edição
@@ -161,8 +160,8 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           final user = snapshot.data;
 
           if (user == null) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryEscuro),
+            return Center(
+              child: CircularProgressIndicator(color: theme.colorScheme.primary),
             );
           }
 
@@ -170,7 +169,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
             child: Column(
               children: [
-                _buildMainCard(user),
+                _buildMainCard(user, theme),
               ],
             ),
           );
@@ -179,7 +178,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildMainCard(UserModel user) {
+  Widget _buildMainCard(UserModel user, ThemeData theme) {
     final initials = (user.name != null && user.name!.isNotEmpty)
         ? user.name![0].toUpperCase()
         : user.email.isNotEmpty ? user.email[0].toUpperCase() : '?';
@@ -188,9 +187,9 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceEscuro,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.borderEscuro),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: Column(
         children: [
@@ -204,17 +203,17 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             Container(
               width: 80,
               height: 80,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryEscuro,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary,
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Text(
                   initials,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF020617),
+                    color: theme.colorScheme.onPrimary,
                   ),
                 ),
               ),
@@ -225,10 +224,10 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           Text(
             user.name ?? 'Usuário',
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: theme.colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 8),
@@ -237,42 +236,42 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.primaryEscuro.withOpacity(0.12),
+              color: theme.colorScheme.primary.withOpacity(0.12),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.primaryEscuro.withOpacity(0.35)),
+              border: Border.all(color: theme.colorScheme.primary.withOpacity(0.35)),
             ),
             child: Text(
               _getProfileLabel(user.preferences.profileType),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: AppColors.primaryEscuro,
+                color: theme.colorScheme.primary,
                 letterSpacing: 0.4,
               ),
             ),
           ),
 
           const SizedBox(height: 24),
-          const Divider(color: AppColors.borderEscuro, height: 1),
+          Divider(color: theme.dividerColor, height: 1),
           const SizedBox(height: 20),
 
           // Informações de contato
-          _buildInfoRow(Icons.email_outlined, 'Email', user.email),
+          _buildInfoRow(theme, Icons.email_outlined, 'Email', user.email),
           if (user.phone != null && user.phone!.isNotEmpty) ...[
             const SizedBox(height: 16),
-            _buildInfoRow(Icons.phone_outlined, 'Telefone', user.phone!),
+            _buildInfoRow(theme, Icons.phone_outlined, 'Telefone', user.phone!),
           ],
 
           // Neurodivergências (Chips integrados)
           if (user.preferences.neurodivergencies.isNotEmpty) ...[
             const SizedBox(height: 20),
-            const Divider(color: AppColors.borderEscuro, height: 1),
+            Divider(color: theme.dividerColor, height: 1),
             const SizedBox(height: 16),
-            const Align(
+            Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 'Condições / Neurodivergências',
-                style: TextStyle(fontSize: 11, color: AppColors.textSecundarioEscuro),
+                style: TextStyle(fontSize: 11, color: theme.textTheme.bodyMedium?.color),
               ),
             ),
             const SizedBox(height: 8),
@@ -282,7 +281,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                 spacing: 8,
                 runSpacing: 8,
                 children: user.preferences.neurodivergencies
-                    .map((item) => _buildChip(item, color: AppColors.primaryEscuro))
+                    .map((item) => _buildChip(item, color: theme.colorScheme.primary))
                     .toList(),
               ),
             ),
@@ -313,17 +312,17 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(ThemeData theme, IconData icon, String label, String value) {
     return Row(
       children: [
         Container(
           width: 38,
           height: 38,
           decoration: BoxDecoration(
-            color: AppColors.primaryEscuro.withOpacity(0.10),
+            color: theme.colorScheme.primary.withOpacity(0.10),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, size: 18, color: AppColors.primaryEscuro),
+          child: Icon(icon, size: 18, color: theme.colorScheme.primary),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -332,15 +331,15 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             children: [
               Text(
                 label,
-                style: const TextStyle(fontSize: 11, color: AppColors.textSecundarioEscuro),
+                style: TextStyle(fontSize: 11, color: theme.textTheme.bodyMedium?.color),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
             ],
@@ -350,7 +349,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildQrToggleButton() {
+  Widget _buildQrToggleButton(ThemeData theme) {
     return GestureDetector(
       onTap: _toggleQr,
       child: Container(
@@ -359,21 +358,21 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.borderEscuro),
+          border: Border.all(color: theme.dividerColor),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               _showQr ? Icons.qr_code_2 : Icons.qr_code_scanner,
-              color: Colors.white,
+              color: theme.colorScheme.onSurface,
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               _showQr ? 'Ocultar QR Code' : 'Mostrar QR Code',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w500,
                 fontSize: 14,
               ),
@@ -382,9 +381,9 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             AnimatedRotation(
               turns: _showQr ? 0.5 : 0,
               duration: const Duration(milliseconds: 320),
-              child: const Icon(
+              child: Icon(
                 Icons.keyboard_arrow_down,
-                color: AppColors.textSecundarioEscuro,
+                color: theme.textTheme.bodyMedium?.color,
                 size: 20,
               ),
             ),

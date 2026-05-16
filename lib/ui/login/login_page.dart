@@ -77,14 +77,22 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
 
     try {
-      await _authService.loginWithGoogle(profile: profileId);
+      final success = await _authService.loginWithGoogle(profile: profileId);
       if (mounted) {
-        UiUtils.showSnackBar(context, "Login social realizado com sucesso!");
-        // A navegação será tratada automaticamente pelo AuthGate
+        if (success) {
+          UiUtils.showSnackBar(context, "Login social realizado com sucesso!");
+        } else {
+          UiUtils.showSnackBar(context, "Login cancelado.", isError: true);
+        }
       }
     } catch (e) {
       if (mounted) {
-        UiUtils.showSnackBar(context, "Erro no Google Login: $e", isError: true);
+        final errorStr = e.toString().toLowerCase();
+        if (errorStr.contains('canceled') || errorStr.contains('cancelled')) {
+          UiUtils.showSnackBar(context, "Login cancelado.", isError: true);
+        } else {
+          UiUtils.showSnackBar(context, "Erro no Google Login: $e", isError: true);
+        }
       }
     } finally {
       if (mounted) {

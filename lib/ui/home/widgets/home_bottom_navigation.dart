@@ -17,7 +17,7 @@ class HomeBottomNavigation extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: theme.dividerColor, width: 1),
+          top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.1), width: 1),
         ),
       ),
       child: BottomNavigationBar(
@@ -27,12 +27,13 @@ class HomeBottomNavigation extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         selectedItemColor: theme.colorScheme.primary,
         unselectedItemColor: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
+        selectedFontSize: 11,
+        unselectedFontSize: 11,
         elevation: 0,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_filled),
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home_filled),
             label: 'Início',
           ),
           BottomNavigationBarItem(
@@ -41,24 +42,19 @@ class HomeBottomNavigation extends StatelessWidget {
             label: 'Rotina',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.chat_bubble_outline),
+            activeIcon: Icon(Icons.chat_bubble),
+            label: 'Chat',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.timer_outlined),
             activeIcon: Icon(Icons.timer),
             label: 'Foco',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.auto_stories_outlined),
-            activeIcon: Icon(Icons.auto_stories),
-            label: 'Aprender',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
             label: 'Perfil',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.help_outline),
-            activeIcon: Icon(Icons.help),
-            label: 'Ajuda',
           ),
         ],
       ),

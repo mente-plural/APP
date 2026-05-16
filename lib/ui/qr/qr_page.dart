@@ -64,8 +64,9 @@ class _QrPageState extends State<QrPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.bgEscuro,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -73,24 +74,24 @@ class _QrPageState extends State<QrPage> {
         leading: IconButton(
           icon: Container(
             padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceEscuro,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.arrow_back_ios_new,
-                size: 14, color: Colors.white),
+            child: Icon(Icons.arrow_back_ios_new,
+                size: 14, color: theme.colorScheme.onSurface),
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           _mode == _QrMode.myQr ? 'QR Code' : 'Escanear',
-          style: const TextStyle(
-              fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+              fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface),
         ),
       ),
       body: Column(
         children: [
-          _buildToggle(),
+          _buildToggle(theme),
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 250),
@@ -107,24 +108,26 @@ class _QrPageState extends State<QrPage> {
     );
   }
 
-  Widget _buildToggle() {
+  Widget _buildToggle(ThemeData theme) {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.surfaceEscuro,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.borderEscuro),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: Row(
         children: [
           _toggleBtn(
+            theme,
             icon: Icons.qr_code_2,
             label: 'Meu QR',
             active: _mode == _QrMode.myQr,
             onTap: () => _switchMode(_QrMode.myQr),
           ),
           _toggleBtn(
+            theme,
             icon: Icons.qr_code_scanner,
             label: 'Escanear',
             active: _mode == _QrMode.scan,
@@ -135,7 +138,8 @@ class _QrPageState extends State<QrPage> {
     );
   }
 
-  Widget _toggleBtn({
+  Widget _toggleBtn(
+    ThemeData theme, {
     required IconData icon,
     required String label,
     required bool active,
@@ -148,7 +152,7 @@ class _QrPageState extends State<QrPage> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: active ? AppColors.primaryEscuro : Colors.transparent,
+            color: active ? theme.colorScheme.primary : Colors.transparent,
             borderRadius: BorderRadius.circular(14),
           ),
           child: Row(
@@ -157,8 +161,8 @@ class _QrPageState extends State<QrPage> {
               Icon(icon,
                   size: 18,
                   color: active
-                      ? const Color(0xFF020617)
-                      : AppColors.textSecundarioEscuro),
+                      ? theme.colorScheme.onPrimary
+                      : theme.textTheme.bodyMedium?.color),
               const SizedBox(width: 6),
               Text(
                 label,
@@ -166,8 +170,8 @@ class _QrPageState extends State<QrPage> {
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: active
-                      ? const Color(0xFF020617)
-                      : AppColors.textSecundarioEscuro,
+                      ? theme.colorScheme.onPrimary
+                      : theme.textTheme.bodyMedium?.color,
                 ),
               ),
             ],
@@ -185,6 +189,7 @@ class _MyQrView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return StreamBuilder<UserModel?>(
       stream: authService.userStream,
       builder: (context, snapshot) {
@@ -202,16 +207,16 @@ class _MyQrView extends StatelessWidget {
                   Container(
                     width: 44,
                     height: 44,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primaryEscuro,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary,
                       shape: BoxShape.circle,
                     ),
                     child: Center(
                       child: Text(initials,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF020617))),
+                              color: theme.colorScheme.onPrimary)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -221,23 +226,12 @@ class _MyQrView extends StatelessWidget {
                       children: [
                         Text(
                           user?.name ?? 'Usuário',
-                          style: const TextStyle(
-                              color: Colors.white,
+                          style: TextStyle(
+                              color: theme.colorScheme.onSurface,
                               fontSize: 15,
                               fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 4),
-                        // if (user?.neurodivergenceTypes != null)
-                        //   Wrap(
-                        //     spacing: 5,
-                        //     children: [
-                        //       _chip(user!.profileType == 'FOR_ME'
-                        //           ? 'Para Mim'
-                        //           : user.profileType ?? ''),
-                        //       ...user.neurodivergenceTypes!
-                        //           .map((n) => _chip(n, purple: true)),
-                        //     ],
-                        //   ),
                       ],
                     ),
                   ),
@@ -248,9 +242,9 @@ class _MyQrView extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceEscuro,
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: AppColors.borderEscuro),
+                  border: Border.all(color: theme.dividerColor),
                 ),
                 child: Column(
                   children: [
@@ -268,9 +262,9 @@ class _MyQrView extends StatelessWidget {
                           version: QrVersions.auto,
                           size: 182,
                           backgroundColor: Colors.white,
-                          eyeStyle: const QrEyeStyle(
+                          eyeStyle: QrEyeStyle(
                             eyeShape: QrEyeShape.square,
-                            color: AppColors.bgEscuro,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                       ),
@@ -280,9 +274,9 @@ class _MyQrView extends StatelessWidget {
                       user?.id != null && user!.id.length >= 4
                           ? 'USR-${user.id.substring(0, 4).toUpperCase()}'
                           : '---',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textSecundarioEscuro,
+                        color: theme.textTheme.bodyMedium?.color,
                         letterSpacing: 1.4,
                         fontFamily: 'monospace',
                       ),
@@ -294,22 +288,22 @@ class _MyQrView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceEscuro,
+                  color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.borderEscuro),
+                  border: Border.all(color: theme.dividerColor),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Icon(Icons.info_outline,
-                        size: 15, color: AppColors.textSecundarioEscuro),
-                    SizedBox(width: 10),
+                        size: 15, color: theme.textTheme.bodyMedium?.color),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Peça para outro usuário escanear este código para acessar seu perfil de suporte.',
                         style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.textSecundarioEscuro,
+                            color: theme.textTheme.bodyMedium?.color,
                             height: 1.5),
                       ),
                     ),
@@ -321,8 +315,8 @@ class _MyQrView extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryEscuro,
-                    foregroundColor: const Color(0xFF020617),
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -340,8 +334,8 @@ class _MyQrView extends StatelessWidget {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: AppColors.borderEscuro),
+                    foregroundColor: theme.colorScheme.onSurface,
+                    side: BorderSide(color: theme.dividerColor),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16)),
@@ -363,9 +357,9 @@ class _MyQrView extends StatelessWidget {
     );
   }
 
-  Widget _chip(String label, {bool purple = false}) {
-    final color = purple ? const Color(0xFFa5b4fc) : AppColors.primaryEscuro;
-    final bg = purple ? const Color(0xFF6366f1) : AppColors.primaryEscuro;
+  Widget _chip(ThemeData theme, String label, {bool purple = false}) {
+    final color = purple ? const Color(0xFFa5b4fc) : theme.colorScheme.primary;
+    final bg = purple ? const Color(0xFF6366f1) : theme.colorScheme.primary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
@@ -397,6 +391,7 @@ class _ScanView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
       child: Column(
@@ -424,10 +419,10 @@ class _ScanView extends StatelessWidget {
                       height: 200,
                       child: Stack(
                         children: [
-                          _corner(top: 0, left: 0, borders: {_B.top, _B.left}),
-                          _corner(top: 0, right: 0, borders: {_B.top, _B.right}),
-                          _corner(bottom: 0, left: 0, borders: {_B.bottom, _B.left}),
-                          _corner(bottom: 0, right: 0, borders: {_B.bottom, _B.right}),
+                          _corner(theme, top: 0, left: 0, borders: {_B.top, _B.left}),
+                          _corner(theme, top: 0, right: 0, borders: {_B.top, _B.right}),
+                          _corner(theme, bottom: 0, left: 0, borders: {_B.bottom, _B.left}),
+                          _corner(theme, bottom: 0, right: 0, borders: {_B.bottom, _B.right}),
                           const _ScanLine(),
                         ],
                       ),
@@ -438,61 +433,61 @@ class _ScanView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          const Center(
+          Center(
             child: Text(
               'Aponte a câmera para o QR Code\nde outro usuário do app',
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 13,
-                  color: AppColors.textSecundarioEscuro,
+                  color: theme.textTheme.bodyMedium?.color,
                   height: 1.6),
             ),
           ),
           const SizedBox(height: 24),
           if (_recent.isNotEmpty) ...[
-            const Text(
+            Text(
               'ESCANEADOS RECENTEMENTE',
               style: TextStyle(
                 fontSize: 10,
-                color: AppColors.textSecundarioEscuro,
+                color: theme.textTheme.bodyMedium?.color,
                 letterSpacing: 0.8,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 10),
-            ..._recent.map((item) => _recentCard(context, item)),
+            ..._recent.map((item) => _recentCard(context, theme, item)),
           ],
         ],
       ),
     );
   }
 
-  Widget _recentCard(BuildContext context, Map<String, String> item) {
+  Widget _recentCard(BuildContext context, ThemeData theme, Map<String, String> item) {
     return GestureDetector(
       onTap: () => onDetected(item['uid']!),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: AppColors.surfaceEscuro,
+          color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.borderEscuro),
+          border: Border.all(color: theme.dividerColor),
         ),
         child: Row(
           children: [
             Container(
               width: 38,
               height: 38,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryEscuro,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary,
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Text(item['initial']!,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF020617))),
+                        color: theme.colorScheme.onPrimary)),
               ),
             ),
             const SizedBox(width: 12),
@@ -501,27 +496,28 @@ class _ScanView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(item['name']!,
-                      style: const TextStyle(
-                          color: Colors.white,
+                      style: TextStyle(
+                          color: theme.colorScheme.onSurface,
                           fontSize: 14,
                           fontWeight: FontWeight.w500)),
                   const SizedBox(height: 2),
                   Text(item['time']!,
-                      style: const TextStyle(
-                          color: AppColors.textSecundarioEscuro,
+                      style: TextStyle(
+                          color: theme.textTheme.bodyMedium?.color,
                           fontSize: 11)),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right,
-                color: AppColors.textSecundarioEscuro, size: 20),
+            Icon(Icons.chevron_right,
+                color: theme.textTheme.bodyMedium?.color, size: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _corner({
+  Widget _corner(
+    ThemeData theme, {
     double? top,
     double? bottom,
     double? left,
@@ -539,16 +535,16 @@ class _ScanView extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             top: borders.contains(_B.top)
-                ? const BorderSide(color: AppColors.primaryEscuro, width: 3)
+                ? BorderSide(color: theme.colorScheme.primary, width: 3)
                 : BorderSide.none,
             bottom: borders.contains(_B.bottom)
-                ? const BorderSide(color: AppColors.primaryEscuro, width: 3)
+                ? BorderSide(color: theme.colorScheme.primary, width: 3)
                 : BorderSide.none,
             left: borders.contains(_B.left)
-                ? const BorderSide(color: AppColors.primaryEscuro, width: 3)
+                ? BorderSide(color: theme.colorScheme.primary, width: 3)
                 : BorderSide.none,
             right: borders.contains(_B.right)
-                ? const BorderSide(color: AppColors.primaryEscuro, width: 3)
+                ? BorderSide(color: theme.colorScheme.primary, width: 3)
                 : BorderSide.none,
           ),
           borderRadius: BorderRadius.only(
@@ -602,6 +598,7 @@ class _ScanLineState extends State<_ScanLine>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return AnimatedBuilder(
       animation: _anim,
       builder: (_, __) => Positioned(
@@ -611,7 +608,7 @@ class _ScanLineState extends State<_ScanLine>
         child: Container(
           height: 2,
           decoration: BoxDecoration(
-            color: AppColors.primaryEscuro.withOpacity(0.75),
+            color: theme.colorScheme.primary.withOpacity(0.75),
             borderRadius: BorderRadius.circular(1),
           ),
         ),

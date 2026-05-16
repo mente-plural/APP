@@ -168,8 +168,7 @@ class ApiClient {
           'email': email,
           'password': password,
           if (name != null) 'name': name,
-          if (phone != null) 'phone': phone,
-          if (profile != null) 'profile_type': profile,
+          if (phone != null) 'phone': phone
         }),
       );
 
@@ -220,37 +219,37 @@ class ApiClient {
   }
 
   Future<Map<String, dynamic>> syncProfile(UserModel user,
-      {String? profile}) async {
+      {String? firebaseToken}) async {
     try {
-      final profileType = profile ?? user.preferences.profileType;
+      final profileType = user.preferences.profileType;
       final body = {
         'firebaseUid': user.firebaseUid,
         'email': user.email,
         'name': user.name ?? 'Usuário',
+        'phone': user.phone,
         if (user.photoUrl != null && user.photoUrl!.isNotEmpty) 'photo_url': user.photoUrl,
-        if (profileType != null) 'profile_type': profileType,
         'preferences': user.preferences.copyWith(profileType: profileType).toMap(),
-        'preferred_color': user.preferences.preferredColor ?? 'Tema Escuro',
-        'neurodivergencies': user.preferences.neurodivergencies,
-        // Redundância para compatibilidade com o backend
-        'profileType': profileType,
-        'preferredColor': user.preferences.preferredColor ?? 'Tema Escuro',
-        'neurodivergencies_list': user.preferences.neurodivergencies,
       };
 
       debugPrint("API Sync Request: POST /v1/users");
 
+      final headers = await _getHeaders();
+      if (firebaseToken != null) {
+        headers['X-Firebase-Token'] = firebaseToken;
+      }
+
       final response = await http.post(
         Uri.parse('$_baseUrl/v1/users'),
-        headers: await _getHeaders(),
+        headers: headers,
         body: jsonEncode(body),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        // if (data['token'] != null) {
-        //   await _tokenManager.saveToken(data['token']);
-        // }
+        if (data['token'] != null) {
+          await _tokenManager.saveToken(data['token']);
+          debugPrint("Backend Token salvo após sync: ${data['token']}");
+        }
         return data;
       } else {
         debugPrint("API Sync Error (${response.statusCode}): ${response.body}");

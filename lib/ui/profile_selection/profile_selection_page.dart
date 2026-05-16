@@ -1,3 +1,4 @@
+import 'package:app/shared/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../app_theme.dart';
@@ -209,25 +210,34 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
       ],
     );
   }
-
   Widget _stepRole() {
     final options = [
       {'label': 'Paciente', 'value': 'FOR_ME'},
       {'label': 'Tutor', 'value': 'TUTOR'},
       {'label': 'Usuário geral', 'value': 'LEARN_MORE'},
     ];
+
     return Column(
       key: const ValueKey(2),
-      children: options
-          .map((opt) => _selectionCard(
-                title: opt['label'] as String,
-                isSelected: selectedRole == opt['value'],
-                onTap: () => setState(() => selectedRole = opt['value'] as String),
-              ))
-          .toList(),
+      children: options.map((opt) {
+        final String value = opt['value'] as String;
+        final bool isPaciente = value == 'FOR_ME';
+
+        return _selectionCard(
+          title: opt['label'] as String,
+          isSelected: selectedRole == value,
+          clickable: true,
+          onTap: () {
+            if (isPaciente) {
+              setState(() => selectedRole = value);
+            } else {
+              UiUtils.showSnackBar(context, 'Em desenvolvimento...', isError: true);
+            }
+          },
+        );
+      }).toList(),
     );
   }
-
   Widget _stepColor() {
     final options = [
       'Tema Claro',
@@ -235,15 +245,24 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
       'Alto Contraste',
       'Cores Suaves/Tons Pastéis'
     ];
+
     return Column(
       key: const ValueKey(3),
-      children: options
-          .map((opt) => _selectionCard(
-                title: opt,
-                isSelected: selectedColor == opt,
-                onTap: () => setState(() => selectedColor = opt),
-              ))
-          .toList(),
+      children: options.map((opt) {
+        final bool isTemaPronto = opt == 'Tema Claro' || opt == 'Tema Escuro';
+
+        return _selectionCard(
+          title: opt,
+          isSelected: selectedColor == opt,
+          onTap: () {
+            if (isTemaPronto) {
+              setState(() => selectedColor = opt);
+            } else {
+              UiUtils.showSnackBar(context, 'Em desenvolvimento...', isError: true);
+            }
+          },
+        );
+      }).toList(),
     );
   }
 
@@ -254,7 +273,6 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
       'Dislexia',
       'Discalculia',
       'Dispraxia',
-      'Síndrome de Tourette',
       'Outro',
       'Prefiro não dizer'
     ];
@@ -284,57 +302,62 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
       ],
     );
   }
-
   Widget _selectionCard({
     required String title,
     required bool isSelected,
     required VoidCallback onTap,
     bool isMulti = false,
+    bool clickable = true, // Corrigido para camelCase
   }) {
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primaryEscuro.withValues(alpha: 0.1)
-              : AppColors.surfaceEscuro,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: isSelected ? AppColors.primaryEscuro : AppColors.borderEscuro,
-            width: 2,
+      // Se clickable for falso, o onTap recebe null e o botão é desativado
+      onTap: clickable ? onTap : null,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        // Se não for clicável, reduz a opacidade para dar o feedback visual de desabilitado
+        opacity: clickable ? 1.0 : 0.2,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.primaryEscuro.withValues(alpha: 0.1)
+                : AppColors.surfaceEscuro,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isSelected ? AppColors.primaryEscuro : AppColors.borderEscuro,
+              width: 2,
+            ),
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : AppColors.textSecundarioEscuro,
-                  fontSize: 18,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : AppColors.textSecundarioEscuro,
+                    fontSize: 18,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  ),
                 ),
               ),
-            ),
-            if (isSelected)
-              Icon(
-                isMulti ? Icons.check_box : Icons.check_circle,
-                color: AppColors.primaryEscuro,
-              ),
-            if (!isSelected && isMulti)
-              Icon(
-                Icons.check_box_outline_blank,
-                color: AppColors.textSecundarioEscuro.withValues(alpha: 0.5),
-              ),
-          ],
+              if (isSelected)
+                Icon(
+                  isMulti ? Icons.check_box : Icons.check_circle,
+                  color: AppColors.primaryEscuro,
+                ),
+              if (!isSelected && isMulti)
+                Icon(
+                  Icons.check_box_outline_blank,
+                  color: AppColors.textSecundarioEscuro.withValues(alpha: 0.5),
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
-
   Widget _buildFooter() {
     return Row(
       children: [
