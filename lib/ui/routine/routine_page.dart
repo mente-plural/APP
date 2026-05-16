@@ -5,6 +5,7 @@ import '../../core/providers/profile_provider.dart';
 import '../../models/routine/routine_task_model.dart';
 
 class RoutinePage extends StatefulWidget {
+
   const RoutinePage({super.key});
 
   @override
@@ -102,7 +103,7 @@ class _RoutinePageState extends State<RoutinePage> {
         children: [
           _buildDateHeader(theme),
           const SizedBox(height: 16),
-          _buildProgressCard(colorScheme.primary),
+          _buildProgressCard(theme),
           const Padding(
             padding: EdgeInsets.fromLTRB(20, 24, 20, 12),
             child: Text(
@@ -150,7 +151,9 @@ class _RoutinePageState extends State<RoutinePage> {
     );
   }
 
-  Widget _buildProgressCard(Color primary) {
+  Widget _buildProgressCard(ThemeData theme) {
+    final colorScheme = theme.colorScheme;
+    final primary = colorScheme.primary;
     final completed = _tasks.where((t) => t.isCompleted).length;
     final total = _tasks.length;
     final progress = total > 0 ? completed / total : 0.0;
@@ -159,17 +162,14 @@ class _RoutinePageState extends State<RoutinePage> {
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [primary, primary.withValues(alpha: 0.8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
-            color: primary.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: theme.shadowColor.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -179,22 +179,29 @@ class _RoutinePageState extends State<RoutinePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   "Seu progresso",
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: primary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   "$completed de $total tarefas concluídas",
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 13),
+                  style: TextStyle(
+                    color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                    fontSize: 13,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: LinearProgressIndicator(
                     value: progress,
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    backgroundColor: primary.withValues(alpha: 0.1),
+                    valueColor: AlwaysStoppedAnimation<Color>(primary),
                     minHeight: 8,
                   ),
                 ),
@@ -206,13 +213,17 @@ class _RoutinePageState extends State<RoutinePage> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 "${(progress * 100).toInt()}%",
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
             ),
           ),
@@ -254,7 +265,9 @@ class _RoutinePageState extends State<RoutinePage> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-            color: task.isCompleted ? theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.5) : null,
+            color: task.isCompleted 
+                ? theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.5) 
+                : theme.colorScheme.primary,
           ),
         ),
         subtitle: Text(

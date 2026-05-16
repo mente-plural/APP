@@ -7,6 +7,7 @@ class AppColors {
   static const Color surfaceClaro = Color(0xFFFFFFFF);
   static const Color textPrimaryClaro = Color(0xFF1C1917);
   static const Color textMutedClaro = Color(0xFF57534E);
+  static const Color borderClaro = Color(0xFFE7E5E4);
 
   // --- MODO ESCURO ---
   static const Color primaryEscuro = Color(0xFF01BBA6);
@@ -32,11 +33,21 @@ class AppTheme {
         surface: AppColors.surfaceClaro,
         onPrimary: Colors.white,
         onSurface: AppColors.textPrimaryClaro,
+        outline: AppColors.borderClaro,
       ),
       scaffoldBackgroundColor: AppColors.bgClaro,
+      dividerColor: AppColors.borderClaro,
       textTheme: const TextTheme(
-        bodyLarge: TextStyle(color: AppColors.textPrimaryClaro),
-        bodyMedium: TextStyle(color: AppColors.textMutedClaro),
+        bodyLarge: TextStyle(color: AppColors.textPrimaryClaro, fontSize: 16),
+        headlineMedium: TextStyle(
+          color: AppColors.textPrimaryClaro,
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
+        ),
+        bodyMedium: TextStyle(
+          color: AppColors.textMutedClaro,
+          fontSize: 14,
+        ),
       ),
       elevatedButtonTheme: _buttonTheme(AppColors.primaryClaro, Colors.white),
     );
@@ -52,6 +63,7 @@ class AppTheme {
         surface: AppColors.surfaceEscuro,
         onPrimary: Colors.white,
         onSurface: AppColors.textAccentEscuro,
+        outline: AppColors.borderEscuro,
       ),
       scaffoldBackgroundColor: AppColors.bgEscuro,
       dividerColor: AppColors.borderEscuro,
@@ -60,6 +72,7 @@ class AppTheme {
         headlineMedium: TextStyle(
           color: AppColors.textAccentEscuro,
           fontWeight: FontWeight.bold,
+          fontSize: 20,
         ),
         bodyMedium: TextStyle(
           color: AppColors.textSecundarioEscuro,
@@ -85,25 +98,35 @@ class AppTheme {
     );
   }
 
-  // --- TEMA ALTO CONTRASTE ---
+  // --- TEMA ALTO CONTRASTE (ACESSIBILIDADE) ---
   static ThemeData get highContrastTheme {
     return ThemeData(
       useMaterial3: true,
-      fontFamily: 'sans-serif',
       brightness: Brightness.dark,
       colorScheme: const ColorScheme.dark(
         primary: Colors.yellow,
         surface: Colors.black,
         onPrimary: Colors.black,
         onSurface: Colors.white,
+        outline: Colors.white,
       ),
       scaffoldBackgroundColor: Colors.black,
       dividerColor: Colors.white,
       textTheme: const TextTheme(
-        bodyLarge: TextStyle(color: Colors.white, fontSize: 18),
-        headlineMedium: TextStyle(color: Colors.yellow, fontWeight: FontWeight.bold),
-        headlineLarge: TextStyle(color: Colors.yellow, fontWeight: FontWeight.bold),
-        bodyMedium: TextStyle(color: Colors.white, fontSize: 14),
+        bodyLarge: TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.w500,
+        ),
+        headlineMedium: TextStyle(
+          color: Colors.yellow,
+          fontWeight: FontWeight.bold,
+          fontSize: 24,
+        ),
+        bodyMedium: TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+        ),
       ),
       elevatedButtonTheme: _buttonTheme(Colors.yellow, Colors.black),
     );

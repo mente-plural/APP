@@ -249,7 +249,7 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
     return Column(
       key: const ValueKey(3),
       children: options.map((opt) {
-        final bool isTemaPronto = opt == 'Tema Claro' || opt == 'Tema Escuro';
+        final bool isTemaPronto = opt == 'Tema Claro' || opt == 'Tema Escuro' || opt == 'Alto Contraste';
 
         return _selectionCard(
           title: opt,
