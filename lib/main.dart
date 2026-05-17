@@ -1,7 +1,6 @@
 import 'package:app/app_theme.dart';
 import 'package:app/core/auth_gate.dart';
 import 'package:app/core/providers/navigation_provider.dart';
-import 'package:app/core/providers/profile_provider.dart';
 import 'package:app/core/providers/theme_provider.dart';
 import 'package:app/ui/onboarding/onboarding_page.dart';
 import 'package:app/ui/qr/qr_page.dart';
@@ -29,7 +28,6 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
       ],

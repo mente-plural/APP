@@ -117,10 +117,24 @@ class AuthService {
     }
   }
 
-  Future<void> loginWithEmail(String email, String password, {String? profile}) async {
-    final response = await _apiClient.signIn(email: email, password: password, profile: profile);
-    final userData = response['user'] ?? response;
-    _currentUser = UserModel.fromMap(userData);
+  Future<void> loginWithEmail(String email, String password) async {
+    final response = await _apiClient.signIn(email: email, password: password);
+    
+    // Salva o token para as próximas requisições
+    final String? apiToken = response['data']?['token'] ?? response['token'];
+    if (apiToken != null) {
+      await _tokenManager.saveToken(apiToken);
+      debugPrint("✅ JWT de E-mail salvo.");
+    }
+
+    final userData = response['data']?['user'] ?? response['user'] ?? response;
+    final user = UserModel.fromMap(userData);
+
+    // Garante que o email não seja perdido se o backend não retornar
+    _currentUser = (user.email.isEmpty || user.email == "null")
+        ? user.copyWith(email: email)
+        : user;
+
     _userController.add(_currentUser);
     await _saveSession(_currentUser!);
   }
@@ -129,23 +143,35 @@ class AuthService {
     required String email,
     required String password,
     String? name,
-    String? phone,
-    String? profile,
+    String? phone
   }) async {
     final response = await _apiClient.signUp(
       email: email,
       password: password,
       name: name,
-      phone: phone,
-      profile: profile,
+      phone: phone
     );
-    final userData = response['user'] ?? response;
-    _currentUser = UserModel.fromMap(userData);
+    
+    // Salva o token para as próximas requisições
+    final String? apiToken = response['data']?['token'] ?? response['token'];
+    if (apiToken != null) {
+      await _tokenManager.saveToken(apiToken);
+      debugPrint("✅ JWT de Registro salvo.");
+    }
+
+    final userData = response['data']?['user'] ?? response['user'] ?? response;
+    final user = UserModel.fromMap(userData);
+
+    // Garante que o email não seja perdido se o backend não retornar
+    _currentUser = (user.email.isEmpty || user.email == "null")
+        ? user.copyWith(email: email)
+        : user;
+
     _userController.add(_currentUser);
     await _saveSession(_currentUser!);
   }
 
-  Future<bool> loginWithGoogle({String? profile}) async {
+  Future<bool> loginWithGoogle() async {
     _isSocialLoginInProgress = true;
     try {
       debugPrint("Iniciando Google Sign-In...");
@@ -166,7 +192,7 @@ class AuthService {
       final firebaseUser = userCredential.user;
 
       if (firebaseUser != null) {
-        await _firebaseLoginWithApi(firebaseUser, profile: profile);
+        await _firebaseLoginWithApi(firebaseUser);
         return true;
       }
       return false;
@@ -181,7 +207,7 @@ class AuthService {
     }
   }
 
-  Future<void> _firebaseLoginWithApi(User user, {String? profile}) async {
+  Future<void> _firebaseLoginWithApi(User user) async {
     debugPrint("Trocando token Firebase por token do Backend...");
     final idToken = await user.getIdToken();
     if (idToken == null) throw 'Falha ao obter ID Token do Firebase';

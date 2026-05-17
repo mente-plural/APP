@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../app_theme.dart';
-import '../../core/providers/profile_provider.dart';
 import '../../models/routine/routine_task_model.dart';
 import '../../shared/widgets/page_header.dart';
 

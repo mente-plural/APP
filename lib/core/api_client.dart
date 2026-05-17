@@ -189,8 +189,7 @@ class ApiClient {
 
   Future<Map<String, dynamic>> signIn({
     required String email,
-    required String password,
-    String? profile,
+    required String password
   }) async {
     try {
       final response = await http.post(
@@ -198,10 +197,10 @@ class ApiClient {
         headers: await _getHeaders(),
         body: jsonEncode({
           'email': email,
-          'password': password,
+          'password': password.toString(),
         }),
       );
-      debugPrint(response.statusCode as String?);
+      debugPrint(response.statusCode.toString());
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['token'] != null) {

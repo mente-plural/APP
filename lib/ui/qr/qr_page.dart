@@ -6,6 +6,7 @@ import '../../models/user_model.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:share_plus/share_plus.dart';
+import '../profile/external_profile_page.dart';
 
 // Enums devem ficar fora das classes (Top-level)
 enum _QrMode { myQr, scan }
@@ -46,20 +47,26 @@ class _QrPageState extends State<QrPage> {
     }
   }
 
-  void _onQrDetected(String uid) {
-    // Exemplo de navegação (certifique-se que UserProfileViewPage existe no seu projeto)
-    // Navigator.of(context).push(
-    //  MaterialPageRoute(builder: (_) => UserProfileViewPage(uid: uid)),
-    // );
+  bool _isProcessing = false;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Usuário encontrado: $uid'),
-        backgroundColor: AppColors.surfaceEscuro,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+  void _onQrDetected(String uid) {
+    if (uid.isEmpty || _isProcessing) return;
+    
+    setState(() => _isProcessing = true);
+    debugPrint("🔍 QR Detectado: $uid");
+    
+    // Para o scanner imediatamente
+    _scannerController.stop();
+
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ExternalProfilePage(userId: uid)),
+    ).then((_) {
+      setState(() => _isProcessing = false);
+      // Reinicia o scanner ao voltar, se ainda estiver na aba de scan
+      if (_mode == _QrMode.scan) {
+        _scannerController.start();
+      }
+    });
   }
 
   @override
@@ -262,9 +269,15 @@ class _MyQrView extends StatelessWidget {
                           version: QrVersions.auto,
                           size: 182,
                           backgroundColor: Colors.white,
-                          eyeStyle: QrEyeStyle(
+                          // Garante que o QR seja escuro mesmo em tema Dark,
+                          // já que o fundo do container é branco.
+                          eyeStyle: const QrEyeStyle(
                             eyeShape: QrEyeShape.square,
-                            color: theme.colorScheme.onSurface,
+                            color: Color(0xFF1E1E1E),
+                          ),
+                          dataModuleStyle: const QrDataModuleStyle(
+                            dataModuleShape: QrDataModuleShape.square,
+                            color: Color(0xFF1E1E1E),
                           ),
                         ),
                       ),
@@ -323,10 +336,14 @@ class _MyQrView extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16)),
                   ),
                   icon: const Icon(Icons.share_rounded, size: 18),
-                  label: const Text('Compartilhar QR Code',
+                  label: const Text('Compartilhar meu ID',
                       style: TextStyle(
                           fontSize: 15, fontWeight: FontWeight.bold)),
-                  onPressed: () {},
+                  onPressed: () {
+                    if (user?.id != null) {
+                      Share.share('Olá! Este é meu ID de suporte no NeuroFlow: ${user!.id}');
+                    }
+                  },
                 ),
               ),
               const SizedBox(height: 10),
@@ -340,13 +357,17 @@ class _MyQrView extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16)),
                   ),
-                  icon: const Icon(Icons.link_rounded, size: 18),
-                  label: const Text('Copiar link do perfil',
+                  icon: const Icon(Icons.copy_all_rounded, size: 18),
+                  label: const Text('Copiar meu ID',
                       style: TextStyle(
                           fontSize: 15, fontWeight: FontWeight.w600)),
                   onPressed: () {
-                    Clipboard.setData(const ClipboardData(
-                        text: 'https://seuapp.com/perfil/id'));
+                    if (user?.id != null) {
+                      Clipboard.setData(ClipboardData(text: user!.id));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('ID copiado para a área de transferência')),
+                      );
+                    }
                   },
                 ),
               ),
