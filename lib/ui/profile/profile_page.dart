@@ -3,6 +3,7 @@ import '../../app_theme.dart';
 import '../../core/auth_service.dart';
 import '../../models/user_model.dart';
 import '../../shared/widgets/primary_button.dart';
+import '../../shared/widgets/page_header.dart';
 import '../login/login_page.dart';
 import '../qr/qr_page.dart';
 
@@ -99,81 +100,81 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        // Botão de Sair em vermelho no canto superior esquerdo
-        leading: IconButton(
-          tooltip: 'Sair da Conta',
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.redAccent.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.logout_rounded, size: 32, color: Colors.redAccent),
-          ),
-          onPressed: _confirmLogout,
-        ),
-        title: Text(
-          'Meu Perfil',
-          style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface),
-        ),
-        actions: [
-          // QR Code Screen Link
-          IconButton(
-            tooltip: 'Meu QR Code',
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.qr_code_2,
-                  size: 32, color: theme.colorScheme.primary),
-            ),
-            onPressed: () => Navigator.of(context)
-                .push(MaterialPageRoute(builder: (_) => const QrPage())),
-          ),
-          // Editar Perfil
-          IconButton(
-            tooltip: 'Editar Perfil',
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.edit, size: 32, color: theme.textTheme.bodyMedium?.color),
-            ),
-            onPressed: () {
-              // Lógica de edição
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: StreamBuilder<UserModel?>(
-        stream: _authService.userStream,
-        builder: (context, snapshot) {
-          final user = snapshot.data;
+      body: SafeArea(
+        child: StreamBuilder<UserModel?>(
+          stream: _authService.userStream,
+          builder: (context, snapshot) {
+            final user = snapshot.data;
 
-          if (user == null) {
-            return Center(
-              child: CircularProgressIndicator(color: theme.colorScheme.primary),
+            if (user == null) {
+              return Center(
+                child: CircularProgressIndicator(color: theme.colorScheme.primary),
+              );
+            }
+
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(theme),
+                  const SizedBox(height: 32),
+                  _buildMainCard(user, theme),
+                  const SizedBox(height: 24),
+                  _buildLogoutButton(theme),
+                ],
+              ),
             );
-          }
+          },
+        ),
+      ),
+    );
+  }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-            child: Column(
-              children: [
-                _buildMainCard(user, theme),
-              ],
+  Widget _buildHeader(ThemeData theme) {
+    return PageHeader(
+      title: "Meu Perfil",
+      actions: [
+        HeaderActionIcon(
+          icon: Icons.qr_code_scanner,
+          tooltip: 'Meu QR Code',
+          iconColor: theme.colorScheme.primary,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const QrPage()),
+          ),
+        ),
+        HeaderActionIcon(
+          icon: Icons.edit_outlined,
+          tooltip: 'Editar Perfil',
+          onTap: () {},
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLogoutButton(ThemeData theme) {
+    return InkWell(
+      onTap: _confirmLogout,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.redAccent.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.redAccent.withOpacity(0.2)),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
+            SizedBox(width: 8),
+            Text(
+              "Sair da Conta",
+              style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 16),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }

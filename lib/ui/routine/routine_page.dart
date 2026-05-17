@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../app_theme.dart';
 import '../../core/providers/profile_provider.dart';
 import '../../models/routine/routine_task_model.dart';
+import '../../shared/widgets/page_header.dart';
 
 class RoutinePage extends StatefulWidget {
 
@@ -80,74 +81,76 @@ class _RoutinePageState extends State<RoutinePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: const Text("Minha Rotina", style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline),
-            onPressed: () {
-
-            },
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(theme),
+              const SizedBox(height: 32),
+              _buildDateHeader(theme),
+              const SizedBox(height: 16),
+              _buildProgressCard(theme),
+              const SizedBox(height: 32),
+              const Text(
+                "Tarefas de Hoje",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _tasks.isEmpty
+                      ? _buildEmptyState()
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: _tasks.length,
+                          itemBuilder: (context, index) {
+                            return _buildTaskItem(_tasks[index], index, theme);
+                          },
+                        ),
+            ],
           ),
-        ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildDateHeader(theme),
-          const SizedBox(height: 16),
-          _buildProgressCard(theme),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 24, 20, 12),
-            child: Text(
-              "Tarefas de Hoje",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _tasks.isEmpty
-                    ? _buildEmptyState()
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: _tasks.length,
-                        itemBuilder: (context, index) {
-                          return _buildTaskItem(_tasks[index], index, theme);
-                        },
-                      ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
+  Widget _buildHeader(ThemeData theme) {
+    return PageHeader(
+      title: "Minha Rotina",
+      actions: [
+        HeaderActionIcon(
+          icon: Icons.add_circle_outline,
+          tooltip: 'Nova Tarefa',
+          iconColor: theme.colorScheme.primary,
+          onTap: () {},
+        ),
+      ],
+    );
+  }
+
   Widget _buildDateHeader(ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Segunda-feira",
-            style: TextStyle(
-              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-              fontSize: 14,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Segunda-feira",
+          style: TextStyle(
+            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+            fontSize: 14,
           ),
-          const Text(
-            "14 de Maio",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
+        ),
+        const Text(
+          "14 de Maio",
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+      ],
     );
   }
 
@@ -159,7 +162,6 @@ class _RoutinePageState extends State<RoutinePage> {
     final progress = total > 0 ? completed / total : 0.0;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: colorScheme.surface,

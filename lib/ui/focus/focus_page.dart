@@ -3,6 +3,7 @@ import 'package:app/ui/focus/widgets/focus_card.dart';
 import 'package:app/ui/focus/widgets/time_section.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../shared/widgets/page_header.dart';
 
 class TempoFocoPage extends StatelessWidget {
   const TempoFocoPage({super.key});
@@ -10,7 +11,6 @@ class TempoFocoPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
     return Scaffold(
@@ -47,32 +47,8 @@ class TempoFocoPage extends StatelessWidget {
 
 
   Widget _buildHeader(BuildContext context, ThemeData theme) {
-    return Row(
-      children: [
-        InkWell(
-          onTap: () => Provider.of<NavigationProvider>(context, listen: false).setIndex(0),
-          borderRadius: BorderRadius.circular(24),
-          child: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              shape: BoxShape.circle,
-              border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
-            ),
-            child: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface, size: 24),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Text(
-          "Tempo de Foco",
-          style: TextStyle(
-            color: theme.colorScheme.onSurface,
-            fontSize: 22,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
+    return PageHeader(
+      title: "Tempo de Foco"
     );
   }
 

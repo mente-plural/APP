@@ -206,6 +206,7 @@ class ApiClient {
         final data = jsonDecode(response.body);
         if (data['token'] != null) {
           await _tokenManager.saveToken(data['token']);
+
           debugPrint("Token salvo: ${data['token']} !!!!!!!!!!!!!!!!!!!!!!!!");
         }
         return data;
