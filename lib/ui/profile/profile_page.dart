@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../app_theme.dart';
-import '../../core/auth_service.dart';
+import '../../core/auth/auth_service.dart';
 import '../../models/user_model.dart';
-import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/page_header.dart';
-import '../login/login_page.dart';
-import '../qr/qr_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -15,9 +12,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStateMixin {
-  bool _showQr = false;
   late AnimationController _qrController;
-  late Animation<double> _qrAnimation;
   final _authService = AuthService();
 
   @override
@@ -27,10 +22,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
       vsync: this,
       duration: const Duration(milliseconds: 320),
     );
-    _qrAnimation = CurvedAnimation(
-      parent: _qrController,
-      curve: Curves.easeInOut,
-    );
   }
 
   @override
@@ -39,16 +30,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     super.dispose();
   }
 
-  void _toggleQr() {
-    setState(() {
-      _showQr = !_showQr;
-      if (_showQr) {
-        _qrController.forward();
-      } else {
-        _qrController.reverse();
-      }
-    });
-  }
 
   Future<void> _confirmLogout() async {
     final confirm = await showDialog<bool>(
@@ -140,9 +121,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           icon: Icons.qr_code_scanner,
           tooltip: 'Meu QR Code',
           iconColor: theme.colorScheme.primary,
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const QrPage()),
-          ),
+          onTap: () => Navigator.pushNamed(context, '/qr'),
         ),
         HeaderActionIcon(
           icon: Icons.edit_outlined,
@@ -194,7 +173,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
       ),
       child: Column(
         children: [
-          // Avatar
           if (user.photoUrl != null && user.photoUrl!.isNotEmpty)
             CircleAvatar(
               radius: 40,
@@ -221,7 +199,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             ),
           const SizedBox(height: 14),
 
-          // Nome
           Text(
             user.name ?? 'Usuário',
             textAlign: TextAlign.center,
@@ -233,7 +210,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           ),
           const SizedBox(height: 8),
 
-          // Tipo de Perfil (Badge)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
@@ -256,14 +232,12 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           Divider(color: theme.dividerColor, height: 1),
           const SizedBox(height: 20),
 
-          // Informações de contato
           _buildInfoRow(theme, Icons.email_outlined, 'Email', user.email),
           if (user.phone != null && user.phone!.isNotEmpty) ...[
             const SizedBox(height: 16),
             _buildInfoRow(theme, Icons.phone_outlined, 'Telefone', user.phone!),
           ],
 
-          // Neurodivergências (Chips integrados)
           if (user.preferences.neurodivergencies.isNotEmpty) ...[
             const SizedBox(height: 20),
             Divider(color: theme.dividerColor, height: 1),
@@ -349,49 +323,4 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
       ],
     );
   }
-
-  Widget _buildQrToggleButton(ThemeData theme) {
-    return GestureDetector(
-      onTap: _toggleQr,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: theme.dividerColor),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              _showQr ? Icons.qr_code_2 : Icons.qr_code_scanner,
-              color: theme.colorScheme.onSurface,
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              _showQr ? 'Ocultar QR Code' : 'Mostrar QR Code',
-              style: TextStyle(
-                color: theme.colorScheme.onSurface,
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(width: 8),
-            AnimatedRotation(
-              turns: _showQr ? 0.5 : 0,
-              duration: const Duration(milliseconds: 320),
-              child: Icon(
-                Icons.keyboard_arrow_down,
-                color: theme.textTheme.bodyMedium?.color,
-                size: 20,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
 }

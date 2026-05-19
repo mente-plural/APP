@@ -18,38 +18,52 @@ class UserPreferences {
   });
 
   factory UserPreferences.fromMap(Map<String, dynamic> map) {
+    // Detecta se os dados estão aninhados em 'preferences' ou na raiz
     final preferencesData = map['preferences'];
-    final bool isNested = preferencesData is Map;
-    final data = isNested ? preferencesData : map;
+    final Map<String, dynamic> data = (preferencesData is Map) 
+        ? Map<String, dynamic>.from(preferencesData) 
+        : Map<String, dynamic>.from(map);
+
+    // Função auxiliar para extrair strings limpando valores "null" ou vazios
+    String? cleanString(dynamic value) {
+      if (value == null) return null;
+      final s = value.toString().trim();
+      return (s.isEmpty || s == 'null') ? null : s;
+    }
+
+    // Busca valores tentando camelCase e snake_case tanto no mapa local quanto no raiz
+    dynamic findValue(String camel, String snake) {
+      return data[camel] ?? data[snake] ?? map[camel] ?? map[snake];
+    }
 
     return UserPreferences(
-      id: isNested ? data['id']?.toString() : null,
-      userId: (data['user_id'] ?? data['userId'] ?? map['id'] ?? map['uuid'])?.toString(),
-      preferredColor: (data['preferred_color'] ?? data['preferredColor'] ?? map['preferred_color'] ?? map['preferredColor'])?.toString(),
-      profileType: (data['profile_type'] ?? data['profileType'] ?? map['profile_type'] ?? map['profileType'])?.toString(),
-      neurodivergencies: data['neurodivergencies'] != null
-          ? (data['neurodivergencies'] as List).map((e) => e.toString()).toList()
-          : (map['neurodivergencies'] != null 
-              ? (map['neurodivergencies'] as List).map((e) => e.toString()).toList() 
-              : []),
-      highContrast: data['high_contrast'] ?? data['highContrast'] ?? map['high_contrast'] ?? map['highContrast'] ?? false,
-      fontSizeMultiplier: (data['font_size_multiplier'] ?? data['fontSizeMultiplier'] ?? map['font_size_multiplier'] ?? map['fontSizeMultiplier'] ?? 1.0).toDouble(),
+      id: cleanString(data['id']),
+      userId: cleanString(findValue('userId', 'user_id')),
+      preferredColor: cleanString(findValue('preferredColor', 'preferred_color')),
+      profileType: cleanString(findValue('profileType', 'profile_type')),
+      neurodivergencies: _parseNeuro(data['neurodivergencies'] ?? map['neurodivergencies']),
+      highContrast: findValue('highContrast', 'high_contrast') ?? false,
+      fontSizeMultiplier: (findValue('fontSizeMultiplier', 'font_size_multiplier') ?? 1.0).toDouble(),
     );
   }
 
-  Map<String, dynamic> toMap() {
-    final bool isUuid = id != null &&
-        RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
-            .hasMatch(id!);
+  static List<String> _parseNeuro(dynamic value) {
+    if (value == null || value is! List) return [];
+    return value.map((e) => e.toString()).where((e) => e.isNotEmpty && e != 'null').toList();
+  }
 
+  Map<String, dynamic> toMap() {
     return {
-      if (isUuid) 'id': id,
-      if (userId != null) 'user_id': userId,
-      'preferred_color': preferredColor,
-      'profile_type': profileType,
+      if (id != null) 'id': id,
+      if (userId != null) 'userId': userId,
+      // Somente envia se o valor for válido para o Enum do backend
+      if (preferredColor != null && preferredColor != 'null' && preferredColor!.isNotEmpty)
+        'preferredColor': preferredColor,
+      if (profileType != null && profileType != 'null' && profileType!.isNotEmpty)
+        'profileType': profileType,
       'neurodivergencies': neurodivergencies,
-      'high_contrast': highContrast,
-      'font_size_multiplier': fontSizeMultiplier,
+      'highContrast': highContrast,
+      'fontSizeMultiplier': fontSizeMultiplier,
     };
   }
 

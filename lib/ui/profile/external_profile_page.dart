@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../app_theme.dart';
-import '../../core/api_client.dart';
+import '../../core/user/user_client.dart';
+import '../../core/user/user_service.dart';
 import '../../models/user_model.dart';
 import '../../shared/widgets/page_header.dart';
 
@@ -13,7 +14,8 @@ class ExternalProfilePage extends StatefulWidget {
 }
 
 class _ExternalProfilePageState extends State<ExternalProfilePage> {
-  final _apiClient = ApiClient();
+  final _apiClient = UserService();
+  final _api2 = UserClient();
   UserModel? _user;
   bool _isLoading = true;
   String? _error;
@@ -30,7 +32,10 @@ class _ExternalProfilePageState extends State<ExternalProfilePage> {
         _isLoading = true;
         _error = null;
       });
-      final response = await _apiClient.fetchUser(widget.userId);
+      final response2 = await _apiClient.getUserProfile(widget.userId);
+      final response = await _api2.fetchUser(widget.userId);
+      debugPrint(response.toString());
+      debugPrint(response2.toString());
       final userData = response['user'] ?? response['data'] ?? response;
       
       if (userData is Map && userData.isNotEmpty) {

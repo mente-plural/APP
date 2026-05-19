@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../core/auth_service.dart';
+import 'package:provider/provider.dart';
+import '../../../core/auth/auth_service.dart';
+import '../../../core/providers/navigation_provider.dart';
 import '../../../models/user_model.dart';
 import '../../../shared/widgets/page_header.dart';
 
@@ -26,9 +28,14 @@ class HomeHeader extends StatelessWidget {
               onTap: () => Navigator.pushNamed(context, '/qr'),
             ),
             HeaderActionIcon(
-              icon: Icons.notifications_none,
-              tooltip: 'Notificações',
-              onTap: () {},
+              icon: user?.photoUrl != null && user!.photoUrl!.isNotEmpty 
+                  ? Icons.person_outline 
+                  : Icons.person_outline,
+              tooltip: 'Meu Perfil',
+              onTap: () {
+                final navProvider = Provider.of<NavigationProvider>(context, listen: false);
+                navProvider.setIndex(4); // Perfil index
+              },
             ),
           ],
         );

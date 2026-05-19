@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../app_theme.dart';
-import '../../core/auth_service.dart';
+import '../../core/auth/auth_service.dart';
 import '../../shared/utils/ui_utils.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
+import '../../shared/widgets/page_header.dart';
 import '../login/login_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -64,13 +65,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (mounted) {
         UiUtils.showSnackBar(
-            context, "Conta criada com sucesso! Por favor, faça login.");
-        await _authService.logout();
-
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const LoginPage()),
-          (route) => false,
-        );
+            context, "Conta criada com sucesso!");
+        Navigator.of(context).pop();
       }
     } catch (e) {
       if (mounted) {
@@ -89,41 +85,28 @@ class _RegisterPageState extends State<RegisterPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
-          onPressed: () {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const LoginPage()),
-            );
-          },
-        ),
-      ),
-      body: SingleChildScrollView(
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        padding: const EdgeInsets.all(AppSizes.radiusLG * 1.5),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: 80),
-            Text(
-              'Criar Conta',
-              style: theme.textTheme.headlineLarge?.copyWith(
-                fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              PageHeader(
+                title: 'Criar Conta',
+                leading: BackButton(
+                  color: theme.colorScheme.onSurface,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Preencha seus dados para começar',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+              const SizedBox(height: 8),
+              Text(
+                'Preencha seus dados para começar',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                ),
               ),
-            ),
-            const SizedBox(height: 40),
+              const SizedBox(height: 40),
 
             CustomTextField(
               label: 'Nome Completo',
@@ -183,11 +166,7 @@ class _RegisterPageState extends State<RegisterPage> {
               children: [
                 const Text('Já tem uma conta? '),
                 TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const LoginPage()),
-                    );
-                  },
+                  onPressed: () => Navigator.of(context).pop(),
                   child: const Text(
                     'Fazer login',
                     style: TextStyle(
@@ -201,6 +180,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

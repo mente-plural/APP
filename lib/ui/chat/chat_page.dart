@@ -17,7 +17,7 @@ class ChatPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const PageHeader(title: "Chat de Apoio"),
+              const PageHeader(title: "Chat de Apoio COM IA"),
               const SizedBox(height: 80),
               Center(
                 child: Column(

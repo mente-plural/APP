@@ -33,16 +33,18 @@ class UserModel {
 
     final String? name = (map['name'] ?? map['fullName'] ?? map['full_name'] ?? map['display_name'] ?? map['displayName'])?.toString();
 
+    final firebaseUid = (map['firebase_uid'] ?? map['firebaseUid'] ?? map['firebase_id'])?.toString();
+
     return UserModel(
       id: userId,
-      firebaseUid: (map['firebase_uid'] ?? map['firebaseUid'] ?? map['uid'] ?? map['firebase_id'] ?? userId).toString(),
+      firebaseUid: firebaseUid,
       email: email,
       name: (name != null && name.isNotEmpty) ? name : null,
       phone: (map['phone'] ?? map['phoneNumber'] ?? map['phone_number'])?.toString(),
       photoUrl: map['photo_url']?.toString() ?? map['photoUrl']?.toString() ?? map['avatar_url']?.toString(),
       preferences: UserPreferences.fromMap({
         ...map,
-        if (!map.containsKey('user_id') && !map.containsKey('userId')) 'user_id': userId,
+        if (!map.containsKey('user_id') && !map.containsKey('userId')) 'userId': userId,
       }),
       createdAt: _parseDate(map['created_at'] ?? map['createdAt']),
       updatedAt: _parseDate(map['updated_at'] ?? map['updatedAt']),
@@ -59,14 +61,14 @@ class UserModel {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'firebase_uid': firebaseUid,
+      'firebaseUid': firebaseUid,
       'email': email,
       'name': name,
       'phone': phone,
-      'photo_url': photoUrl,
+      'photoUrl': photoUrl,
       'preferences': preferences.toMap(),
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
     };
   }
 

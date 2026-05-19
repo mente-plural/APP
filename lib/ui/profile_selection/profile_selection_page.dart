@@ -2,7 +2,7 @@ import 'package:app/shared/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../app_theme.dart';
-import '../../core/auth_service.dart';
+import '../../core/auth/auth_service.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../../shared/widgets/secondary_button.dart';
 
@@ -19,7 +19,6 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
   String? selectedRole;
   String? selectedColor;
   final Set<String> selectedNeuro = {};
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -48,7 +47,6 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
         return;
       }
 
-      setState(() => _isLoading = true);
       debugPrint("Finalizando Onboarding. Enviando Perfil: $selectedRole, Cor: $selectedColor");
 
       try {
@@ -71,7 +69,6 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
         }
       } finally {
         if (mounted) {
-          setState(() => _isLoading = false);
         }
       }
     }

@@ -1,4 +1,4 @@
-import 'package:app/app_theme.dart';
+import 'package:app/core/auth/auth_service.dart';
 import 'package:app/core/auth_gate.dart';
 import 'package:app/core/providers/navigation_provider.dart';
 import 'package:app/core/providers/theme_provider.dart';
@@ -17,13 +17,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  
-  // Para manter a sessão ativa durante o desenvolvimento, o signOut fica comentado.
-  // await FirebaseAuth.instance.signOut();
 
+  // await FirebaseAuth.instance.signOut();
+  // await AuthService().logout();
   final prefs = await SharedPreferences.getInstance();
+  // final bool seenOnboarding = prefs.getBool('seen_onboarding') ?? false;
   final bool seenOnboarding = prefs.getBool('seen_onboarding') ?? false;
-  // final bool seenOnboarding = false;
 
   runApp(
     MultiProvider(

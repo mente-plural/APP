@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../app_theme.dart';
-import '../../core/auth_service.dart';
+import '../../core/auth/auth_service.dart';
 import '../../models/user_model.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:share_plus/share_plus.dart';
 import '../profile/external_profile_page.dart';
+import '../../shared/widgets/page_header.dart';
 
-// Enums devem ficar fora das classes (Top-level)
+
 enum _QrMode { myQr, scan }
 enum _B { top, bottom, left, right }
 
@@ -74,43 +74,30 @@ class _QrPageState extends State<QrPage> {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(Icons.arrow_back_ios_new,
-                size: 14, color: theme.colorScheme.onSurface),
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          _mode == _QrMode.myQr ? 'QR Code' : 'Escanear',
-          style: TextStyle(
-              fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface),
-        ),
-      ),
-      body: Column(
-        children: [
-          _buildToggle(theme),
-          Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              child: _mode == _QrMode.myQr
-                  ? _MyQrView(authService: _authService)
-                  : _ScanView(
-                  onDetected: _onQrDetected,
-                  controller: _scannerController
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+              child: PageHeader(
+                title: _mode == _QrMode.myQr ? 'QR Code' : 'Escanear',
+                leading: BackButton(color: theme.colorScheme.onSurface),
               ),
             ),
-          ),
-        ],
+            _buildToggle(theme),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                child: _mode == _QrMode.myQr
+                    ? _MyQrView(authService: _authService)
+                    : _ScanView(
+                    onDetected: _onQrDetected,
+                    controller: _scannerController
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -378,24 +365,8 @@ class _MyQrView extends StatelessWidget {
     );
   }
 
-  Widget _chip(ThemeData theme, String label, {bool purple = false}) {
-    final color = purple ? const Color(0xFFa5b4fc) : theme.colorScheme.primary;
-    final bg = purple ? const Color(0xFF6366f1) : theme.colorScheme.primary;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: bg.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: bg.withOpacity(0.35)),
-      ),
-      child: Text(label,
-          style: TextStyle(
-              fontSize: 10, fontWeight: FontWeight.w600, color: color)),
-    );
-  }
 }
 
-// Aba: Escanear
 class _ScanView extends StatelessWidget {
   final void Function(String uid) onDetected;
   final MobileScannerController controller;

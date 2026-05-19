@@ -98,7 +98,7 @@ class AppTheme {
     );
   }
 
-  // --- TEMA ALTO CONTRASTE (ACESSIBILIDADE) ---
+  // --- TEMA ALTO CONTRASTE ---
   static ThemeData get highContrastTheme {
     return ThemeData(
       useMaterial3: true,

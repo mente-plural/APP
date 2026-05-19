@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../app_theme.dart';
-import '../auth_service.dart';
 import '../../models/user_model.dart';
+import '../auth/auth_service.dart';
 
 class ThemeProvider with ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.dark;

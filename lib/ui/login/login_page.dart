@@ -6,10 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../app_theme.dart';
-import '../../core/auth_service.dart';
+import '../../core/auth/auth_service.dart';
 import '../../shared/utils/ui_utils.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
+import '../../shared/widgets/page_header.dart';
 import '../home/home_page.dart';
 import '../register/register_page.dart';
 
@@ -46,7 +47,9 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
 
     try {
+      debugPrint("LoginPage: Iniciando login para $email");
       await _authService.loginWithEmail(email, password);
+      debugPrint("LoginPage: loginWithEmail concluído");
 
       if (mounted) {
         UiUtils.showSnackBar(context, "Login realizado com sucesso!");
@@ -97,27 +100,22 @@ class _LoginPageState extends State<LoginPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: SingleChildScrollView(
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        padding: const EdgeInsets.all(AppSizes.radiusLG * 1.5),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: 100),
-            Text(
-              'Entrar',
-              style: theme.textTheme.headlineLarge?.copyWith(
-                fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const PageHeader(title: 'Entrar'),
+              const SizedBox(height: 8),
+              Text(
+                'Bem-vindo de volta!',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Bem-vindo de volta!',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
-              ),
-            ),
-            const SizedBox(height: 48),
+              const SizedBox(height: 48),
 
             CustomTextField(
               label: 'Email',
@@ -187,7 +185,7 @@ class _LoginPageState extends State<LoginPage> {
           ],
         ),
       ),
-    );
+    ));
   }
 }
 

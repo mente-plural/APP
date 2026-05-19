@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../app_theme.dart';
-import '../../models/routine/routine_task_model.dart';
+import '../../models/routine_task_model.dart';
 import '../../shared/widgets/page_header.dart';
+import '../../core/routine/routine_service.dart';
+import 'widgets/task_row.dart';
+import 'widgets/task_sheet.dart';
+import 'widgets/routine_progress_card.dart';
+import 'widgets/routine_empty_state.dart';
 
 class RoutinePage extends StatefulWidget {
-
   const RoutinePage({super.key});
 
   @override
@@ -13,68 +15,144 @@ class RoutinePage extends StatefulWidget {
 }
 
 class _RoutinePageState extends State<RoutinePage> {
-  bool _isLoading = false;
-  List<RoutineTaskModel> _tasks = [];
+  final RoutineService _routineService = RoutineService();
+  bool _isActionLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadTasks();
+    // Faz a chamada inicial para popular a Stream e o cache do Service
+    _routineService.loadTodayRoutines();
   }
 
-  Future<void> _loadTasks() async {
-    setState(() => _isLoading = true);
+  void _toggleTask(RoutineTaskModel task) async {
+    final newStatus = !task.isCompleted;
 
-    await Future.delayed(const Duration(milliseconds: 800));
-    
-    if (!mounted) return;
+    // O service cuida do estado otimista na hora na Stream
+    final success = await _routineService.toggleTaskCompletion(task.id, newStatus);
 
-    final mockTasks = [
-      {
-        'id': '1',
-        'title': 'Remédio da manhã',
-        'time': '08:00',
-        'isCompleted': true,
-        'icon': 'medication',
-        'color': '0xFFF87171',
-      },
-      {
-        'id': '2',
-        'title': 'Café da manhã',
-        'time': '08:30',
-        'isCompleted': false,
-        'icon': 'coffee',
-        'color': '0xFFFBBF24',
-      },
-      {
-        'id': '3',
-        'title': 'Trabalho / Estudo',
-        'time': '09:00',
-        'isCompleted': false,
-        'icon': 'work',
-        'color': '0xFF60A5FA',
-      },
-      {
-        'id': '4',
-        'title': 'Alongamento',
-        'time': '10:30',
-        'isCompleted': false,
-        'icon': 'fitness_center',
-        'color': '0xFF34D399',
-      },
-    ];
-
-    setState(() {
-      _tasks = mockTasks.map((m) => RoutineTaskModel.fromMap(m)).toList();
-      _isLoading = false;
-    });
+    if (success && newStatus && _routineService.isAllTasksCompleted()) {
+      _showCompletionDialog();
+    } else if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erro ao atualizar tarefa. Verifique sua conexão.')),
+      );
+    }
   }
 
-  void _toggleTask(int index) {
-    setState(() {
-      _tasks[index] = _tasks[index].copyWith(isCompleted: !_tasks[index].isCompleted);
-    });
+  void _deleteTask(String taskId) async {
+    final success = await _routineService.removeTask(taskId);
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erro ao excluir tarefa.')),
+      );
+    }
+  }
 
+  void _openSheet({RoutineTaskModel? editTask}) {
+    final titleCtrl = TextEditingController(text: editTask?.title ?? '');
+    final descCtrl  = TextEditingController(text: editTask?.description ?? '');
+
+    int initHour = 8;
+    int initMinute = 0;
+    bool isPM = false;
+
+    // Tratamento seguro do formato de 24h retornado pelo backend
+    if (editTask != null && editTask.time.contains(':')) {
+      final parts = editTask.time.split(':');
+      if (parts.length == 2) {
+        final rawHour = int.tryParse(parts[0]) ?? 8;
+        initMinute = int.tryParse(parts[1]) ?? 0;
+
+        isPM = rawHour >= 12;
+        initHour = rawHour > 12 ? rawHour - 12 : (rawHour == 0 ? 12 : rawHour);
+      }
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.75),
+      builder: (sheetCtx) => AnimatedPadding(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        padding: EdgeInsets.only(bottom: MediaQuery.of(sheetCtx).viewInsets.bottom),
+        child: TaskSheet(
+          titleCtrl: titleCtrl,
+          descCtrl: descCtrl,
+          isEditMode: editTask != null,
+          initialHour: initHour,
+          initialMinute: initMinute,
+          initialIsPM: isPM,
+          priority: editTask?.priority ?? 1,
+          onSave: (title, desc, time, priority) async {
+            if (title.trim().isEmpty) return;
+
+            Navigator.pop(context);
+            setState(() => _isActionLoading = true);
+
+            // 1. Função interna para converter a String "HH:MM AM/PM" para "HH:MM" (24h)
+            String convertTo24h(String timeStr) {
+              try {
+                final parts = timeStr.trim().split(' ');
+                if (parts.length != 2) return timeStr; // Se já estiver em 24h, mantém
+
+                final isPM = parts[1].toUpperCase() == 'PM';
+                final hm = parts[0].split(':');
+                if (hm.length != 2) return timeStr;
+
+                int hour = int.parse(hm[0]);
+                int minute = int.parse(hm[1]);
+
+                // Regras de conversão de formato 12h para 24h
+                if (isPM && hour != 12) hour += 12;
+                if (!isPM && hour == 12) hour = 0;
+
+                // Retorna no formato exato esperado pelo Fastify: "HH:MM"
+                return '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+              } catch (e) {
+                debugPrint('⚠️ Erro ao converter formato de hora: $e');
+                return timeStr; // Fallback seguro
+              }
+            }
+
+            // 2. Aplica a conversão antes de montar os modelos
+            final String formattedTime = convertTo24h(time);
+
+            try {
+              if (editTask != null) {
+                final updatedTask = editTask.copyWith(
+                  title: title.trim(),
+                  description: desc.trim(),
+                  time: formattedTime, // <--- String limpa em formato 24h
+                  priority: priority,
+                );
+                await _routineService.editTask(editTask.id, updatedTask);
+              } else {
+                final newTaskTemplate = RoutineTaskModel(
+                  id: '',
+                  title: title.trim(),
+                  description: desc.trim(),
+                  time: formattedTime, // <--- String limpa em formato 24h
+                  isCompleted: false,
+                  priority: priority,
+                );
+                await _routineService.createNewTask(newTaskTemplate);
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Erro ao salvar tarefa: $e')),
+                );
+              }
+            } finally {
+              if (mounted) setState(() => _isActionLoading = false);
+            }
+          },
+        ),
+      ),
+    );
   }
 
   @override
@@ -84,230 +162,182 @@ class _RoutinePageState extends State<RoutinePage> {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(theme),
-              const SizedBox(height: 32),
-              _buildDateHeader(theme),
-              const SizedBox(height: 16),
-              _buildProgressCard(theme),
-              const SizedBox(height: 32),
-              const Text(
-                "Tarefas de Hoje",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _tasks.isEmpty
-                      ? _buildEmptyState()
-                      : ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _tasks.length,
-                          itemBuilder: (context, index) {
-                            return _buildTaskItem(_tasks[index], index, theme);
-                          },
-                        ),
-            ],
-          ),
+        child: StreamBuilder<List<RoutineTaskModel>>(
+          stream: _routineService.tasksStream,
+          initialData: _routineService.cachedTasks,
+          builder: (context, snapshot) {
+            final tasks = snapshot.data ?? [];
+            final allCompleted = _routineService.isAllTasksCompleted();
+            final completedCount = tasks.where((t) => t.isCompleted).length;
+            final progress = tasks.isEmpty ? 0.0 : completedCount / tasks.length;
+
+            // Exibe loader apenas na primeira busca se o cache estiver vazio
+            if (tasks.isEmpty && snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator(color: theme.colorScheme.primary));
+            }
+
+            return Stack(
+              children: [
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+                      child: PageHeader(
+                        title: 'Minha Rotina',
+                        actions: [
+                          HeaderActionIcon(
+                            icon: Icons.add_rounded,
+                            tooltip: 'Adicionar Tarefa',
+                            iconColor: theme.colorScheme.primary,
+                            onTap: () => _openSheet(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    RoutineProgressCard(
+                      completedCount: completedCount,
+                      totalCount: tasks.length,
+                      progress: progress,
+                    ),
+                    const SizedBox(height: 24),
+                    Expanded(
+                      child: tasks.isEmpty
+                          ? const RoutineEmptyState()
+                          : ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                        itemCount: tasks.length + (allCompleted ? 1 : 0),
+                        itemBuilder: (_, i) {
+                          if (i == tasks.length) {
+                            return _buildCompletionStatus(theme);
+                          }
+                          final firstIncompleteIndex = tasks.indexWhere((t) => !t.isCompleted);
+                          return TaskRow(
+                            task: tasks[i],
+                            index: i,
+                            isLast: i == tasks.length - 1,
+                            isHighlighted: i == firstIncompleteIndex,
+                            onToggle: () => _toggleTask(tasks[i]),
+                            onEdit: () => _openSheet(editTask: tasks[i]),
+                            onDelete: () => _deleteTask(tasks[i].id),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                if (_isActionLoading)
+                  Container(
+                    color: Colors.black.withValues(alpha: 0.25),
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildHeader(ThemeData theme) {
-    return PageHeader(
-      title: "Minha Rotina",
-      actions: [
-        HeaderActionIcon(
-          icon: Icons.add_circle_outline,
-          tooltip: 'Nova Tarefa',
-          iconColor: theme.colorScheme.primary,
-          onTap: () {},
+  void _showCompletionDialog() {
+    final theme = Theme.of(context);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: theme.colorScheme.surface,
+        surfaceTintColor: Colors.transparent,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.celebration_rounded, color: theme.colorScheme.primary, size: 40),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Tudo concluído!',
+              style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Parabéns! Você finalizou todas as tarefas da sua rotina de hoje.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                fontSize: 15,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 32),
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                width: double.infinity,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    'Continuar',
+                    style: TextStyle(color: theme.colorScheme.onPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildDateHeader(ThemeData theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Segunda-feira",
-          style: TextStyle(
-            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-            fontSize: 14,
-          ),
-        ),
-        const Text(
-          "14 de Maio",
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProgressCard(ThemeData theme) {
+  Widget _buildCompletionStatus(ThemeData theme) {
     final colorScheme = theme.colorScheme;
-    final primary = colorScheme.primary;
-    final completed = _tasks.where((t) => t.isCompleted).length;
-    final total = _tasks.length;
-    final progress = total > 0 ? completed / total : 0.0;
+    final primaryColor = colorScheme.primary;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(top: 32, bottom: 8, left: 48, right: 48),
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: theme.shadowColor.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: primaryColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: primaryColor.withValues(alpha: 0.1)),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Seu progresso",
-                  style: TextStyle(
-                    color: primary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "$completed de $total tarefas concluídas",
-                  style: TextStyle(
-                    color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    backgroundColor: primary.withValues(alpha: 0.1),
-                    valueColor: AlwaysStoppedAnimation<Color>(primary),
-                    minHeight: 8,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 20),
           Container(
-            width: 60,
-            height: 60,
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: primary.withValues(alpha: 0.1),
+              color: primaryColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Center(
-              child: Text(
-                "${(progress * 100).toInt()}%",
-                style: TextStyle(
-                  color: primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-            ),
+            child: Icon(Icons.stars_rounded, color: primaryColor, size: 28),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTaskItem(RoutineTaskModel task, int index, ThemeData theme) {
-    final colorScheme = theme.colorScheme;
-    final taskColor = task.color != null ? Color(int.parse(task.color!)) : colorScheme.primary;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: task.isCompleted 
-              ? Colors.transparent 
-              : theme.dividerColor.withValues(alpha: 0.1),
-        ),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: taskColor.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            _getIconData(task.icon),
-            color: taskColor,
-          ),
-        ),
-        title: Text(
-          task.title,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-            color: task.isCompleted 
-                ? theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.5) 
-                : theme.colorScheme.primary,
-          ),
-        ),
-        subtitle: Text(
-          task.time.format(context),
-          style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6)),
-        ),
-        trailing: Transform.scale(
-          scale: 1.2,
-          child: Checkbox(
-            value: task.isCompleted,
-            onChanged: (_) => _toggleTask(index),
-            shape: const CircleBorder(),
-            activeColor: colorScheme.primary,
-          ),
-        ),
-      ),
-    );
-  }
-
-
-  IconData _getIconData(String? iconName) {
-    switch (iconName) {
-      case 'medication': return Icons.medication_rounded;
-      case 'coffee': return Icons.coffee_rounded;
-      case 'work': return Icons.work_rounded;
-      case 'fitness_center': return Icons.fitness_center_rounded;
-      default: return Icons.task_alt_rounded;
-    }
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.calendar_today_outlined, size: 64, color: Colors.grey.withValues(alpha: 0.5)),
           const SizedBox(height: 16),
-          const Text("Nenhuma tarefa agendada", style: TextStyle(fontWeight: FontWeight.bold)),
-          const Text("Toque no + para começar sua rotina.", style: TextStyle(color: Colors.grey)),
+          Text('Rotina Completa!', style: TextStyle(color: colorScheme.onSurface, fontSize: 20, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+          const SizedBox(height: 8),
+          Text(
+            'Você cumpriu todos os seus objetivos para hoje. Bom trabalho!',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7), fontSize: 16, height: 1.3),
+          ),
         ],
       ),
     );
