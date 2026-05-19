@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../app_theme.dart';
 import '../../core/user/user_service.dart';
 import '../../models/user_model.dart';
@@ -158,7 +159,12 @@ class _ExternalProfilePageState extends State<ExternalProfilePage> {
           _CircleButton(
             icon: Icons.share_rounded,
             onTap: () {
-              // Implementar compartilhamento se necessário
+              if (_user != null) {
+                Share.share(
+                  'Confira o perfil de ${_user!.name ?? 'Usuário'} no Mão Amiga!\n'
+                  'Contato: ${_user!.email}',
+                );
+              }
             },
           ),
         ],

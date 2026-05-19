@@ -74,4 +74,56 @@ class AuthClient extends ApiBaseClient {
       rethrow;
     }
   }
+
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/v1/auth/forgot-password'),
+        // 💡 Rota pública: headers simples evitam dependência de tokens
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      ).timeout(const Duration(seconds: 15));
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        if (response.body.isEmpty) return {'message': 'Solicitação enviada'};
+        try {
+          return jsonDecode(response.body);
+        } catch (_) {
+          return {'message': response.body};
+        }
+      } else {
+        handleErrorResponse(response);
+        return {};
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> resetPassword(String token, String newPassword) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/v1/auth/reset-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'token': token,
+          'newPassword': newPassword,
+        }),
+      ).timeout(const Duration(seconds: 15));
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        if (response.body.isEmpty) return {'message': 'Senha alterada com sucesso'};
+        try {
+          return jsonDecode(response.body);
+        } catch (_) {
+          return {'message': response.body};
+        }
+      } else {
+        handleErrorResponse(response);
+        return {};
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

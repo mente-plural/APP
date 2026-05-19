@@ -67,6 +67,81 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  void _showForgotPasswordDialog() {
+    final emailController = TextEditingController(text: _emailController.text);
+    bool isSending = false;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Recuperar Senha'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Informe seu e-mail para receber as instruções de recuperação.',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                label: 'E-mail',
+                hint: 'seu@email.com',
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: isSending ? null : () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: isSending
+                  ? null
+                  : () async {
+                      final email = emailController.text.trim();
+                      if (email.isEmpty) {
+                        UiUtils.showSnackBar(context, "Informe seu e-mail.", isError: true);
+                        return;
+                      }
+
+                      setDialogState(() => isSending = true);
+                      try {
+                        await _authService.sendPasswordResetEmail(email);
+                        if (mounted) {
+                          Navigator.pop(context);
+                          UiUtils.showSnackBar(
+                            context,
+                            "Se o e-mail existir, um link de recuperação foi enviado.",
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          setDialogState(() => isSending = false);
+                          UiUtils.showSnackBar(
+                            context,
+                            e.toString().replaceAll('Exception: ', ''),
+                            isError: true,
+                          );
+                        }
+                      }
+                    },
+              child: isSending
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Enviar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _handleGoogleSignIn() async {
     setState(() => _isLoading = true);
 
@@ -133,7 +208,20 @@ class _LoginPageState extends State<LoginPage> {
               isPassword: true,
               textInputAction: TextInputAction.done,
             ),
-            const SizedBox(height: 32),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _showForgotPasswordDialog,
+                child: Text(
+                  'Esqueci minha senha',
+                  style: TextStyle(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
 
             PrimaryButton(
               label: 'Entrar',

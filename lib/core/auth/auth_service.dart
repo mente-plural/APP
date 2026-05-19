@@ -249,6 +249,22 @@ class AuthService {
     await prefs.remove('user_session');
   }
 
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _authClient.forgotPassword(email);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> resetPassword(String token, String newPassword) async {
+    try {
+      await _authClient.resetPassword(token, newPassword);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<void> updateUserProfile({
     String? name,
     String? profileType,
