@@ -24,19 +24,22 @@ class UserModel {
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
-    // Tenta extrair o ID de várias fontes comuns
-    final userId = (map['id'] ?? map['uuid'] ?? map['userId'] ?? map['firebaseUid'] ?? map['firebase_uid'] ?? '').toString();
+
+    final userId = (map['id'] ?? map['uuid'] ?? map['userId'] ?? map['firebase_uid'] ?? map['firebaseUid'] ?? map['uid'] ?? '').toString();
     
-    // Se o email vier vazio, tenta buscar de campos alternativos
+
     final email = (map['email'] ?? map['userEmail'] ?? map['user_email'] ?? '').toString();
+
+
+    final String? name = (map['name'] ?? map['fullName'] ?? map['full_name'] ?? map['display_name'] ?? map['displayName'])?.toString();
 
     return UserModel(
       id: userId,
-      firebaseUid: (map['firebaseUid'] ?? map['firebase_uid'] ?? map['uid'] ?? map['firebase_id'] ?? '').toString(),
+      firebaseUid: (map['firebase_uid'] ?? map['firebaseUid'] ?? map['uid'] ?? map['firebase_id'] ?? userId).toString(),
       email: email,
-      name: (map['name'] ?? map['fullName'] ?? map['full_name'] ?? map['display_name'])?.toString(),
+      name: (name != null && name.isNotEmpty) ? name : null,
       phone: (map['phone'] ?? map['phoneNumber'] ?? map['phone_number'])?.toString(),
-      photoUrl: map['photoUrl']?.toString() ?? map['photo_url']?.toString() ?? map['avatar_url']?.toString(),
+      photoUrl: map['photo_url']?.toString() ?? map['photoUrl']?.toString() ?? map['avatar_url']?.toString(),
       preferences: UserPreferences.fromMap({
         ...map,
         if (!map.containsKey('user_id') && !map.containsKey('userId')) 'user_id': userId,
@@ -70,12 +73,6 @@ class UserModel {
   bool get hasValidDatabaseId =>
       RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
           .hasMatch(id);
-
-  get neurodivergenceTypes => null;
-
-  get profileType => null;
-
-  String? get theme => null;
 
   UserModel copyWith({
     String? id,

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../app_theme.dart';
-import '../../core/providers/profile_provider.dart';
 import '../../models/routine/routine_task_model.dart';
+import '../../shared/widgets/page_header.dart';
 
 class RoutinePage extends StatefulWidget {
+
   const RoutinePage({super.key});
 
   @override
@@ -23,7 +24,7 @@ class _RoutinePageState extends State<RoutinePage> {
 
   Future<void> _loadTasks() async {
     setState(() => _isLoading = true);
-    // Simulação de tarefas
+
     await Future.delayed(const Duration(milliseconds: 800));
     
     if (!mounted) return;
@@ -73,102 +74,103 @@ class _RoutinePageState extends State<RoutinePage> {
     setState(() {
       _tasks[index] = _tasks[index].copyWith(isCompleted: !_tasks[index].isCompleted);
     });
-    // TODO: Sincronizar com o backend via ApiClient
+
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.bgEscuro : AppColors.bgClaro,
-      appBar: AppBar(
-        title: const Text("Minha Rotina", style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline),
-            onPressed: () {
-              // TODO: Adicionar nova tarefa
-            },
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(theme),
+              const SizedBox(height: 32),
+              _buildDateHeader(theme),
+              const SizedBox(height: 16),
+              _buildProgressCard(theme),
+              const SizedBox(height: 32),
+              const Text(
+                "Tarefas de Hoje",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _tasks.isEmpty
+                      ? _buildEmptyState()
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: _tasks.length,
+                          itemBuilder: (context, index) {
+                            return _buildTaskItem(_tasks[index], index, theme);
+                          },
+                        ),
+            ],
           ),
-        ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildDateHeader(isDark),
-          const SizedBox(height: 16),
-          _buildProgressCard(primaryColor, isDark),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 24, 20, 12),
-            child: Text(
-              "Tarefas de Hoje",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _tasks.isEmpty
-                    ? _buildEmptyState()
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: _tasks.length,
-                        itemBuilder: (context, index) {
-                          return _buildTaskItem(_tasks[index], index, isDark, primaryColor);
-                        },
-                      ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildDateHeader(bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Segunda-feira", // Ideal usar Intl para formatar data real
-            style: TextStyle(
-              color: isDark ? AppColors.textSecundarioEscuro : AppColors.textMutedClaro,
-              fontSize: 14,
-            ),
-          ),
-          const Text(
-            "14 de Maio",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
+  Widget _buildHeader(ThemeData theme) {
+    return PageHeader(
+      title: "Minha Rotina",
+      actions: [
+        HeaderActionIcon(
+          icon: Icons.add_circle_outline,
+          tooltip: 'Nova Tarefa',
+          iconColor: theme.colorScheme.primary,
+          onTap: () {},
+        ),
+      ],
     );
   }
 
-  Widget _buildProgressCard(Color primary, bool isDark) {
+  Widget _buildDateHeader(ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Segunda-feira",
+          style: TextStyle(
+            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+            fontSize: 14,
+          ),
+        ),
+        const Text(
+          "14 de Maio",
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProgressCard(ThemeData theme) {
+    final colorScheme = theme.colorScheme;
+    final primary = colorScheme.primary;
     final completed = _tasks.where((t) => t.isCompleted).length;
     final total = _tasks.length;
     final progress = total > 0 ? completed / total : 0.0;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [primary, primary.withValues(alpha: 0.8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
-            color: primary.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: theme.shadowColor.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -178,22 +180,29 @@ class _RoutinePageState extends State<RoutinePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   "Seu progresso",
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: primary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   "$completed de $total tarefas concluídas",
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 13),
+                  style: TextStyle(
+                    color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                    fontSize: 13,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: LinearProgressIndicator(
                     value: progress,
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    backgroundColor: primary.withValues(alpha: 0.1),
+                    valueColor: AlwaysStoppedAnimation<Color>(primary),
                     minHeight: 8,
                   ),
                 ),
@@ -205,13 +214,17 @@ class _RoutinePageState extends State<RoutinePage> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 "${(progress * 100).toInt()}%",
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
             ),
           ),
@@ -220,18 +233,19 @@ class _RoutinePageState extends State<RoutinePage> {
     );
   }
 
-  Widget _buildTaskItem(RoutineTaskModel task, int index, bool isDark, Color primary) {
-    final taskColor = task.color != null ? Color(int.parse(task.color!)) : primary;
+  Widget _buildTaskItem(RoutineTaskModel task, int index, ThemeData theme) {
+    final colorScheme = theme.colorScheme;
+    final taskColor = task.color != null ? Color(int.parse(task.color!)) : colorScheme.primary;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceEscuro : AppColors.surfaceClaro,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: task.isCompleted 
               ? Colors.transparent 
-              : (isDark ? AppColors.borderEscuro : Colors.grey.shade200),
+              : theme.dividerColor.withValues(alpha: 0.1),
         ),
       ),
       child: ListTile(
@@ -252,12 +266,14 @@ class _RoutinePageState extends State<RoutinePage> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-            color: task.isCompleted ? Colors.grey : null,
+            color: task.isCompleted 
+                ? theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.5) 
+                : theme.colorScheme.primary,
           ),
         ),
         subtitle: Text(
           task.time.format(context),
-          style: TextStyle(color: Colors.grey.shade500),
+          style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6)),
         ),
         trailing: Transform.scale(
           scale: 1.2,
@@ -265,12 +281,13 @@ class _RoutinePageState extends State<RoutinePage> {
             value: task.isCompleted,
             onChanged: (_) => _toggleTask(index),
             shape: const CircleBorder(),
-            activeColor: primary,
+            activeColor: colorScheme.primary,
           ),
         ),
       ),
     );
   }
+
 
   IconData _getIconData(String? iconName) {
     switch (iconName) {

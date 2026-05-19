@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 
 import '../../app_theme.dart';
 import '../../core/auth_service.dart';
-import '../../core/providers/profile_provider.dart';
 import '../../shared/utils/ui_utils.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
@@ -44,25 +43,18 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    final profileProvider = Provider.of<ProfileProvider>(
-        context, listen: false);
-    final profileId = profileProvider.selectedProfile?.id;
-
     setState(() => _isLoading = true);
 
     try {
-      await _authService.loginWithEmail(email, password, profile: profileId);
+      await _authService.loginWithEmail(email, password);
 
       if (mounted) {
         UiUtils.showSnackBar(context, "Login realizado com sucesso!");
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const ProfileSelectionPage()),
-              (route) => false,
-        );
       }
     } catch (e) {
       if (mounted) {
         final errorMsg = e.toString().replaceAll('Exception: ', '');
+        debugPrint(e.toString());
         UiUtils.showSnackBar(context, errorMsg, isError: true);
       }
     } finally {
@@ -73,24 +65,25 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _handleGoogleSignIn() async {
-    final profileProvider = Provider.of<ProfileProvider>(
-        context, listen: false);
-    final profileId = profileProvider.selectedProfile?.id;
-
     setState(() => _isLoading = true);
 
     try {
-      await _authService.loginWithGoogle(profile: profileId);
+      final success = await _authService.loginWithGoogle();
       if (mounted) {
-        UiUtils.showSnackBar(context, "Login social realizado com sucesso!");
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const ProfileSelectionPage()),
-              (route) => false,
-        );
+        if (success) {
+          UiUtils.showSnackBar(context, "Login social realizado com sucesso!");
+        } else {
+          UiUtils.showSnackBar(context, "Login cancelado.", isError: true);
+        }
       }
     } catch (e) {
       if (mounted) {
-        UiUtils.showSnackBar(context, "Erro no Google Login: $e", isError: true);
+        final errorStr = e.toString().toLowerCase();
+        if (errorStr.contains('canceled') || errorStr.contains('cancelled')) {
+          UiUtils.showSnackBar(context, "Login cancelado.", isError: true);
+        } else {
+          UiUtils.showSnackBar(context, "Erro no Google Login: $e", isError: true);
+        }
       }
     } finally {
       if (mounted) {
@@ -178,7 +171,7 @@ class _LoginPageState extends State<LoginPage> {
                 const Text('Ainda não tem conta? '),
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pushReplacement(
+                    Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const RegisterPage()),
                     );
                   },

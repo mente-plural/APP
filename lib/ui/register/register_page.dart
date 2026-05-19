@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../../app_theme.dart';
 import '../../core/auth_service.dart';
-import '../../core/providers/profile_provider.dart';
 import '../../shared/utils/ui_utils.dart';
 import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
@@ -53,10 +52,6 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-    final profileProvider = Provider.of<ProfileProvider>(
-        context, listen: false);
-    final profileId = profileProvider.selectedProfile?.id;
-
     setState(() => _isLoading = true);
 
     try {
@@ -64,8 +59,7 @@ class _RegisterPageState extends State<RegisterPage> {
         email: email,
         password: senha,
         name: nome,
-        phone: telefone,
-        profile: profileId,
+        phone: telefone
       );
 
       if (mounted) {

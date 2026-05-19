@@ -23,7 +23,7 @@ class SecondaryButton extends StatelessWidget {
       isLoading: isLoading,
       icon: icon,
       backgroundColor: const Color(0xFF1E293B),
-      foregroundColor: const Color(0xFFF1F5F9), // Slate 100
+      foregroundColor: const Color(0xFFF1F5F9),
       hoverColor: const Color(0xFF334155),
     );
   }

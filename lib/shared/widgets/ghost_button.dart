@@ -23,7 +23,7 @@ class GhostButton extends StatelessWidget {
       isLoading: isLoading,
       icon: icon,
       backgroundColor: Colors.transparent,
-      foregroundColor: const Color(0xFF2DD4BF), // Teal 400
+      foregroundColor: const Color(0xFF2DD4BF),
       hoverColor: const Color(0xFF1E293B),
       isGhost: true,
     );

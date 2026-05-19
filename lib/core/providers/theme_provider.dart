@@ -36,7 +36,7 @@ class ThemeProvider with ChangeNotifier {
       _themeMode = ThemeMode.dark;
       _highContrast = true;
     } else {
-      // Default or Cores Suaves
+
       _themeMode = ThemeMode.dark;
     }
     notifyListeners();

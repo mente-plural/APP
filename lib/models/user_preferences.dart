@@ -28,8 +28,10 @@ class UserPreferences {
       preferredColor: (data['preferred_color'] ?? data['preferredColor'] ?? map['preferred_color'] ?? map['preferredColor'])?.toString(),
       profileType: (data['profile_type'] ?? data['profileType'] ?? map['profile_type'] ?? map['profileType'])?.toString(),
       neurodivergencies: data['neurodivergencies'] != null
-          ? List<String>.from(data['neurodivergencies'])
-          : (map['neurodivergencies'] != null ? List<String>.from(map['neurodivergencies']) : []),
+          ? (data['neurodivergencies'] as List).map((e) => e.toString()).toList()
+          : (map['neurodivergencies'] != null 
+              ? (map['neurodivergencies'] as List).map((e) => e.toString()).toList() 
+              : []),
       highContrast: data['high_contrast'] ?? data['highContrast'] ?? map['high_contrast'] ?? map['highContrast'] ?? false,
       fontSizeMultiplier: (data['font_size_multiplier'] ?? data['fontSizeMultiplier'] ?? map['font_size_multiplier'] ?? map['fontSizeMultiplier'] ?? 1.0).toDouble(),
     );

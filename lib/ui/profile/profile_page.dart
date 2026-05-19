@@ -3,7 +3,9 @@ import '../../app_theme.dart';
 import '../../core/auth_service.dart';
 import '../../models/user_model.dart';
 import '../../shared/widgets/primary_button.dart';
+import '../../shared/widgets/page_header.dart';
 import '../login/login_page.dart';
+import '../qr/qr_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -29,7 +31,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
       parent: _qrController,
       curve: Curves.easeInOut,
     );
-    _authService.refreshUser();
   }
 
   @override
@@ -39,8 +40,46 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
   }
 
   void _toggleQr() {
-    setState(() => _showQr = !_showQr);
-    _showQr ? _qrController.forward() : _qrController.reverse();
+    setState(() {
+      _showQr = !_showQr;
+      if (_showQr) {
+        _qrController.forward();
+      } else {
+        _qrController.reverse();
+      }
+    });
+  }
+
+  Future<void> _confirmLogout() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceEscuro,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Sair da conta?',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: const Text('Você precisará fazer login novamente.',
+            style: TextStyle(color: AppColors.textSecundarioEscuro)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar',
+                style: TextStyle(color: AppColors.textSecundarioEscuro)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Sair',
+                style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && mounted) {
+      await _authService.logout();
+      // A navegação de volta para a LoginPage será tratada automaticamente pelo AuthGate
+      // ao detectar que o fluxo de usuário no AuthService tornou-se null.
+    }
   }
 
   String _getProfileLabel(String? type) {
@@ -58,70 +97,32 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.bgEscuro,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'Meu Perfil',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        actions: [
-          IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: AppColors.surfaceEscuro,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.edit, size: 16, color: AppColors.textSecundarioEscuro),
-            ),
-            onPressed: () {
-              // TODO: Implementar edição de perfil
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () => _authService.refreshUser(),
-        color: AppColors.primaryEscuro,
-        backgroundColor: AppColors.surfaceEscuro,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: SafeArea(
         child: StreamBuilder<UserModel?>(
           stream: _authService.userStream,
           builder: (context, snapshot) {
             final user = snapshot.data;
 
             if (user == null) {
-              return const Center(
-                child: CircularProgressIndicator(color: AppColors.primaryEscuro),
+              return Center(
+                child: CircularProgressIndicator(color: theme.colorScheme.primary),
               );
             }
 
             return SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildMainCard(user),
-                  const SizedBox(height: 16),
-                  _buildQrToggleButton(),
-                  _buildQrSection(user),
+                  _buildHeader(theme),
                   const SizedBox(height: 32),
-                  PrimaryButton(
-                    label: 'Sair da Conta',
-                    onPressed: () async {
-                      await _authService.logout();
-                      if (context.mounted) {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (_) => const LoginPage()),
-                          (route) => false,
-                        );
-                      }
-                    },
-                  ),
+                  _buildMainCard(user, theme),
+                  const SizedBox(height: 24),
+                  _buildLogoutButton(theme),
                 ],
               ),
             );
@@ -131,18 +132,65 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildMainCard(UserModel user) {
+  Widget _buildHeader(ThemeData theme) {
+    return PageHeader(
+      title: "Meu Perfil",
+      actions: [
+        HeaderActionIcon(
+          icon: Icons.qr_code_scanner,
+          tooltip: 'Meu QR Code',
+          iconColor: theme.colorScheme.primary,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const QrPage()),
+          ),
+        ),
+        HeaderActionIcon(
+          icon: Icons.edit_outlined,
+          tooltip: 'Editar Perfil',
+          onTap: () {},
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLogoutButton(ThemeData theme) {
+    return InkWell(
+      onTap: _confirmLogout,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.redAccent.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.redAccent.withOpacity(0.2)),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
+            SizedBox(width: 8),
+            Text(
+              "Sair da Conta",
+              style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMainCard(UserModel user, ThemeData theme) {
     final initials = (user.name != null && user.name!.isNotEmpty)
         ? user.name![0].toUpperCase()
         : user.email.isNotEmpty ? user.email[0].toUpperCase() : '?';
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceEscuro,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.borderEscuro),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: Column(
         children: [
@@ -156,17 +204,17 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             Container(
               width: 80,
               height: 80,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryEscuro,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary,
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Text(
                   initials,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF020617), // Slate 950 para contraste
+                    color: theme.colorScheme.onPrimary,
                   ),
                 ),
               ),
@@ -177,59 +225,105 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           Text(
             user.name ?? 'Usuário',
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: theme.colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
 
           // Tipo de Perfil (Badge)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.primaryEscuro.withValues(alpha: 0.12),
+              color: theme.colorScheme.primary.withOpacity(0.12),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.primaryEscuro.withValues(alpha: 0.35)),
+              border: Border.all(color: theme.colorScheme.primary.withOpacity(0.35)),
             ),
             child: Text(
               _getProfileLabel(user.preferences.profileType),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: AppColors.primaryEscuro,
+                color: theme.colorScheme.primary,
                 letterSpacing: 0.4,
               ),
             ),
           ),
 
           const SizedBox(height: 24),
-          const Divider(color: AppColors.borderEscuro, height: 1),
+          Divider(color: theme.dividerColor, height: 1),
           const SizedBox(height: 20),
 
           // Informações de contato
-          _buildInfoRow(Icons.email_outlined, 'Email', user.email),
+          _buildInfoRow(theme, Icons.email_outlined, 'Email', user.email),
           if (user.phone != null && user.phone!.isNotEmpty) ...[
             const SizedBox(height: 16),
-            _buildInfoRow(Icons.phone_outlined, 'Telefone', user.phone!),
+            _buildInfoRow(theme, Icons.phone_outlined, 'Telefone', user.phone!),
+          ],
+
+          // Neurodivergências (Chips integrados)
+          if (user.preferences.neurodivergencies.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Divider(color: theme.dividerColor, height: 1),
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Condições / Neurodivergências',
+                style: TextStyle(fontSize: 11, color: theme.textTheme.bodyMedium?.color),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: user.preferences.neurodivergencies
+                    .map((item) => _buildChip(item, color: theme.colorScheme.primary))
+                    .toList(),
+              ),
+            ),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildChip(String label, {required Color color, Color? bg}) {
+    final bgColor = bg ?? color;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: bgColor.withOpacity(0.35)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: color,
+          letterSpacing: 0.3,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(ThemeData theme, IconData icon, String label, String value) {
     return Row(
       children: [
         Container(
-          width: 40,
-          height: 40,
+          width: 38,
+          height: 38,
           decoration: BoxDecoration(
-            color: AppColors.primaryEscuro.withValues(alpha: 0.10),
+            color: theme.colorScheme.primary.withOpacity(0.10),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, size: 18, color: AppColors.primaryEscuro),
+          child: Icon(icon, size: 18, color: theme.colorScheme.primary),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -238,15 +332,15 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             children: [
               Text(
                 label,
-                style: const TextStyle(fontSize: 11, color: AppColors.textSecundarioEscuro),
+                style: TextStyle(fontSize: 11, color: theme.textTheme.bodyMedium?.color),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
             ],
@@ -256,7 +350,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildQrToggleButton() {
+  Widget _buildQrToggleButton(ThemeData theme) {
     return GestureDetector(
       onTap: _toggleQr,
       child: Container(
@@ -265,32 +359,32 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.borderEscuro),
+          border: Border.all(color: theme.dividerColor),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               _showQr ? Icons.qr_code_2 : Icons.qr_code_scanner,
-              color: Colors.white,
+              color: theme.colorScheme.onSurface,
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               _showQr ? 'Ocultar QR Code' : 'Mostrar QR Code',
-              style: const TextStyle(
-                fontSize: 15,
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
+              style: TextStyle(
+                color: theme.colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
               ),
             ),
             const SizedBox(width: 8),
             AnimatedRotation(
               turns: _showQr ? 0.5 : 0,
               duration: const Duration(milliseconds: 320),
-              child: const Icon(
+              child: Icon(
                 Icons.keyboard_arrow_down,
-                color: AppColors.textSecundarioEscuro,
+                color: theme.textTheme.bodyMedium?.color,
                 size: 20,
               ),
             ),
@@ -300,48 +394,4 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildQrSection(UserModel user) {
-    return SizeTransition(
-      sizeFactor: _qrAnimation,
-      axisAlignment: -1,
-      child: Padding(
-        padding: const EdgeInsets.only(top: 16),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceEscuro,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.borderEscuro),
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: 180,
-                height: 180,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.qr_code_2,
-                    size: 140,
-                    color: AppColors.bgEscuro,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Escaneie para compartilhar seu perfil de saúde',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecundarioEscuro),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
