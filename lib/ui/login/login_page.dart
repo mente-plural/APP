@@ -69,28 +69,63 @@ class _LoginPageState extends State<LoginPage> {
 
   void _showForgotPasswordDialog() {
     final emailController = TextEditingController(text: _emailController.text);
+    final codeController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+
     bool isSending = false;
+    bool emailSent = false;
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Recuperar Senha'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Informe seu e-mail para receber as instruções de recuperação.',
-                style: TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                label: 'E-mail',
-                hint: 'seu@email.com',
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-              ),
-            ],
+          title: Text(emailSent ? 'Redefinir Senha' : 'Recuperar Senha'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (!emailSent) ...[
+                  const Text(
+                    'Informe seu e-mail para receber as instruções de recuperação.',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    label: 'E-mail',
+                    hint: 'seu@email.com',
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                ] else ...[
+                  const Text(
+                    'Informe o código recebido por e-mail e sua nova senha.',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    label: 'Código',
+                    hint: 'Código de 32 caracteres',
+                    controller: codeController,
+                  ),
+                  const SizedBox(height: 12),
+                  CustomTextField(
+                    label: 'Nova Senha',
+                    hint: '********',
+                    controller: newPasswordController,
+                    isPassword: true,
+                  ),
+                  const SizedBox(height: 12),
+                  CustomTextField(
+                    label: 'Confirmar Nova Senha',
+                    hint: '********',
+                    controller: confirmPasswordController,
+                    isPassword: true,
+                  ),
+                ],
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -101,30 +136,74 @@ class _LoginPageState extends State<LoginPage> {
               onPressed: isSending
                   ? null
                   : () async {
-                      final email = emailController.text.trim();
-                      if (email.isEmpty) {
-                        UiUtils.showSnackBar(context, "Informe seu e-mail.", isError: true);
-                        return;
-                      }
-
-                      setDialogState(() => isSending = true);
-                      try {
-                        await _authService.sendPasswordResetEmail(email);
-                        if (mounted) {
-                          Navigator.pop(context);
-                          UiUtils.showSnackBar(
-                            context,
-                            "Se o e-mail existir, um link de recuperação foi enviado.",
-                          );
+                      if (!emailSent) {
+                        // Fluxo de envio de email
+                        final email = emailController.text.trim();
+                        if (email.isEmpty) {
+                          UiUtils.showSnackBar(context, "Informe seu e-mail.", isError: true);
+                          return;
                         }
-                      } catch (e) {
-                        if (mounted) {
-                          setDialogState(() => isSending = false);
-                          UiUtils.showSnackBar(
-                            context,
-                            e.toString().replaceAll('Exception: ', ''),
-                            isError: true,
-                          );
+
+                        setDialogState(() => isSending = true);
+                        try {
+                          await _authService.sendPasswordResetEmail(email);
+                          if (context.mounted) {
+                            setDialogState(() {
+                              isSending = false;
+                              emailSent = true;
+                            });
+                            UiUtils.showSnackBar(
+                              context,
+                              "Se o e-mail existir, um código de recuperação foi enviado.",
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            setDialogState(() => isSending = false);
+                            UiUtils.showSnackBar(
+                              context,
+                              e.toString().replaceAll('Exception: ', ''),
+                              isError: true,
+                            );
+                          }
+                        }
+                      } else {
+                        // Fluxo de redefinição de senha
+                        final code = codeController.text.trim();
+                        final newPass = newPasswordController.text;
+                        final confirmPass = confirmPasswordController.text;
+
+                        if (code.isEmpty || newPass.isEmpty || confirmPass.isEmpty) {
+                          UiUtils.showSnackBar(context, "Preencha todos os campos.", isError: true);
+                          return;
+                        }
+
+                        if (newPass != confirmPass) {
+                          UiUtils.showSnackBar(context, "As senhas não coincidem.", isError: true);
+                          return;
+                        }
+
+                        if (newPass.length < 6) {
+                          UiUtils.showSnackBar(context, "A senha deve ter pelo menos 6 caracteres.", isError: true);
+                          return;
+                        }
+
+                        setDialogState(() => isSending = true);
+                        try {
+                          await _authService.resetPassword(code, newPass);
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            UiUtils.showSnackBar(context, "Senha alterada com sucesso!");
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            setDialogState(() => isSending = false);
+                            UiUtils.showSnackBar(
+                              context,
+                              e.toString().replaceAll('Exception: ', ''),
+                              isError: true,
+                            );
+                          }
                         }
                       }
                     },
@@ -132,9 +211,9 @@ class _LoginPageState extends State<LoginPage> {
                   ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
-                  : const Text('Enviar'),
+                  : Text(emailSent ? 'Redefinir' : 'Enviar'),
             ),
           ],
         ),
