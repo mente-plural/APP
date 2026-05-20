@@ -29,11 +29,6 @@ jobs:
           flutter clean
           flutter pub get
 
-      - name: Instalar Dependências do iOS
-        run: |
-          cd ios
-          pod install --repo-update
-
       - name: Configurar chaves de Assinatura (Apple API Key)
         env:
           APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
