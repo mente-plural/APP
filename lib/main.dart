@@ -46,7 +46,7 @@ class App extends StatelessWidget {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
         return MaterialApp(
-          title: 'Mente Plural',
+          title: 'NeuroGuia',
           debugShowCheckedModeBanner: false,
           theme: themeProvider.currentTheme,
           home: showOnboarding ? const OnboardingScreen() : const AuthGate(),

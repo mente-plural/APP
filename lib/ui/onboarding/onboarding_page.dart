@@ -80,7 +80,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 data: _pagesData[_currentPage],
               ),
             ),
-            const FixedOnboardingTitle(title: 'Mente Plural'),
+            const FixedOnboardingTitle(title: 'NeuroGuia'),
             OnboardingNavigation(
               itemCount: _pagesData.length,
               currentIndex: _currentPage,

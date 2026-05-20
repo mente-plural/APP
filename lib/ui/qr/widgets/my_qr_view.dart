@@ -154,7 +154,7 @@ class MyQrView extends StatelessWidget {
                           fontSize: 15, fontWeight: FontWeight.bold)),
                   onPressed: () {
                     if (user?.id != null) {
-                      Share.share('Olá! Este é meu ID de suporte no Mente Plural: ${user!.id}');
+                      Share.share('Olá! Este é meu ID de suporte no NeuroGuia: ${user!.id}');
                     }
                   },
                 ),

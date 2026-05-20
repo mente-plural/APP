@@ -154,7 +154,7 @@ class _ExternalProfilePageState extends State<ExternalProfilePage> {
             icon: Icons.share_rounded,
             onTap: () {
               if (_user != null) {
-                Share.share('Confira o perfil de ${_user!.name ?? 'Usuário'} no Mente Plural!\nContato: ${_user!.email}');
+                Share.share('Confira o perfil de ${_user!.name ?? 'Usuário'} no NeuroGuia!\nContato: ${_user!.email}');
               }
             },
           ),
