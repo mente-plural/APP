@@ -9,11 +9,6 @@ jobs:
     name: Build e Deploy iOS App Store
     runs-on: macos-latest
 
-    env:
-      APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
-      APP_STORE_KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
-      APP_STORE_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
-
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
@@ -35,34 +30,42 @@ jobs:
           flutter pub get
 
       - name: Criar Chaveiro e Gerar Certificado na Nuvem
+        env:
+          APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
+          APP_STORE_KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
+          APP_STORE_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
         run: |
-          # 1. Instala pulando a trava de ambiente gerenciado externo
           pip3 install codemagic-cli-tools --break-system-packages
-          
-          # 2. Adiciona o caminho dos binários do Python ao PATH do GitHub Actions
           echo "$(python3 -m site --user-base)/bin" >> $GITHUB_PATH
           export PATH="$(python3 -m site --user-base)/bin:$PATH"
           
-          # 3. Inicializa o chaveiro seguro na máquina virtual
           keychain initialize
           
-          # 4. Cria e busca o certificado de distribuição na Apple
+          # Buscamos os arquivos vinculando diretamente ao Bundle ID do seu app
           app-store-connect fetch-signing-files com.maoamiga.app.app \
             --issuer-id="$APP_STORE_ISSUER_ID" \
             --key-id="$APP_STORE_KEY_ID" \
             --private-key="$APP_STORE_CONNECT_KEY" \
-            --create \
             --type=IOS_APP_STORE \
-            --platform=IOS
+            --platform=IOS \
+            --create
           
-          # 5. Vincula o certificado ao chaveiro local do Mac
           keychain add-certificates
 
       - name: Compilar o pacote IPA (Release)
+        env:
+          APP_STORE_KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
+          APP_STORE_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
         run: |
-          flutter build ipa --release --export-options-plist=ios/export_options.plist
+          flutter build ipa --release \
+            --export-options-plist=ios/export_options.plist \
+            --api-key-id="$APP_STORE_KEY_ID" \
+            --api-issuer="$APP_STORE_ISSUER_ID"
 
       - name: Enviar o App para o TestFlight
+        env:
+          APP_STORE_KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
+          APP_STORE_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
         run: |
           xcrun altool --upload-app --type ios \
             -f build/ios/ipa/*.ipa \
