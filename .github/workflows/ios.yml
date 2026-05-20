@@ -29,28 +29,26 @@ jobs:
           flutter clean
           flutter pub get
 
-      - name: Criar Chaveiro e Gerar Certificado na Nuvem
+      - name: Instalar Certificado de Distribuição Apple Nativamente
         env:
-          APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
-          APP_STORE_KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
-          APP_STORE_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
+          P12_BASE64: ${{ secrets.APP_STORE_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.APP_STORE_CERTIFICATE_PASSWORD }}
         run: |
-          pip3 install codemagic-cli-tools --break-system-packages
-          echo "$(python3 -m site --user-base)/bin" >> $GITHUB_PATH
-          export PATH="$(python3 -m site --user-base)/bin:$PATH"
-          
-          keychain initialize
-          
-          # Buscamos os arquivos vinculando diretamente ao Bundle ID do seu app
-          app-store-connect fetch-signing-files com.maoamiga.app.app \
-            --issuer-id="$APP_STORE_ISSUER_ID" \
-            --key-id="$APP_STORE_KEY_ID" \
-            --private-key="$APP_STORE_CONNECT_KEY" \
-            --type=IOS_APP_STORE \
-            --platform=IOS \
-            --create
-          
-          keychain add-certificates
+          # 1. Cria caminhos temporários seguros
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # 2. Decodifica o texto Base64 de volta para o arquivo .p12 binário
+          echo -n "$P12_BASE64" | base64 --decode --output $CERTIFICATE_PATH
+
+          # 3. Cria e configura o chaveiro nativo do macOS na máquina virtual
+          security create-keychain -p "" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "" $KEYCHAIN_PATH
+
+          # 4. Importa o certificado para o chaveiro do sistema
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
 
       - name: Compilar o pacote IPA (Release)
         env:
