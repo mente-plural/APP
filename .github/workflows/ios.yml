@@ -9,6 +9,11 @@ jobs:
     name: Build e Deploy iOS App Store
     runs-on: macos-latest
 
+    env:
+      APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
+      APP_STORE_KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
+      APP_STORE_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
+
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
@@ -29,24 +34,33 @@ jobs:
           flutter clean
           flutter pub get
 
-      - name: Configurar chaves de Assinatura (Apple API Key)
-        env:
-          APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
-          KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
+      - name: Criar Chaveiro e Gerar Certificado na Nuvem
+        # Instalamos as ferramentas CLI do Codemagic na máquina do GitHub para gerenciar o chaveiro do Mac virtual
         run: |
-          mkdir -p ~/private_keys
-          echo "$APP_STORE_CONNECT_KEY" > ~/private_keys/AuthKey_$KEY_ID.p8
+          pip3 install codemagic-cli-tools
+          
+          # 1. Inicializa um chaveiro seguro na máquina virtual
+          keychain initialize
+          
+          # 2. Busca ou CRIA (--create) o certificado de distribuição direto na Apple via API
+          app-store-connect fetch-signing-files com.maoamiga.app.app \
+            --issuer-id="$APP_STORE_ISSUER_ID" \
+            --key-id="$APP_STORE_KEY_ID" \
+            --private-key="$APP_STORE_CONNECT_KEY" \
+            --create \
+            --type=IOS_APP_STORE \
+            --platform=IOS
+          
+          # 3. Adiciona o certificado gerado ao chaveiro do Mac para o Xcode enxergar
+          keychain add-certificates
 
       - name: Compilar o pacote IPA (Release)
         run: |
           flutter build ipa --release --export-options-plist=ios/export_options.plist
 
       - name: Enviar o App para o TestFlight
-        env:
-          KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
-          ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
         run: |
           xcrun altool --upload-app --type ios \
             -f build/ios/ipa/*.ipa \
-            --apiKey "$KEY_ID" \
-            --apiIssuer "$ISSUER_ID"
+            --apiKey "$APP_STORE_KEY_ID" \
+            --apiIssuer "$APP_STORE_ISSUER_ID"
