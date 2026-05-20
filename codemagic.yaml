@@ -1,0 +1,44 @@
+workflows:
+  ios-release:
+    name: Mente Plural iOS Release
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      xcode: latest
+      groups:
+        - apple_auth
+      vars:
+        BUNDLE_ID: "com.maoamiga.app.app"
+        XCODE_SCHEME: "Runner"
+    scripts:
+      - name: Set up code signing settings
+        script: |
+          keychain initialize
+          openssl genrsa -out cert_key 2048
+          export CERTIFICATE_PRIVATE_KEY=$(cat cert_key)
+          
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+          
+          keychain add-certificates
+          xcode-project use-profiles
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Build iOS (IPA)
+        script: |
+          flutter build ipa --release \
+            --export-options-plist="/Users/builder/export_options.plist"
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      email:
+        recipients:
+          - contato@lmagalhaes.com
+      app_store_connect:
+        # Usando os nomes das variáveis que você tem no grupo apple_auth
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: true

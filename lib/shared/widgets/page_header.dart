@@ -4,43 +4,48 @@ class PageHeader extends StatelessWidget {
   final String title;
   final List<Widget>? actions;
   final Widget? leading;
+  final bool center;
 
   const PageHeader({
     super.key,
     required this.title,
     this.actions,
     this.leading,
+    this.center = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        if (leading != null) ...[
-          leading!,
-          const SizedBox(width: 16),
-        ],
-        Expanded(
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.onSurface,
-            ),
+    // Usamos NavigationToolbar para garantir que o título possa ser centralizado 
+    // em relação à largura total do container, ignorando o tamanho dos ícones laterais (se couber).
+    // Isso é o comportamento padrão de uma AppBar e garante um alinhamento visual correto.
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: NavigationToolbar(
+        leading: leading,
+        middle: Text(
+          title,
+          textAlign: center ? TextAlign.center : TextAlign.start,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: theme.colorScheme.onSurface,
           ),
         ),
-        if (actions != null) ...[
-          const SizedBox(width: 16),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: actions!,
-          ),
-        ],
-      ],
+        trailing: (actions != null && actions!.isNotEmpty)
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: actions!,
+              )
+            : null,
+        centerMiddle: center,
+        middleSpacing: 16.0,
+      ),
     );
   }
 }

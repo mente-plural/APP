@@ -1,18 +1,16 @@
 import 'dart:io' show Platform;
 
-import 'package:app/ui/profile_selection/profile_selection_page.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import '../../app_theme.dart';
 import '../../core/auth/auth_service.dart';
 import '../../shared/utils/ui_utils.dart';
-import '../../shared/widgets/custom_text_field.dart';
 import '../../shared/widgets/primary_button.dart';
-import '../../shared/widgets/page_header.dart';
-import '../home/home_page.dart';
 import '../register/register_page.dart';
+import './widgets/login_header.dart';
+import './widgets/login_form.dart';
+import './widgets/social_auth_section.dart';
+import './widgets/login_footer.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -92,9 +90,8 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(fontSize: 14),
                   ),
                   const SizedBox(height: 16),
-                  CustomTextField(
-                    label: 'E-mail',
-                    hint: 'seu@email.com',
+                  TextField(
+                    decoration: const InputDecoration(labelText: 'E-mail', hintText: 'seu@email.com'),
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                   ),
@@ -104,24 +101,21 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(fontSize: 14),
                   ),
                   const SizedBox(height: 16),
-                  CustomTextField(
-                    label: 'Código',
-                    hint: 'Código de 32 caracteres',
+                  TextField(
+                    decoration: const InputDecoration(labelText: 'Código', hintText: 'Código de 32 caracteres'),
                     controller: codeController,
                   ),
                   const SizedBox(height: 12),
-                  CustomTextField(
-                    label: 'Nova Senha',
-                    hint: '********',
+                  TextField(
+                    decoration: const InputDecoration(labelText: 'Nova Senha', hintText: '********'),
                     controller: newPasswordController,
-                    isPassword: true,
+                    obscureText: true,
                   ),
                   const SizedBox(height: 12),
-                  CustomTextField(
-                    label: 'Confirmar Nova Senha',
-                    hint: '********',
+                  TextField(
+                    decoration: const InputDecoration(labelText: 'Confirmar Nova Senha', hintText: '********'),
                     controller: confirmPasswordController,
-                    isPassword: true,
+                    obscureText: true,
                   ),
                 ],
               ],
@@ -137,7 +131,6 @@ class _LoginPageState extends State<LoginPage> {
                   ? null
                   : () async {
                       if (!emailSent) {
-                        // Fluxo de envio de email
                         final email = emailController.text.trim();
                         if (email.isEmpty) {
                           UiUtils.showSnackBar(context, "Informe seu e-mail.", isError: true);
@@ -168,7 +161,6 @@ class _LoginPageState extends State<LoginPage> {
                           }
                         }
                       } else {
-                        // Fluxo de redefinição de senha
                         final code = codeController.text.trim();
                         final newPass = newPasswordController.text;
                         final confirmPass = confirmPasswordController.text;
@@ -251,154 +243,47 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const PageHeader(title: 'Entrar'),
-              const SizedBox(height: 8),
-              Text(
-                'Bem-vindo de volta!',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
-                ),
-              ),
+              const LoginHeader(),
               const SizedBox(height: 48),
-
-            CustomTextField(
-              label: 'Email',
-              hint: 'seu@email.com',
-              controller: _emailController,
-              icon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
-              textInputAction: TextInputAction.next,
-            ),
-            const SizedBox(height: 24),
-
-            CustomTextField(
-              label: 'Senha',
-              hint: '********',
-              controller: _passwordController,
-              icon: Icons.lock_outline,
-              isPassword: true,
-              textInputAction: TextInputAction.done,
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: _showForgotPasswordDialog,
-                child: Text(
-                  'Esqueci minha senha',
-                  style: TextStyle(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+              LoginForm(
+                emailController: _emailController,
+                passwordController: _passwordController,
+                onForgotPassword: _showForgotPasswordDialog,
               ),
-            ),
-            const SizedBox(height: 16),
-
-            PrimaryButton(
-              label: 'Entrar',
-              onPressed: _handleEmailSignIn,
-              isLoading: _isLoading,
-            ),
-
-            const SizedBox(height: 24),
-            Text('ou continue com', style: theme.textTheme.bodyMedium),
-            const SizedBox(height: 24),
-
-            _SocialAuthButton(
-              icon: Icons.g_mobiledata,
-              label: 'Continuar com Google',
-              onPressed: _handleGoogleSignIn,
-              isLoading: _isLoading,
-            ),
-
-            if (!kIsWeb && Platform.isIOS) ...[
-              const SizedBox(height: 12),
-              _SocialAuthButton(
-                icon: Icons.apple,
-                label: 'Continuar com Apple',
-                onPressed: () {},
+              const SizedBox(height: 16),
+              PrimaryButton(
+                label: 'Entrar',
+                onPressed: _handleEmailSignIn,
                 isLoading: _isLoading,
               ),
+              const SizedBox(height: 24),
+              SocialAuthSection(
+                isLoading: _isLoading,
+                onGoogleSignIn: _handleGoogleSignIn,
+                onAppleSignIn: () {}, // Implement as needed
+              ),
+              const SizedBox(height: 32),
+              LoginFooter(
+                onCreateAccount: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const RegisterPage()),
+                  );
+                },
+              ),
             ],
-
-            const SizedBox(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('Ainda não tem conta? '),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const RegisterPage()),
-                    );
-                  },
-                  child: const Text(
-                    'Criar conta',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    ));
-  }
-}
-
-class _SocialAuthButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-  final bool isLoading;
-
-  const _SocialAuthButton({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-    this.isLoading = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return OutlinedButton.icon(
-      onPressed: isLoading ? null : onPressed,
-      icon: isLoading
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : Icon(icon, color: theme.colorScheme.onSurface),
-      label: Text(
-        label,
-        style: TextStyle(
-          color: theme.colorScheme.onSurface.withOpacity(
-            isLoading ? 0.5 : 1.0,
           ),
-        ),
-      ),
-      style: OutlinedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 56),
-        side: BorderSide(color: theme.dividerColor),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusLG),
         ),
       ),
     );
   }
 }
+

@@ -7,6 +7,12 @@ import '../../models/user_model.dart';
 import '../../shared/utils/ui_utils.dart';
 import '../../shared/widgets/page_header.dart';
 import '../../shared/widgets/custom_text_field.dart';
+import 'widgets/profile_avatar.dart';
+import 'widgets/info_row.dart';
+import 'widgets/profile_badge.dart';
+import 'widgets/profile_section.dart';
+import 'widgets/neurodivergencies_section.dart';
+import 'widgets/profile_type_selector.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -20,14 +26,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
   bool _isEditing = false;
   bool _isSaving = false;
   bool _isUploading = false;
-
-  final List<String> _availableColors = [
-    'Verde',
-    'Azul',
-    'Roxo',
-    'Laranja',
-    'Padrão',
-  ];
 
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
@@ -149,7 +147,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     }
   }
 
-
   Future<void> _confirmLogout() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -177,21 +174,15 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
 
     if (confirm == true && mounted) {
       await _authService.logout();
-      // A navegação de volta para a LoginPage será tratada automaticamente pelo AuthGate
-      // ao detectar que o fluxo de usuário no AuthService tornou-se null.
     }
   }
 
   String _getProfileLabel(String? type) {
     switch (type) {
-      case 'FOR_ME':
-        return 'Para Mim';
-      case 'TUTOR':
-        return 'Tutor ou Familiar';
-      case 'LEARN_MORE':
-        return 'Aprender Mais';
-      default:
-        return 'Perfil do Usuário';
+      case 'FOR_ME': return 'Para Mim';
+      case 'TUTOR': return 'Tutor ou Familiar';
+      case 'LEARN_MORE': return 'Aprender Mais';
+      default: return 'Perfil do Usuário';
     }
   }
 
@@ -207,9 +198,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             final user = snapshot.data;
 
             if (user == null) {
-              return Center(
-                child: CircularProgressIndicator(color: theme.colorScheme.primary),
-              );
+              return Center(child: CircularProgressIndicator(color: theme.colorScheme.primary));
             }
 
             return Column(
@@ -248,11 +237,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
       title: _isEditing ? "Editar Perfil" : "Meu Perfil",
       actions: _isEditing
           ? [
-              HeaderActionIcon(
-                icon: Icons.close,
-                tooltip: 'Cancelar',
-                onTap: _cancelEditing,
-              ),
+              HeaderActionIcon(icon: Icons.close, tooltip: 'Cancelar', onTap: _cancelEditing),
             ]
           : [
               HeaderActionIcon(
@@ -273,219 +258,121 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
   Widget _buildEditForm(UserModel user, ThemeData theme) {
     return Column(
       children: [
-        _buildAvatarEdit(user, theme),
+        ProfileAvatar(
+          photoUrl: user.photoUrl,
+          name: user.name ?? '',
+          email: user.email,
+          radius: 50,
+          isEditing: true,
+          isUploading: _isUploading,
+          onEditTap: _pickAndUploadImage,
+        ),
         const SizedBox(height: 24),
-        _buildPersonalInfoEdit(user, theme),
+        ProfileSection(
+          title: 'Informações Pessoais',
+          child: Column(
+            children: [
+              CustomTextField(
+                label: 'Nome completo',
+                hint: 'Seu nome',
+                controller: _nameController,
+                icon: Icons.person_outline,
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                label: 'Email',
+                hint: 'seu@email.com',
+                controller: TextEditingController(text: user.email),
+                icon: Icons.email_outlined,
+                enabled: false,
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                label: 'Telefone',
+                hint: '(00) 0 0000-0000',
+                controller: _phoneController,
+                icon: Icons.phone_outlined,
+                keyboardType: TextInputType.phone,
+              ),
+            ],
+          ),
+        ),
         const SizedBox(height: 16),
-        _buildProfileTypeEdit(theme),
+        ProfileSection(
+          title: 'Tipo de Perfil',
+          child: ProfileTypeSelector(
+            selectedType: _selectedProfileType,
+            options: _profileTypes,
+            onTypeSelected: (val) => setState(() => _selectedProfileType = val),
+          ),
+        ),
         const SizedBox(height: 16),
-        // _buildColorPreferenceEdit(theme),
-        // const SizedBox(height: 16),
-        // _buildAccessibilityEdit(theme),
-        // const SizedBox(height: 16),
-        _buildNeurodivergenciesEdit(theme),
+        ProfileSection(
+          title: 'Neurodivergências',
+          subtitle: 'Selecione as que se aplicam',
+          child: NeurodivergenciesSection(
+            neurodivergencies: _selectedNeurodivergencies,
+            isEditing: true,
+            availableOptions: _availableNeurodivergencies,
+            onSelected: (item, val) {
+              setState(() {
+                val ? _selectedNeurodivergencies.add(item) : _selectedNeurodivergencies.remove(item);
+              });
+            },
+          ),
+        ),
         const SizedBox(height: 32),
       ],
     );
   }
 
-  Widget _buildColorPreferenceEdit(ThemeData theme) {
-    return _buildCard(
-      theme,
-      title: 'Cor Preferida',
-      child: Wrap(
-        spacing: 12,
-        children: _availableColors.map((color) {
-          final isSelected = _selectedColor == color || (_selectedColor == null && color == 'Padrão');
-          return ChoiceChip(
-            label: Text(color),
-            selected: isSelected,
-            onSelected: (selected) {
-              if (selected) setState(() => _selectedColor = color == 'Padrão' ? null : color);
-            },
-            selectedColor: theme.colorScheme.primary.withOpacity(0.2),
-            labelStyle: TextStyle(
-              color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
-          );
-        }).toList(),
+  Widget _buildMainCard(UserModel user, ThemeData theme) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: theme.dividerColor),
       ),
-    );
-  }
-
-  Widget _buildAccessibilityEdit(ThemeData theme) {
-    return _buildCard(
-      theme,
-      title: 'Acessibilidade',
       child: Column(
         children: [
-          SwitchListTile(
-            title: const Text('Alto Contraste'),
-            subtitle: const Text('Melhora a visibilidade das cores'),
-            value: _highContrast,
-            onChanged: (val) => setState(() => _highContrast = val),
-            activeColor: theme.colorScheme.primary,
-            contentPadding: EdgeInsets.zero,
+          ProfileAvatar(photoUrl: user.photoUrl, name: user.name ?? '', email: user.email),
+          const SizedBox(height: 14),
+          Text(
+            user.name ?? 'Usuário',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface),
           ),
-          const Divider(),
           const SizedBox(height: 8),
-          Row(
-            children: [
-              const Text('Tamanho da Fonte'),
-              const Spacer(),
-              Text('${(_fontSizeMultiplier * 100).toInt()}%', style: const TextStyle(fontWeight: FontWeight.bold)),
-            ],
-          ),
-          Slider(
-            value: _fontSizeMultiplier,
-            min: 0.8,
-            max: 1.5,
-            divisions: 7,
-            label: '${(_fontSizeMultiplier * 100).toInt()}%',
-            onChanged: (val) => setState(() => _fontSizeMultiplier = val),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAvatarEdit(UserModel user, ThemeData theme) {
-    final initials = (user.name != null && user.name!.isNotEmpty)
-        ? user.name![0].toUpperCase()
-        : user.email.isNotEmpty ? user.email[0].toUpperCase() : '?';
-
-    return Center(
-      child: Stack(
-        children: [
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: theme.colorScheme.primary,
-            backgroundImage: (user.photoUrl != null && user.photoUrl!.isNotEmpty)
-                ? NetworkImage(user.photoUrl!)
-                : null,
-            child: (user.photoUrl == null || user.photoUrl!.isEmpty)
-                ? Text(
-                    initials,
-                    style: TextStyle(fontSize: 38, fontWeight: FontWeight.bold, color: theme.colorScheme.onPrimary),
-                  )
-                : null,
-          ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: GestureDetector(
-              onTap: _isUploading ? null : _pickAndUploadImage,
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: theme.scaffoldBackgroundColor, width: 2),
-                ),
-                child: _isUploading
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Icon(Icons.camera_alt, size: 18, color: Colors.white),
+          ProfileBadge(label: _getProfileLabel(user.preferences.profileType)),
+          const SizedBox(height: 24),
+          Divider(color: theme.dividerColor, height: 1),
+          const SizedBox(height: 20),
+          InfoRow(icon: Icons.email_outlined, label: 'Email', value: user.email),
+          const SizedBox(height: 16),
+          InfoRow(icon: Icons.phone_outlined, label: 'Telefone', value: user.phone ?? 'Não informado'),
+          const SizedBox(height: 16),
+          InfoRow(icon: Icons.calendar_today_outlined, label: 'Membro desde', value: DateFormat('dd/MM/yyyy').format(user.createdAt)),
+          if (user.preferences.neurodivergencies.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Divider(color: theme.dividerColor, height: 1),
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text('Condições / Neurodivergências', style: TextStyle(fontSize: 11, color: theme.textTheme.bodyMedium?.color)),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPersonalInfoEdit(UserModel user, ThemeData theme) {
-    return _buildCard(
-      theme,
-      title: 'Informações Pessoais',
-      child: Column(
-        children: [
-          CustomTextField(
-            label: 'Nome completo',
-            hint: 'Seu nome',
-            controller: _nameController,
-            icon: Icons.person_outline,
-            textCapitalization: TextCapitalization.words,
-          ),
-          const SizedBox(height: 16),
-          CustomTextField(
-            label: 'Email',
-            hint: 'seu@email.com',
-            controller: TextEditingController(text: user.email),
-            icon: Icons.email_outlined,
-            enabled: false,
-          ),
-          const SizedBox(height: 16),
-          CustomTextField(
-            label: 'Telefone',
-            hint: '(00) 0 0000-0000',
-            controller: _phoneController,
-            icon: Icons.phone_outlined,
-            keyboardType: TextInputType.phone,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileTypeEdit(ThemeData theme) {
-    return _buildCard(
-      theme,
-      title: 'Tipo de Perfil',
-      child: Column(
-        children: _profileTypes.map((type) {
-          final isSelected = _selectedProfileType == type['value'];
-          final isDevelopment = type['value'] != 'FOR_ME';
-          return _buildSelectableTile(
-            theme,
-            label: type['label']!,
-            isSelected: isSelected,
-            isDevelopment: isDevelopment,
-            onTap: isDevelopment
-                ? () {}
-                : () {
-                    setState(() {
-                      _selectedProfileType = type['value'];
-                    });
-                  },
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildNeurodivergenciesEdit(ThemeData theme) {
-    return _buildCard(
-      theme,
-      title: 'Neurodivergências',
-      subtitle: 'Selecione as que se aplicam',
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: _availableNeurodivergencies.map((item) {
-          final isSelected = _selectedNeurodivergencies.contains(item);
-          return FilterChip(
-            label: Text(
-              item,
-              style: TextStyle(
-                color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.7),
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: NeurodivergenciesSection(neurodivergencies: user.preferences.neurodivergencies),
             ),
-            selected: isSelected,
-            onSelected: (val) {
-              setState(() {
-                val ? _selectedNeurodivergencies.add(item) : _selectedNeurodivergencies.remove(item);
-              });
-            },
-            backgroundColor: theme.colorScheme.surface,
-            selectedColor: theme.colorScheme.primary.withOpacity(0.15),
-            checkmarkColor: theme.colorScheme.primary,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          );
-        }).toList(),
+          ],
+        ],
       ),
     );
   }
@@ -527,83 +414,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildCard(ThemeData theme, {required String title, String? subtitle, required Widget child}) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: theme.dividerColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          if (subtitle != null) ...[
-            const SizedBox(height: 4),
-            Text(subtitle, style: theme.textTheme.bodySmall),
-          ],
-          const SizedBox(height: 16),
-          child,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSelectableTile(ThemeData theme,
-      {required String label, required bool isSelected, required VoidCallback onTap, bool isDevelopment = false}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? theme.colorScheme.primary.withOpacity(0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-              color: isSelected
-                  ? theme.colorScheme.primary
-                  : (isDevelopment ? theme.dividerColor.withOpacity(0.3) : theme.dividerColor)),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: isSelected
-                  ? theme.colorScheme.primary
-                  : (isDevelopment ? theme.dividerColor.withOpacity(0.3) : theme.dividerColor),
-              size: 20,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(color: isDevelopment ? theme.disabledColor : null),
-              ),
-            ),
-            if (isDevelopment)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  "Em breve",
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildLogoutButton(ThemeData theme) {
     return InkWell(
       onTap: _confirmLogout,
@@ -627,202 +437,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildMainCard(UserModel user, ThemeData theme) {
-    final initials = (user.name != null && user.name!.isNotEmpty)
-        ? user.name![0].toUpperCase()
-        : user.email.isNotEmpty ? user.email[0].toUpperCase() : '?';
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: theme.dividerColor),
-      ),
-      child: Column(
-        children: [
-          _buildAvatar(user, theme, initials),
-          const SizedBox(height: 14),
-          Text(
-            user.name ?? 'Usuário',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface),
-          ),
-          const SizedBox(height: 8),
-          _buildBadge(_getProfileLabel(user.preferences.profileType), theme),
-          const SizedBox(height: 24),
-          Divider(color: theme.dividerColor, height: 1),
-          const SizedBox(height: 20),
-          _buildInfoRow(theme, Icons.email_outlined, 'Email', user.email),
-          const SizedBox(height: 16),
-          _buildInfoRow(theme, Icons.phone_outlined, 'Telefone', user.phone ?? 'Não informado'),
-          const SizedBox(height: 16),
-          _buildInfoRow(theme, Icons.calendar_today_outlined, 'Membro desde', DateFormat('dd/MM/yyyy').format(user.createdAt)),
-          if (user.preferences.neurodivergencies.isNotEmpty) ...[
-            const SizedBox(height: 20),
-            Divider(color: theme.dividerColor, height: 1),
-            const SizedBox(height: 16),
-            _buildNeurodivergenciesSection(user, theme),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAvatar(UserModel user, ThemeData theme, String initials) {
-    if (user.photoUrl != null && user.photoUrl!.isNotEmpty) {
-      return CircleAvatar(radius: 40, backgroundImage: NetworkImage(user.photoUrl!));
-    }
-    return Container(
-      width: 80,
-      height: 80,
-      decoration: BoxDecoration(color: theme.colorScheme.primary, shape: BoxShape.circle),
-      child: Center(
-        child: Text(initials, style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: theme.colorScheme.onPrimary)),
-      ),
-    );
-  }
-
-  Widget _buildBadge(String label, ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.colorScheme.primary.withOpacity(0.35)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: theme.colorScheme.primary, letterSpacing: 0.4),
-      ),
-    );
-  }
-
-  Widget _buildAccessibilitySection(UserModel user, ThemeData theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Acessibilidade', style: TextStyle(fontSize: 11, color: theme.textTheme.bodyMedium?.color)),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            _buildSmallInfoCard(
-              theme,
-              icon: Icons.contrast,
-              label: 'Alto Contraste',
-              value: user.preferences.highContrast ? 'Ativado' : 'Desativado',
-            ),
-            const SizedBox(width: 12),
-            _buildSmallInfoCard(
-              theme,
-              icon: Icons.format_size,
-              label: 'Tam. Fonte',
-              value: '${(user.preferences.fontSizeMultiplier * 100).toInt()}%',
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSmallInfoCard(ThemeData theme, {required IconData icon, required String label, required String value}) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: theme.dividerColor.withOpacity(0.5)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, size: 16, color: theme.colorScheme.primary),
-            const SizedBox(height: 8),
-            Text(label, style: TextStyle(fontSize: 10, color: theme.textTheme.bodyMedium?.color)),
-            Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNeurodivergenciesSection(UserModel user, ThemeData theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Condições / Neurodivergências', style: TextStyle(fontSize: 11, color: theme.textTheme.bodyMedium?.color)),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: user.preferences.neurodivergencies
-              .map((item) => _buildChip(item, color: theme.colorScheme.primary))
-              .toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildChip(String label, {required Color color, Color? bg}) {
-    final bgColor = bg ?? color;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: bgColor.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: bgColor.withOpacity(0.35)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: color,
-          letterSpacing: 0.3,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(ThemeData theme, IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Container(
-          width: 38,
-          height: 38,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withOpacity(0.10),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, size: 18, color: theme.colorScheme.primary),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(fontSize: 11, color: theme.textTheme.bodyMedium?.color),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

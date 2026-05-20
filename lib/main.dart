@@ -1,3 +1,4 @@
+import 'package:app/core/providers/focus_provider.dart';
 import 'package:app/core/auth_gate.dart';
 import 'package:app/core/providers/navigation_provider.dart';
 import 'package:app/core/providers/theme_provider.dart';
@@ -22,11 +23,13 @@ void main() async {
   // final bool seenOnboarding = prefs.getBool('seen_onboarding') ?? false;
   final bool seenOnboarding = false;
 
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
+        ChangeNotifierProvider(create: (_) => FocusProvider()),
       ],
       child: App(showOnboarding: !seenOnboarding),
     ),
@@ -43,7 +46,7 @@ class App extends StatelessWidget {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
         return MaterialApp(
-          title: 'Mão Amiga',
+          title: 'Mente Plural',
           debugShowCheckedModeBanner: false,
           theme: themeProvider.currentTheme,
           home: showOnboarding ? const OnboardingScreen() : const AuthGate(),

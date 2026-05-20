@@ -1,8 +1,6 @@
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import '../focus_page.dart';
+import 'package:provider/provider.dart';
+import '../../../core/providers/focus_provider.dart';
 
 class FocusCard extends StatelessWidget {
   const FocusCard({super.key});
@@ -11,83 +9,97 @@ class FocusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
+    final focusProvider = Provider.of<FocusProvider>(context);
+
+    int currentCycle = (focusProvider.completedCycles % 4) + 1;
+    bool isFocus = focusProvider.status == PomodoroStatus.focus;
 
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1), width: 1),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withValues(alpha: 0.03),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            "CICLO POMODORO",
-            style: TextStyle(
-              color: textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.5,
-            ),
-          ),
-          const SizedBox(height: 24),
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              StepPomodoro(number: "1", label: "Foco", time: "25 min", isActive: true),
-              StepPomodoro(number: "2", label: "Pausa\nCurta", time: "5 min", isActive: false),
-              StepPomodoro(number: "3", label: "Foco", time: "25 min", isActive: false),
-              StepPomodoro(number: "4", label: "Pausa\nCurta", time: "5 min", isActive: false),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Repita 4 vezes",
-                style: TextStyle(color: textTheme.bodyMedium?.color?.withValues(alpha: 0.6), fontSize: 13, fontStyle: FontStyle.italic),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "CICLO ATUAL",
+                    style: TextStyle(
+                      color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.5),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 10,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        "$currentCycle",
+                        style: TextStyle(
+                          color: colorScheme.primary,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      Text(
+                        " / 4",
+                        style: TextStyle(
+                          color: theme.disabledColor.withValues(alpha: 0.5),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              _buildDot(context, isActive: true),
-              _buildDot(context, isActive: false),
-              _buildDot(context, isActive: false),
-              _buildDot(context, isActive: false),
+              _buildModernIndicator(focusProvider, colorScheme),
             ],
           ),
-          const SizedBox(height: 24),
-          Divider(color: theme.dividerColor.withValues(alpha: 0.1), thickness: 1, height: 1),
-          const SizedBox(height: 24),
-          Text(
-            "PAUSA LONGA",
-            style: TextStyle(
-              color: textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.5,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "Após 4 ciclos, faça uma pausa longa.",
-            style: TextStyle(color: textTheme.bodyMedium?.color?.withValues(alpha: 0.6), fontSize: 14),
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 32),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: colorScheme.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
+              color: theme.scaffoldBackgroundColor,
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: Text(
-              "15–30 min",
-              style: TextStyle(
-                color: colorScheme.primary,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
+            child: Row(
+              children: [
+                Icon(
+                  isFocus ? Icons.lightbulb_outline : Icons.self_improvement,
+                  size: 18,
+                  color: isFocus ? Colors.orange : colorScheme.primary,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    isFocus 
+                      ? "Mantenha o ritmo! Cada minuto conta." 
+                      : "Respire fundo e relaxe os ombros.",
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -95,17 +107,19 @@ class FocusCard extends StatelessWidget {
     );
   }
 
-  Widget _buildDot(BuildContext context, {required bool isActive}) {
-    final theme = Theme.of(context);
+  Widget _buildModernIndicator(FocusProvider provider, ColorScheme colorScheme) {
+    bool isFocus = provider.status == PomodoroStatus.focus;
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 3),
-      width: 6,
-      height: 6,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isActive ? theme.colorScheme.primary : theme.dividerColor.withValues(alpha: 0.2),
-        shape: BoxShape.circle,
+        color: (isFocus ? Colors.orange : colorScheme.primary).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Icon(
+        isFocus ? Icons.local_fire_department_rounded : Icons.spa_rounded,
+        color: isFocus ? Colors.orange : colorScheme.primary,
+        size: 32,
       ),
     );
   }
 }
-

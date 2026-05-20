@@ -1,10 +1,10 @@
-import 'package:app/shared/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../app_theme.dart';
 import '../../core/auth/auth_service.dart';
-import '../../shared/widgets/primary_button.dart';
-import '../../shared/widgets/secondary_button.dart';
+import './widgets/selection_card.dart';
+import './widgets/profile_selection_header.dart';
+import './widgets/profile_selection_footer.dart';
 
 class ProfileSelectionPage extends StatefulWidget {
   const ProfileSelectionPage({super.key});
@@ -60,15 +60,10 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
         if (mounted) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('seen_onboarding', true);
-          // A navegação agora é feita automaticamente pelo AuthGate
-          // pois o ProfileProvider irá reagir à mudança do usuário.
         }
       } catch (e) {
         if (mounted) {
           _showError("Erro ao salvar perfil: $e");
-        }
-      } finally {
-        if (mounted) {
         }
       }
     }
@@ -96,9 +91,10 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
-              const SizedBox(height: 12),
-              _buildProgressBar(),
+              ProfileSelectionHeader(
+                currentStep: currentStep,
+                title: _getHeaderTitle(),
+              ),
               const SizedBox(height: 40),
               Expanded(
                 child: SingleChildScrollView(
@@ -108,7 +104,11 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
                   ),
                 ),
               ),
-              _buildFooter(),
+              ProfileSelectionFooter(
+                currentStep: currentStep,
+                onNext: nextStep,
+                onPrevious: previousStep,
+              ),
             ],
           ),
         ),
@@ -116,63 +116,24 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
     );
   }
 
-  Widget _buildHeader() {
-    String title = "";
-    if (currentStep == 1) title = "Como podemos te chamar?";
-    if (currentStep == 2) title = "Quem é você?";
-    if (currentStep == 3) title = "Como você prefere as cores?";
-    if (currentStep == 4) title = "Sua identificação";
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: Text(
-            title,
-            style: const TextStyle(
-              color: AppColors.textAccentEscuro,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        Text(
-          "$currentStep de 4",
-          style: const TextStyle(
-            color: AppColors.primaryEscuro,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProgressBar() {
-    return Container(
-      height: 6,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceEscuro,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: FractionallySizedBox(
-        alignment: Alignment.centerLeft,
-        widthFactor: currentStep / 4,
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.primaryEscuro,
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      ),
-    );
+  String _getHeaderTitle() {
+    switch (currentStep) {
+      case 1: return "Como podemos te chamar?";
+      case 2: return "Quem é você?";
+      case 3: return "Como você prefere as cores?";
+      case 4: return "Sua identificação";
+      default: return "";
+    }
   }
 
   Widget _buildCurrentStepContent() {
-    if (currentStep == 1) return _stepName();
-    if (currentStep == 2) return _stepRole();
-    if (currentStep == 3) return _stepColor();
-    return _stepNeuro();
+    switch (currentStep) {
+      case 1: return _stepName();
+      case 2: return _stepRole();
+      case 3: return _stepColor();
+      case 4: return _stepNeuro();
+      default: return const SizedBox.shrink();
+    }
   }
 
   Widget _stepName() {
@@ -207,6 +168,7 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
       ],
     );
   }
+
   Widget _stepRole() {
     final options = [
       {'label': 'Paciente', 'value': 'FOR_ME'},
@@ -220,7 +182,7 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
         final String value = opt['value'] as String;
         final bool isPaciente = value == 'FOR_ME';
 
-        return _selectionCard(
+        return SelectionCard(
           title: opt['label'] as String,
           isSelected: selectedRole == value,
           isDevelopment: !isPaciente,
@@ -248,7 +210,7 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
         final bool isTemaPronto =
             opt == 'Tema Claro' || opt == 'Tema Escuro' || opt == 'Alto Contraste';
 
-        return _selectionCard(
+        return SelectionCard(
           title: opt,
           isSelected: selectedColor == opt,
           isDevelopment: !isTemaPronto,
@@ -281,7 +243,7 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
           style: TextStyle(color: AppColors.textSecundarioEscuro, fontSize: 16),
         ),
         const SizedBox(height: 20),
-        ...options.map((opt) => _selectionCard(
+        ...options.map((opt) => SelectionCard(
               title: opt,
               isSelected: selectedNeuro.contains(opt),
               onTap: () {
@@ -295,111 +257,6 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
               },
               isMulti: true,
             )),
-      ],
-    );
-  }
-  Widget _selectionCard({
-    required String title,
-    required bool isSelected,
-    required VoidCallback onTap,
-    bool isMulti = false,
-    bool clickable = true,
-    bool isDevelopment = false,
-  }) {
-    final bool effectiveClickable = clickable && !isDevelopment;
-    return GestureDetector(
-      onTap: effectiveClickable ? onTap : null,
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 200),
-        opacity: effectiveClickable ? 1.0 : (isDevelopment ? 0.6 : 0.2),
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? AppColors.primaryEscuro.withValues(alpha: 0.1)
-                : AppColors.surfaceEscuro,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: isSelected
-                  ? AppColors.primaryEscuro
-                  : (isDevelopment
-                      ? AppColors.borderEscuro.withValues(alpha: 0.5)
-                      : AppColors.borderEscuro),
-              width: 2,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: isSelected ? Colors.white : AppColors.textSecundarioEscuro,
-                        fontSize: 18,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isDevelopment)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryEscuro.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Text(
-                    "Em breve",
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryEscuro,
-                    ),
-                  ),
-                ),
-              if (isSelected)
-                Icon(
-                  isMulti ? Icons.check_box : Icons.check_circle,
-                  color: AppColors.primaryEscuro,
-                ),
-              if (!isSelected && isMulti && !isDevelopment)
-                Icon(
-                  Icons.check_box_outline_blank,
-                  color: AppColors.textSecundarioEscuro.withValues(alpha: 0.5),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-  Widget _buildFooter() {
-    return Row(
-      children: [
-        if (currentStep > 1)
-          Expanded(
-            flex: 1,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: SecondaryButton(
-                label: "Voltar",
-                onPressed: previousStep,
-              ),
-            ),
-          ),
-        Expanded(
-          flex: 2,
-          child: PrimaryButton(
-            label: currentStep < 4 ? "Continuar" : "Finalizar",
-            onPressed: nextStep,
-          ),
-        ),
       ],
     );
   }

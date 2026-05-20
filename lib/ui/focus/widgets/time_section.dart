@@ -1,8 +1,6 @@
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import '../focus_page.dart';
+import 'package:provider/provider.dart';
+import '../../../core/providers/focus_provider.dart';
 
 class TimerSection extends StatelessWidget {
   const TimerSection({super.key});
@@ -10,16 +8,23 @@ class TimerSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      width: 320,
-      height: 320,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1), width: 6),
-      ),
-      child: Center(
-        child: Text(
-          "25:00",
+    final focusProvider = Provider.of<FocusProvider>(context);
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        SizedBox(
+          width: 320,
+          height: 320,
+          child: CircularProgressIndicator(
+            value: focusProvider.progress,
+            strokeWidth: 8,
+            backgroundColor: theme.dividerColor.withValues(alpha: 0.1),
+            valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+          ),
+        ),
+        Text(
+          focusProvider.timerString,
           style: TextStyle(
             color: theme.colorScheme.onSurface,
             fontSize: 84,
@@ -27,7 +32,7 @@ class TimerSection extends StatelessWidget {
             letterSpacing: -2.0,
           ),
         ),
-      ),
+      ],
     );
   }
 }
