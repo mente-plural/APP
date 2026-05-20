@@ -1,0 +1,57 @@
+name: NeuroGuia iOS Release
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy-ios:
+    name: Build e Deploy iOS App Store
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar o Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Configurar o Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Instalar Dependências do Flutter
+        run: |
+          flutter clean
+          flutter pub get
+
+      - name: Instalar Dependências do iOS
+        run: |
+          cd ios
+          pod install --repo-update
+
+      - name: Configurar chaves de Assinatura (Apple API Key)
+        env:
+          APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
+          KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
+        run: |
+          mkdir -p ~/private_keys
+          echo "$APP_STORE_CONNECT_KEY" > ~/private_keys/AuthKey_$KEY_ID.p8
+
+      - name: Compilar o pacote IPA (Release)
+        run: |
+          flutter build ipa --release --export-options-plist=ios/export_options.plist
+
+      - name: Enviar o App para o TestFlight
+        env:
+          KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
+        run: |
+          xcrun altool --upload-app --type ios \
+            -f build/ios/ipa/*.ipa \
+            --apiKey "$KEY_ID" \
+            --apiIssuer "$ISSUER_ID"
