@@ -47,14 +47,15 @@ jobs:
           security list-keychain -d user -s $KEYCHAIN_PATH
 
       - name: Baixar Perfis de Provisionamento da Apple
-        # Essa Action oficial baixa os perfis mapeando o Bundle ID de forma automática
         uses: apple-actions/download-provisioning-profiles@v3
         with:
           bundle-id: 'com.maoamiga.app.app'
           profile-type: 'IOS_APP_STORE'
           issuer-id: ${{ secrets.APP_STORE_ISSUER_ID }}
           api-key-id: ${{ secrets.APP_STORE_KEY_ID }}
-          api-private-key: ${{ secrets.APP_STORE_CONNECT_KEY }}
+          # Usamos o pipe literais para garantir que as quebras de linha da chave privada sejam preservadas
+          api-private-key: |
+            ${{ secrets.APP_STORE_CONNECT_KEY }}
 
       - name: Compilar o pacote IPA (Release)
         run: |
