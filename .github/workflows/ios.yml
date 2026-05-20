@@ -51,14 +51,9 @@ jobs:
           security list-keychain -d user -s $KEYCHAIN_PATH
 
       - name: Compilar o pacote IPA (Release)
-        env:
-          APP_STORE_KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
-          APP_STORE_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
         run: |
-          flutter build ipa --release \
-            --export-options-plist=ios/export_options.plist \
-            --api-key-id="$APP_STORE_KEY_ID" \
-            --api-issuer="$APP_STORE_ISSUER_ID"
+          # Limpamos as flags inválidas. O Xcode usará o certificado importado no chaveiro.
+          flutter build ipa --release --export-options-plist=ios/export_options.plist
 
       - name: Enviar o App para o TestFlight
         env:
