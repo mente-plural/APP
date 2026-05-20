@@ -27,7 +27,11 @@ class RoutineClient extends ApiBaseClient {
         headers: await getHeaders(),
         body: jsonEncode(taskData),
       );
-      return (response.statusCode == 200 || response.statusCode == 201) ? jsonDecode(response.body) : {};
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
+      }
+      handleErrorResponse(response);
+      return {};
     } catch (e) { rethrow; }
   }
 
@@ -38,7 +42,11 @@ class RoutineClient extends ApiBaseClient {
         headers: await getHeaders(),
         body: jsonEncode(taskData),
       );
-      return response.statusCode == 200 ? jsonDecode(response.body) : {};
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return response.body.isNotEmpty ? jsonDecode(response.body) : {};
+      }
+      handleErrorResponse(response);
+      return {};
     } catch (e) { rethrow; }
   }
 
@@ -47,6 +55,7 @@ class RoutineClient extends ApiBaseClient {
       final response = await http.delete(
         Uri.parse('$baseUrl/v1/routines/$taskId'),
         headers: await getHeaders(),
+        body: jsonEncode({}), // OBRIGATÓRIO para evitar erro 400 no Fastify
       );
       if (response.statusCode != 200 && response.statusCode != 204) {
         handleErrorResponse(response);

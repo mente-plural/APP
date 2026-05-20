@@ -1,11 +1,9 @@
-import 'package:app/core/auth/auth_service.dart';
 import 'package:app/core/auth_gate.dart';
 import 'package:app/core/providers/navigation_provider.dart';
 import 'package:app/core/providers/theme_provider.dart';
 import 'package:app/ui/onboarding/onboarding_page.dart';
 import 'package:app/ui/qr/qr_page.dart';
 import 'package:app/ui/home/home_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +20,7 @@ void main() async {
   // await AuthService().logout();
   final prefs = await SharedPreferences.getInstance();
   // final bool seenOnboarding = prefs.getBool('seen_onboarding') ?? false;
-  final bool seenOnboarding = prefs.getBool('seen_onboarding') ?? false;
+  final bool seenOnboarding = false;
 
   runApp(
     MultiProvider(

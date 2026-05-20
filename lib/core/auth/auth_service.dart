@@ -267,9 +267,12 @@ class AuthService {
 
   Future<void> updateUserProfile({
     String? name,
+    String? phone,
     String? profileType,
     String? preferredColor,
     List<String>? neurodivergencies,
+    bool? highContrast,
+    double? fontSizeMultiplier,
   }) async {
     if (_currentUser == null) return;
 
@@ -282,10 +285,13 @@ class AuthService {
       profileType: profileType ?? _currentUser!.preferences.profileType,
       preferredColor: preferredColor ?? _currentUser!.preferences.preferredColor,
       neurodivergencies: neurodivergencies ?? _currentUser!.preferences.neurodivergencies,
+      highContrast: highContrast ?? _currentUser!.preferences.highContrast,
+      fontSizeMultiplier: fontSizeMultiplier ?? _currentUser!.preferences.fontSizeMultiplier,
     );
 
     final updatedUser = _currentUser!.copyWith(
       name: name ?? _currentUser!.name,
+      phone: phone ?? _currentUser!.phone,
       email: email,
       preferences: updatedPreferences,
     );
@@ -307,12 +313,30 @@ class AuthService {
 
     final updatedData = {
       'name': name ?? _currentUser!.name,
+      'phone': phone ?? _currentUser!.phone,
       'email': email,
       'preferences': updatedPreferences.toMap(),
     };
 
     try {
       final response = await _userClient.updateUser(_currentUser!.id, updatedData);
+      final userData = response['user'] ?? response['data'] ?? response;
+
+      if (userData is Map && userData.isNotEmpty) {
+        _currentUser = UserModel.fromMap(userData as Map<String, dynamic>);
+        _userController.add(_currentUser);
+        await _saveSession(_currentUser!);
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> uploadProfilePhoto(String filePath) async {
+    if (_currentUser == null) return;
+    
+    try {
+      final response = await _userClient.uploadProfilePhoto(_currentUser!.id, filePath);
       final userData = response['user'] ?? response['data'] ?? response;
 
       if (userData is Map && userData.isNotEmpty) {

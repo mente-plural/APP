@@ -81,6 +81,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 icon: _pagesData[_currentPage]["icon"],
               ),
             ),
+            // Título fixo no topo
+            SafeArea(
+              child: IgnorePointer(
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: AppSizes.radiusLG * 2),
+                    child: Text(
+                      'Mão Amiga',
+                      style: theme.textTheme.headlineLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
             Positioned(
               bottom: AppSizes.radiusLG * 2.5,
               left: AppSizes.radiusLG,
@@ -156,11 +174,12 @@ class OnboardingPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const SizedBox(height: 80), // Espaço para não sobrepor o título fixo
           Icon(icon, size: 100, color: primaryColor),
-          const SizedBox(height: AppSizes.radiusLG * 1.5),
+          const SizedBox(height: AppSizes.radiusLG * 2),
           Text(
             title,
-            style: theme.textTheme.headlineLarge?.copyWith(
+            style: theme.textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: theme.colorScheme.onSurface,
             ),
@@ -174,6 +193,7 @@ class OnboardingPage extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
+          const SizedBox(height: 120), // Espaço para os indicadores e botões inferiores
         ],
       ),
     );

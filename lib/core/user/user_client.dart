@@ -74,6 +74,33 @@ class UserClient extends ApiBaseClient {
     }
   }
 
+  Future<Map<String, dynamic>> uploadProfilePhoto(String userId, String filePath) async {
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/v1/users/$userId/photo'),
+      );
+      
+      final headers = await getHeaders();
+      headers.remove('Content-Type'); // O MultipartRequest define o Content-Type correto com o boundary
+      request.headers.addAll(headers);
+      
+      request.files.add(await http.MultipartFile.fromPath('photo', filePath));
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else {
+        handleErrorResponse(response);
+        return {};
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<List<Map<String, dynamic>>> fetchLearnContent({String? query, String? category}) async {
     try {
       final uri = Uri.parse('$baseUrl/v1/content/learn').replace(

@@ -179,12 +179,18 @@ class _TaskRowState extends State<TaskRow> {
                   ),
                   const SizedBox(width: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
-                        color: theme.dividerColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+                      color: theme.scaffoldBackgroundColor,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     child: Text(
-                      widget.task.time,
-                      style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 13, fontWeight: FontWeight.w600),
+                      widget.task.time ?? "--:--",
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ],

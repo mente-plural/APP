@@ -7,6 +7,8 @@ class CustomTextField extends StatelessWidget {
   final String hint;
   final TextEditingController controller;
   final bool isPassword;
+  final bool enabled;
+  final IconData? icon;
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final TextCapitalization textCapitalization;
@@ -18,6 +20,8 @@ class CustomTextField extends StatelessWidget {
     required this.hint,
     required this.controller,
     this.isPassword = false,
+    this.enabled = true,
+    this.icon,
     this.keyboardType,
     this.inputFormatters,
     this.textCapitalization = TextCapitalization.none,
@@ -54,21 +58,27 @@ class CustomTextField extends StatelessWidget {
         TextField(
           controller: controller,
           obscureText: isPassword,
+          enabled: enabled,
           keyboardType: keyboardType,
           inputFormatters: effectiveFormatters,
           textCapitalization: textCapitalization,
           textInputAction: textInputAction,
           autocorrect: !isPassword && keyboardType != TextInputType.emailAddress,
           enableSuggestions: !isPassword && keyboardType != TextInputType.emailAddress,
-          style: TextStyle(color: theme.colorScheme.onSurface),
+          style: TextStyle(
+            color: enabled 
+                ? theme.colorScheme.onSurface 
+                : theme.colorScheme.onSurface.withOpacity(0.5)
+          ),
           decoration: InputDecoration(
             hintText: hint,
+            prefixIcon: icon != null ? Icon(icon, size: 20, color: theme.colorScheme.primary.withOpacity(0.7)) : null,
             hintStyle: TextStyle(
               color: theme.colorScheme.onSurface.withOpacity(0.4),
               fontSize: 14,
             ),
             filled: true,
-            fillColor: theme.colorScheme.surface,
+            fillColor: enabled ? theme.colorScheme.surface : theme.dividerColor.withOpacity(0.05),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 18,

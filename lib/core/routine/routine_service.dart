@@ -4,6 +4,11 @@ import '../../models/routine_task_model.dart';
 import 'routine_client.dart';
 
 class RoutineService {
+  static final RoutineService _instance = RoutineService._internal();
+  factory RoutineService() => _instance;
+
+  RoutineService._internal();
+
   final RoutineClient _routineClient = RoutineClient();
 
   final StreamController<List<RoutineTaskModel>> _tasksController = StreamController<List<RoutineTaskModel>>.broadcast();
@@ -92,7 +97,7 @@ class RoutineService {
     try {
       await _routineClient.deleteTask(taskId);
       _cachedTasks.removeWhere((t) => t.id == taskId);
-      _tasksController.add(_cachedTasks);
+      _sortAndEmit(); // Notifica todos os ouvintes (Home, Routine Page, etc)
       return true;
     } catch (e) {
       debugPrint("❌ [RoutineService] Falha ao deletar tarefa: $e");
@@ -107,7 +112,8 @@ class RoutineService {
 
   void _sortAndEmit() {
     _cachedTasks.sort((a, b) => a.time.compareTo(b.time));
-    _tasksController.add(_cachedTasks);
+    // Emitimos uma cópia da lista para garantir que o StreamBuilder detecte a mudança de estado
+    _tasksController.add(List.from(_cachedTasks));
   }
 
   void _rollback(int index, RoutineTaskModel oldTask) {

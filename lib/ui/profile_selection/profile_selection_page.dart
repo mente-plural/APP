@@ -223,18 +223,17 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
         return _selectionCard(
           title: opt['label'] as String,
           isSelected: selectedRole == value,
-          clickable: true,
+          isDevelopment: !isPaciente,
           onTap: () {
             if (isPaciente) {
               setState(() => selectedRole = value);
-            } else {
-              UiUtils.showSnackBar(context, 'Em desenvolvimento...', isError: true);
             }
           },
         );
       }).toList(),
     );
   }
+
   Widget _stepColor() {
     final options = [
       'Tema Claro',
@@ -246,16 +245,16 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
     return Column(
       key: const ValueKey(3),
       children: options.map((opt) {
-        final bool isTemaPronto = opt == 'Tema Claro' || opt == 'Tema Escuro' || opt == 'Alto Contraste';
+        final bool isTemaPronto =
+            opt == 'Tema Claro' || opt == 'Tema Escuro' || opt == 'Alto Contraste';
 
         return _selectionCard(
           title: opt,
           isSelected: selectedColor == opt,
+          isDevelopment: !isTemaPronto,
           onTap: () {
             if (isTemaPronto) {
               setState(() => selectedColor = opt);
-            } else {
-              UiUtils.showSnackBar(context, 'Em desenvolvimento...', isError: true);
             }
           },
         );
@@ -304,15 +303,15 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
     required bool isSelected,
     required VoidCallback onTap,
     bool isMulti = false,
-    bool clickable = true, // Corrigido para camelCase
+    bool clickable = true,
+    bool isDevelopment = false,
   }) {
+    final bool effectiveClickable = clickable && !isDevelopment;
     return GestureDetector(
-      // Se clickable for falso, o onTap recebe null e o botão é desativado
-      onTap: clickable ? onTap : null,
+      onTap: effectiveClickable ? onTap : null,
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 200),
-        // Se não for clicável, reduz a opacidade para dar o feedback visual de desabilitado
-        opacity: clickable ? 1.0 : 0.2,
+        opacity: effectiveClickable ? 1.0 : (isDevelopment ? 0.6 : 0.2),
         child: Container(
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(20),
@@ -322,7 +321,11 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
                 : AppColors.surfaceEscuro,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: isSelected ? AppColors.primaryEscuro : AppColors.borderEscuro,
+              color: isSelected
+                  ? AppColors.primaryEscuro
+                  : (isDevelopment
+                      ? AppColors.borderEscuro.withValues(alpha: 0.5)
+                      : AppColors.borderEscuro),
               width: 2,
             ),
           ),
@@ -330,21 +333,42 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : AppColors.textSecundarioEscuro,
-                    fontSize: 18,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : AppColors.textSecundarioEscuro,
+                        fontSize: 18,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              if (isDevelopment)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryEscuro.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Text(
+                    "Em breve",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryEscuro,
+                    ),
+                  ),
+                ),
               if (isSelected)
                 Icon(
                   isMulti ? Icons.check_box : Icons.check_circle,
                   color: AppColors.primaryEscuro,
                 ),
-              if (!isSelected && isMulti)
+              if (!isSelected && isMulti && !isDevelopment)
                 Icon(
                   Icons.check_box_outline_blank,
                   color: AppColors.textSecundarioEscuro.withValues(alpha: 0.5),
