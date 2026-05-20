@@ -35,14 +35,18 @@ jobs:
           flutter pub get
 
       - name: Criar Chaveiro e Gerar Certificado na Nuvem
-        # Instalamos as ferramentas CLI do Codemagic na máquina do GitHub para gerenciar o chaveiro do Mac virtual
         run: |
-          pip3 install codemagic-cli-tools
+          # 1. Instala pulando a trava de ambiente gerenciado externo
+          pip3 install codemagic-cli-tools --break-system-packages
           
-          # 1. Inicializa um chaveiro seguro na máquina virtual
+          # 2. Adiciona o caminho dos binários do Python ao PATH do GitHub Actions
+          echo "$(python3 -m site --user-base)/bin" >> $GITHUB_PATH
+          export PATH="$(python3 -m site --user-base)/bin:$PATH"
+          
+          # 3. Inicializa o chaveiro seguro na máquina virtual
           keychain initialize
           
-          # 2. Busca ou CRIA (--create) o certificado de distribuição direto na Apple via API
+          # 4. Cria e busca o certificado de distribuição na Apple
           app-store-connect fetch-signing-files com.maoamiga.app.app \
             --issuer-id="$APP_STORE_ISSUER_ID" \
             --key-id="$APP_STORE_KEY_ID" \
@@ -51,7 +55,7 @@ jobs:
             --type=IOS_APP_STORE \
             --platform=IOS
           
-          # 3. Adiciona o certificado gerado ao chaveiro do Mac para o Xcode enxergar
+          # 5. Vincula o certificado ao chaveiro local do Mac
           keychain add-certificates
 
       - name: Compilar o pacote IPA (Release)
