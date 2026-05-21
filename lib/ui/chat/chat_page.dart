@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+
 import '../../core/network/gemini_service.dart';
 import '../../shared/widgets/page_header.dart';
 import 'chat_introduction_widget.dart';
@@ -149,7 +150,9 @@ class _ChatPageState extends State<ChatPage> {
               enableSuggestions: true,
               decoration: InputDecoration(
                 hintText: "Digite sua dúvida...",
-                hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5)),
+                hintStyle: TextStyle(
+                    color: theme.textTheme.bodyMedium?.color?.withValues(
+                        alpha: 0.5)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
                   borderSide: BorderSide.none,
@@ -216,13 +219,16 @@ class _ChatBubble extends StatelessWidget {
               fontSize: 16,
             ),
             code: TextStyle(
-              backgroundColor: isUser ? Colors.white.withOpacity(0.2) : theme.colorScheme.primary.withOpacity(0.1),
+              backgroundColor: isUser
+                  ? Colors.white.withValues(alpha: 0.2)
+                  : theme.colorScheme.primary.withValues(alpha: 0.1),
               color: isUser ? Colors.white : theme.colorScheme.primary,
               fontFamily: 'monospace',
               fontSize: 14,
             ),
             codeblockDecoration: BoxDecoration(
-              color: isUser ? Colors.black.withOpacity(0.2) : theme.dividerColor.withOpacity(0.05),
+              color: isUser ? Colors.black.withValues(alpha: 0.2) : theme
+                  .dividerColor.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(8),
             ),
           ),

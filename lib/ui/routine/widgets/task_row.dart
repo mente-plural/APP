@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../models/routine_task_model.dart';
 import 'context_menu.dart';
 
@@ -76,7 +77,7 @@ class _TaskRowState extends State<TaskRow> {
       width: 36,
       child: Column(
         children: [
-          // Linha conectora superior
+
           Expanded(
             child: Container(
               width: 2,
@@ -84,7 +85,7 @@ class _TaskRowState extends State<TaskRow> {
             ),
           ),
 
-          // Círculo indicador com o número ou check
+
           AnimatedScale(
             scale: _pressed ? 1.04 : 1.0,
             duration: const Duration(milliseconds: 180),
@@ -97,7 +98,7 @@ class _TaskRowState extends State<TaskRow> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: widget.task.isCompleted
-                      ? theme.colorScheme.primary.withOpacity(0.2)
+                      ? theme.colorScheme.primary.withValues(alpha: 0.2)
                       : theme.colorScheme.surface,
                   border: Border.all(
                     color: widget.task.isCompleted
@@ -112,7 +113,8 @@ class _TaskRowState extends State<TaskRow> {
                       : Text(
                     '${widget.index + 1}',
                     style: TextStyle(
-                      color: (theme.textTheme.bodyMedium?.color)?.withOpacity(0.7),
+                      color: (theme.textTheme.bodyMedium?.color)?.withValues(
+                          alpha: 0.7),
                       fontSize: 13,
                       fontWeight: widget.isHighlighted ? FontWeight.bold : FontWeight.w600,
                     ),
@@ -122,7 +124,7 @@ class _TaskRowState extends State<TaskRow> {
             ),
           ),
 
-          // Linha conectora inferior dinâmica (absorve o espaço restante perfeitamente)
+
           Expanded(
             child: Container(
               width: 2,
@@ -130,7 +132,7 @@ class _TaskRowState extends State<TaskRow> {
             ),
           ),
 
-          // 💡 O contêiner fixo de 12px foi removido daqui para eliminar o overflow!
+
         ],
       ),
     );
@@ -156,36 +158,43 @@ class _TaskRowState extends State<TaskRow> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.task.title,
-                      style: TextStyle(
-                        color: widget.task.isCompleted
-                            ? theme.textTheme.bodyMedium?.color?.withOpacity(0.6)
-                            : theme.colorScheme.onSurface,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        decoration: widget.task.isCompleted ? TextDecoration.lineThrough : null,
-                        decorationColor: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+                child: SingleChildScrollView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.task.title,
+                        style: TextStyle(
+                          color: widget.task.isCompleted
+                              ? theme.textTheme.bodyMedium?.color?.withValues(
+                              alpha: 0.6)
+                              : theme.colorScheme.onSurface,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          height: 1.2,
+                          decoration: widget.task.isCompleted ? TextDecoration
+                              .lineThrough : null,
+                          decorationColor: theme.textTheme.bodyMedium?.color
+                              ?.withValues(alpha: 0.6),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.task.description,
-                      style: TextStyle(
-                        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
-                        fontSize: 13,
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.task.description,
+                        style: TextStyle(
+                          color: theme.textTheme.bodyMedium?.color?.withValues(
+                              alpha: 0.7),
+                          fontSize: 13,
+                          height: 1.2,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
-
-              // Bloco do Horário (Mantido perfeitamente alinhado)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../app_theme.dart';
 
 class OnboardingIndicator extends StatelessWidget {
@@ -34,7 +35,7 @@ class OnboardingIndicator extends StatelessWidget {
       decoration: BoxDecoration(
         color: isSelected
             ? theme.colorScheme.primary
-            : theme.dividerColor.withOpacity(0.3),
+            : theme.dividerColor.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(AppSizes.radiusLG),
       ),
     );

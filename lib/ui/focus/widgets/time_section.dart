@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../../core/providers/focus_provider.dart';
 
 class TimerSection extends StatelessWidget {
@@ -19,7 +20,7 @@ class TimerSection extends StatelessWidget {
           child: CircularProgressIndicator(
             value: focusProvider.progress,
             strokeWidth: 8,
-            backgroundColor: theme.dividerColor.withOpacity(0.1),
+            backgroundColor: theme.dividerColor.withValues(alpha: 0.1),
             valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
           ),
         ),

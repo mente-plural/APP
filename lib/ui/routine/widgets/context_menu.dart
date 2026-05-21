@@ -1,5 +1,7 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
+
 import '../../../models/routine_task_model.dart';
 
 class ContextMenu extends StatelessWidget {
@@ -41,7 +43,7 @@ class ContextMenu extends StatelessWidget {
                         border: Border.all(color: theme.dividerColor),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withValues(alpha: 0.5),
                             blurRadius: 24,
                             offset: const Offset(0, 8),
                           ),
@@ -78,7 +80,8 @@ class ContextMenu extends StatelessWidget {
                           border: Border.all(color: theme.colorScheme.primary, width: 1.5),
                           boxShadow: [
                             BoxShadow(
-                              color: theme.colorScheme.primary.withOpacity(0.15),
+                              color: theme.colorScheme.primary.withValues(
+                                  alpha: 0.15),
                               blurRadius: 20,
                               spreadRadius: 2,
                             ),
@@ -98,7 +101,8 @@ class ContextMenu extends StatelessWidget {
                                   const SizedBox(height: 4),
                                   Text(task.description,
                                       style: TextStyle(
-                                          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                                          color: theme.textTheme.bodyMedium
+                                              ?.color?.withValues(alpha: 0.7),
                                           fontSize: 13)),
                                 ],
                               ),
@@ -108,7 +112,8 @@ class ContextMenu extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 5),
                               decoration: BoxDecoration(
-                                  color: theme.dividerColor.withOpacity(0.1),
+                                  color: theme.dividerColor.withValues(
+                                      alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8)),
                               child: Text(task.time,
                                   style: TextStyle(
@@ -162,7 +167,7 @@ class _ContextOption extends StatelessWidget {
                 Container(
                   width: 36, height: 36,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
+                    color: color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(icon, color: color, size: 20),
@@ -173,7 +178,7 @@ class _ContextOption extends StatelessWidget {
                         color: color, fontWeight: FontWeight.w600, fontSize: 15)),
                 const Spacer(),
                 Icon(Icons.chevron_right_rounded,
-                    color: color.withOpacity(0.5), size: 20),
+                    color: color.withValues(alpha: 0.5), size: 20),
               ],
             ),
           ),

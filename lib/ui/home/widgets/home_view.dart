@@ -1,9 +1,11 @@
 import 'package:app/shared/utils/responsive.dart';
+import 'package:app/ui/home/widgets/assistente_ia.dart';
 import 'package:app/ui/home/widgets/proxima_rotina_section.dart';
 import 'package:flutter/material.dart';
+
+import 'dica_tdah_section.dart';
 import 'home_header.dart';
 import 'momento_foco.dart';
-import 'dica_tdah_section.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -31,7 +33,9 @@ class HomeView extends StatelessWidget {
 
               MomentoFocoCard(theme: theme),
               const SizedBox(height: 24),
-              
+              AssistenteIASection(theme: theme),
+              const SizedBox(height: 24),
+
               ProximoRotinaSection(theme: theme),
               const SizedBox(height: 24),
               

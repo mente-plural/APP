@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:provider/provider.dart';
 
 import '../../core/auth/auth_service.dart';
@@ -8,10 +7,10 @@ import '../../core/providers/navigation_provider.dart';
 import '../../shared/utils/ui_utils.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../register/register_page.dart';
-import './widgets/login_header.dart';
-import './widgets/login_form.dart';
-import './widgets/social_auth_section.dart';
 import './widgets/login_footer.dart';
+import './widgets/login_form.dart';
+import './widgets/login_header.dart';
+import './widgets/social_auth_section.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -47,8 +46,8 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       debugPrint("LoginPage: Iniciando login para $email");
-      
-      // Resetar estados locais de navegação e foco antes/durante o login para garantir limpeza
+
+
       if (mounted) {
         Provider.of<NavigationProvider>(context, listen: false).reset();
         Provider.of<FocusProvider>(context, listen: false).clear();

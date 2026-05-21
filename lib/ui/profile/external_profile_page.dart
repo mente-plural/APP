@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
+
 import '../../app_theme.dart';
 import '../../core/user/user_service.dart';
 import '../../models/user_model.dart';
 import '../../shared/utils/ui_utils.dart';
-import 'widgets/profile_avatar.dart';
 import 'widgets/info_row.dart';
+import 'widgets/neurodivergencies_section.dart';
+import 'widgets/profile_avatar.dart';
 import 'widgets/profile_badge.dart';
 import 'widgets/profile_section.dart';
-import 'widgets/neurodivergencies_section.dart';
 
 class ExternalProfilePage extends StatefulWidget {
   final String userId;
@@ -209,7 +210,7 @@ class _ExternalProfilePageState extends State<ExternalProfilePage> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(Icons.qr_code_scanner_rounded, size: 20, color: theme.colorScheme.primary),
@@ -244,7 +245,8 @@ class _ExternalProfilePageState extends State<ExternalProfilePage> {
               label: 'E-mail',
               value: user.email,
               onTap: () => _copyToClipboard(user.email, 'E-mail'),
-              trailing: Icon(Icons.copy_all_rounded, size: 18, color: theme.colorScheme.primary.withOpacity(0.5)),
+              trailing: Icon(Icons.copy_all_rounded, size: 18,
+                  color: theme.colorScheme.primary.withValues(alpha: 0.5)),
             ),
             if (user.phone != null && user.phone!.isNotEmpty)
               InfoRow(
@@ -252,7 +254,8 @@ class _ExternalProfilePageState extends State<ExternalProfilePage> {
                 label: 'Telefone / WhatsApp',
                 value: user.phone!,
                 onTap: () => _copyToClipboard(user.phone!, 'Telefone'),
-                trailing: Icon(Icons.copy_all_rounded, size: 18, color: theme.colorScheme.primary.withOpacity(0.5)),
+                trailing: Icon(Icons.copy_all_rounded, size: 18,
+                    color: theme.colorScheme.primary.withValues(alpha: 0.5)),
               ),
           ],
         ),

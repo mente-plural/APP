@@ -137,8 +137,8 @@ class UserClient extends ApiBaseClient {
     try {
       final body = {
         'email': email,
-        if (password != null) 'password': password,
-        if (idToken != null) 'idToken': idToken,
+        'password': ?password,
+        'idToken': ?idToken,
       };
 
 

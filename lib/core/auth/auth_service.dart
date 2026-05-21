@@ -8,10 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/user_model.dart';
 import '../../models/user_preferences.dart';
-import '../token_manager.dart';
-import '../providers/focus_provider.dart';
-import '../providers/navigation_provider.dart';
 import '../routine/routine_service.dart';
+import '../token_manager.dart';
 import '../user/user_client.dart';
 import '../user/user_service.dart';
 import 'auth_client.dart';
@@ -246,17 +244,10 @@ class AuthService {
 
     _currentUser = null;
     _userController.add(null);
-    
-    // Limpar outros estados globais e controllers
+
+
     RoutineService().clear();
     UserService().clear();
-
-    // Notificar/Limpar Providers (precisaria do contexto se fosse via Provider.of, 
-    // mas aqui limpamos as instâncias que podem ser acessadas globalmente se houver)
-    // Como FocusProvider e NavigationProvider são usados via MultiProvider no main.dart,
-    // o ideal é resetar seus estados se tivermos acesso às instâncias.
-    // Se não tivermos acesso fácil aqui, o logout deve garantir que ao re-entrar
-    // o estado inicial seja limpo.
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user_session');

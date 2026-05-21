@@ -3,6 +3,7 @@ import 'package:app/ui/home/widgets/home_bottom_navigation.dart';
 import 'package:app/ui/home/widgets/home_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../ui/focus/focus_page.dart';
 import '../../ui/routine/routine_page.dart';
 import '../chat/chat_page.dart';
@@ -48,7 +49,7 @@ class _HomePageState extends State<HomePage> {
           color: theme.scaffoldBackgroundColor,
           border: Border(
             top: BorderSide(
-              color: theme.dividerColor.withOpacity(0.1),
+              color: theme.dividerColor.withValues(alpha: 0.1),
               width: 1,
             ),
           ),

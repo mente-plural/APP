@@ -28,14 +28,15 @@ class NeurodivergenciesSection extends StatelessWidget {
             label: Text(
               item,
               style: TextStyle(
-                color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.7),
+                color: isSelected ? theme.colorScheme.primary : theme
+                    .colorScheme.onSurface.withValues(alpha: 0.7),
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
             selected: isSelected,
             onSelected: (val) => onSelected?.call(item, val),
             backgroundColor: theme.colorScheme.surface,
-            selectedColor: theme.colorScheme.primary.withOpacity(0.15),
+            selectedColor: theme.colorScheme.primary.withValues(alpha: 0.15),
             checkmarkColor: theme.colorScheme.primary,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -58,9 +59,10 @@ class NeurodivergenciesSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(0.12),
+        color: theme.colorScheme.primary.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.colorScheme.primary.withOpacity(0.35)),
+        border: Border.all(
+            color: theme.colorScheme.primary.withValues(alpha: 0.35)),
       ),
       child: Text(
         label,

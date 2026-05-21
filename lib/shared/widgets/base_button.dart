@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../app_theme.dart';
 
 class BaseButton extends StatelessWidget {
@@ -37,7 +38,8 @@ class BaseButton extends StatelessWidget {
         foregroundColor: WidgetStateProperty.all(foregroundColor),
         elevation: WidgetStateProperty.all(0),
         shadowColor: WidgetStateProperty.all(Colors.transparent),
-        overlayColor: WidgetStateProperty.all(hoverColor.withOpacity(0.1)),
+        overlayColor: WidgetStateProperty.all(
+            hoverColor.withValues(alpha: 0.1)),
         minimumSize: WidgetStateProperty.all(const Size(double.infinity, 56)),
         shape: WidgetStateProperty.all(
           RoundedRectangleBorder(

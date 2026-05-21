@@ -13,7 +13,9 @@ class RoutineEmptyState extends StatelessWidget {
           Container(
             width: 72, height: 72,
             decoration:
-            BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
+            BoxDecoration(
+                color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(20)),
             child: Icon(Icons.playlist_add_rounded, color: theme.colorScheme.primary, size: 36),
           ),
           const SizedBox(height: 20),
@@ -25,7 +27,9 @@ class RoutineEmptyState extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Toque no + para criar sua primeira tarefa.',
-            style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7), fontSize: 14),
+            style: TextStyle(
+                color: theme.textTheme.bodyMedium?.color?.withValues(
+                    alpha: 0.7), fontSize: 14),
           ),
         ],
       ),

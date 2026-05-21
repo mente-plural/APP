@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../shared/widgets/page_header.dart';
 
 class LoginHeader extends StatelessWidget {
@@ -16,7 +17,7 @@ class LoginHeader extends StatelessWidget {
         Text(
           'Bem-vindo de volta!',
           style: theme.textTheme.bodyLarge?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
       ],

@@ -26,12 +26,15 @@ class ProfileTypeSelector extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: isSelected ? theme.colorScheme.primary.withOpacity(0.1) : Colors.transparent,
+              color: isSelected ? theme.colorScheme.primary.withValues(
+                  alpha: 0.1) : Colors.transparent,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: isSelected
                     ? theme.colorScheme.primary
-                    : (isDevelopment ? theme.dividerColor.withOpacity(0.3) : theme.dividerColor),
+                    : (isDevelopment
+                    ? theme.dividerColor.withValues(alpha: 0.3)
+                    : theme.dividerColor),
               ),
             ),
             child: Row(
@@ -40,7 +43,8 @@ class ProfileTypeSelector extends StatelessWidget {
                   isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
                   color: isSelected
                       ? theme.colorScheme.primary
-                      : (isDevelopment ? theme.dividerColor.withOpacity(0.3) : theme.dividerColor),
+                      : (isDevelopment ? theme.dividerColor.withValues(
+                      alpha: 0.3) : theme.dividerColor),
                   size: 20,
                 ),
                 const SizedBox(width: 10),
@@ -54,7 +58,7 @@ class ProfileTypeSelector extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withOpacity(0.1),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(

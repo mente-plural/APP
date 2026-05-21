@@ -27,7 +27,9 @@ class RoutineProgressCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Progresso do Dia', style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7), fontSize: 13)),
+          Text('Progresso do Dia', style: TextStyle(
+              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+              fontSize: 13)),
           const SizedBox(height: 6),
           Row(
             children: [
@@ -46,7 +48,9 @@ class RoutineProgressCard extends StatelessWidget {
                   ),
                   TextSpan(
                     text: ' / $totalCount',
-                    style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7), fontSize: 16),
+                    style: TextStyle(
+                        color: theme.textTheme.bodyMedium?.color?.withValues(
+                            alpha: 0.7), fontSize: 16),
                   ),
                 ]),
               ),
@@ -58,7 +62,7 @@ class RoutineProgressCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 6,
-              backgroundColor: theme.dividerColor.withOpacity(0.2),
+              backgroundColor: theme.dividerColor.withValues(alpha: 0.2),
               valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
             ),
           ),

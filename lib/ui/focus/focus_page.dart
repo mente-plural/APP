@@ -197,7 +197,7 @@ class _TempoFocoPageState extends State<TempoFocoPage> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 💡 Bloco Condicional Corrigido
+
                   if (tasks.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 32),
@@ -232,13 +232,15 @@ class _TempoFocoPageState extends State<TempoFocoPage> {
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? theme.colorScheme.primary.withOpacity(0.1)
+                                    ? theme.colorScheme.primary.withValues(
+                                    alpha: 0.1)
                                     : theme.colorScheme.surface,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
                                   color: isSelected
                                       ? theme.colorScheme.primary
-                                      : theme.dividerColor.withOpacity(0.1),
+                                      : theme.dividerColor.withValues(
+                                      alpha: 0.1),
                                 ),
                               ),
                               child: Row(
@@ -270,9 +272,9 @@ class _TempoFocoPageState extends State<TempoFocoPage> {
                           );
                         },
                       ),
-                    ), // 🔍 Fim do else / Flexible
+                    ),
 
-                  // 💡 Elementos movidos para a raiz da Column
+
                   const SizedBox(height: 16),
                   if (focusProvider.selectedTask != null)
                     SizedBox(
@@ -355,7 +357,8 @@ class _TempoFocoPageState extends State<TempoFocoPage> {
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: theme.dividerColor.withOpacity(0.1)),
+            border: Border.all(
+                color: theme.dividerColor.withValues(alpha: 0.1)),
           ),
           child: Material(
             color: Colors.transparent,
@@ -364,7 +367,9 @@ class _TempoFocoPageState extends State<TempoFocoPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.refresh, color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7), size: 24),
+                  Icon(Icons.refresh,
+                      color: theme.textTheme.bodyMedium?.color?.withValues(
+                          alpha: 0.7), size: 24),
                   const SizedBox(width: 12),
                   Text(
                     "Recomeçar Tempo",
@@ -422,18 +427,24 @@ class _TempoFocoPageState extends State<TempoFocoPage> {
       child: Container(padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: hasTask ? theme.colorScheme.primary.withOpacity(0.5) : theme.dividerColor.withOpacity(0.1), width: hasTask ? 1.5 : 1),),
+          border: Border.all(color: hasTask
+              ? theme.colorScheme.primary.withValues(alpha: 0.5)
+              : theme.dividerColor.withValues(alpha: 0.1),
+              width: hasTask ? 1.5 : 1),),
         child: Row(children: [
           Container(padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.1),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(14),),
             child: Icon(focusProvider.status == PomodoroStatus.focus ? Icons.menu_book_outlined : Icons.self_improvement,
               color: theme.colorScheme.primary, size: 24,),),
           const SizedBox(width: 16),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(focusProvider.status == PomodoroStatus.focus ? "FOCO ATUAL" : "STATUS", 
-                style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+              Text(focusProvider.status == PomodoroStatus.focus ? "FOCO ATUAL" : "STATUS",
+                style: TextStyle(
+                  color: theme.textTheme.bodyMedium?.color?.withValues(
+                      alpha: 0.6),
                 fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 1.2,),),
               const SizedBox(height: 4),
               Text(focusProvider.status == PomodoroStatus.focus ? (hasTask ? focusProvider.selectedTask!.title : "Toque para escolher uma tarefa") : "Hora de descansar",

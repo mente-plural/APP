@@ -112,7 +112,8 @@ class _ProximoRotinaSectionState extends State<ProximoRotinaSection> {
       ),
       child: Row(
         children: [
-          Icon(Icons.calendar_today_outlined, color: widget.theme.colorScheme.primary.withOpacity(0.5)),
+          Icon(Icons.calendar_today_outlined,
+              color: widget.theme.colorScheme.primary.withValues(alpha: 0.5)),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
@@ -196,7 +197,7 @@ class _ProximoRotinaSectionState extends State<ProximoRotinaSection> {
               ),
               Icon(
                 Icons.chevron_right,
-                color: widget.theme.colorScheme.primary.withOpacity(0.5),
+                color: widget.theme.colorScheme.primary.withValues(alpha: 0.5),
               ),
             ],
           ),
@@ -211,7 +212,8 @@ class _ProximoRotinaSectionState extends State<ProximoRotinaSection> {
       decoration: BoxDecoration(
         color: widget.theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: widget.theme.colorScheme.primary.withOpacity(0.1)),
+        border: Border.all(
+            color: widget.theme.colorScheme.primary.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
