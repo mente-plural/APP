@@ -7,7 +7,7 @@ on:
 jobs:
   deploy-ios:
     name: Build & Upload para TestFlight
-    runs-on: macos-14 # Garante o Xcode 15+ estável no ambiente do GitHub
+    runs-on: macos-15 # Garante o Xcode 15+ estável no ambiente do GitHub
     environment: production
 
     steps:
