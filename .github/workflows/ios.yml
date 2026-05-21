@@ -28,6 +28,9 @@ jobs:
         run: |
           flutter clean
           flutter pub get
+          # 💡 SOLUÇÃO: Força a criação das pastas base para evitar que o rsync do firebase_auth falhe no Runner
+          mkdir -p build/ios/SourcePackages
+          mkdir -p ios/Flutter
 
       - name: Importar Certificado de Distribuição (.p12)
         uses: apple-actions/import-codesign-certs@v3
