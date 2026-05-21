@@ -38,9 +38,31 @@ jobs:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
         run: |
-          # Usamos o 'build ipa' padrão. O Flutter vai usar as variáveis de ambiente 'APP_STORE_CONNECT_...'
-          # injetadas acima para assinar e criar o arquivo .ipa de distribuição original.
-          flutter build ipa --release --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
+          # 1. Cria dinamicamente o arquivo de configuração exigido pelo Xcode para a nuvem
+          cat <<EOF > ios/ExportOptions.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>destination</key>
+              <string>export</string>
+              <key>method</key>
+              <string>app-store</string>
+              <key>signingStyle</key>
+              <string>automatic</string>
+              <key>stripSwiftSymbols</key>
+              <true/>
+              <key>teamID</key>
+              <string>${{ secrets.APP_STORE_TEAM_ID }}</string>
+          </dict>
+          </plist>
+          EOF
+          
+          # 2. Executa o build forçando o método app-store com o arquivo criado
+          flutter build ipa --release \
+            --export-method=app-store \
+            --export-options-plist=ios/ExportOptions.plist \
+            --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
 
       - name: Enviar o build para o TestFlight
         uses: apple-actions/upload-testflight-build@v1
