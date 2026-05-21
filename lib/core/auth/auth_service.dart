@@ -228,9 +228,6 @@ class AuthService {
           firebaseUser = _auth.currentUser;
         }
         await _firebaseLoginWithApi(firebaseUser!);
-
-        UiUtils.showSnackBar(context, firebaseUser.photoURL.toString());
-
         return true;
       }
       return false;
