@@ -257,7 +257,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
 
     try {
-      final success = await _authService.loginWithApple();
+      final success = await _authService.loginWithApple(context);
       if (mounted) {
         if (success) {
           UiUtils.showSnackBar(context, "Login com Apple realizado com sucesso!");

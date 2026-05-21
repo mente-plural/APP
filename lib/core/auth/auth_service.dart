@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:app/shared/utils/ui_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -197,7 +199,7 @@ class AuthService {
     }
   }
 
-  Future<bool> loginWithApple() async {
+  Future<bool> loginWithApple(BuildContext context) async {
     _isSocialLoginInProgress = true;
     try {
       final appleCredential = await SignInWithApple.getAppleIDCredential(
@@ -225,8 +227,10 @@ class AuthService {
           await firebaseUser.reload();
           firebaseUser = _auth.currentUser;
         }
-
         await _firebaseLoginWithApi(firebaseUser!);
+
+        UiUtils.showSnackBar(context, firebaseUser.photoURL.toString());
+
         return true;
       }
       return false;
@@ -251,7 +255,6 @@ class AuthService {
       if (seguroPhoto.isEmpty || seguroPhoto.toLowerCase() == 'null') {
         seguroPhoto = "https://auth.services.apple.com/assets/default_avatar.png";
       }
-
       final response = await _authClient.firebaseAuth(
         idToken: idToken,
         email: seguroEmail,
