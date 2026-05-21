@@ -59,22 +59,35 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-		<key>UISupportedInterfaceOrientations~ipad</key>
-    	<array>
-    		<string>UIInterfaceOrientationPortrait</string>
-    		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-    		<string>UIInterfaceOrientationLandscapeLeft</string>
-    		<string>UIInterfaceOrientationLandscapeRight</string>
-    	</array>
+			<key>UISupportedInterfaceOrientations~ipad</key>
+        	<array>
+        		<string>UIInterfaceOrientationPortrait</string>
+        		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+        		<string>UIInterfaceOrientationLandscapeLeft</string>
+        		<string>UIInterfaceOrientationLandscapeRight</string>
+        	</array>
 
-    	<key>NSCameraUsageDescription</key>
-    	<string>O NeuroGuia usa a câmera para escanear QR Codes e adicionar imagens às tarefas.</string>
+        	<key>NSCameraUsageDescription</key>
+        	<string>O NeuroGuia usa a câmera para escanear QR Codes e adicionar imagens às tarefas.</string>
 
-    	<key>NSPhotoLibraryUsageDescription</key>
-    	<string>O NeuroGuia acessa sua galeria para permitir selecionar imagens para suas anotações e tarefas.</string>
+        	<key>NSPhotoLibraryUsageDescription</key>
+        	<string>O NeuroGuia acessa sua galeria para permitir selecionar imagens para suas anotações e tarefas.</string>
 
-    	<key>NSPhotoLibraryAddUsageDescription</key>
-    	<string>O NeuroGuia pode salvar imagens geradas ou compartilhadas pelo usuário.</string>
+        	<key>NSPhotoLibraryAddUsageDescription</key>
+        	<string>O NeuroGuia pode salvar imagens geradas ou compartilhadas pelo usuário.</string>
 
-    </dict>
-</plist>
+        	<key>CFBundleURLTypes</key>
+        	<array>
+        		<dict>
+        			<key>CFBundleTypeRole</key>
+        			<string>Editor</string>
+
+        			<key>CFBundleURLSchemes</key>
+        			<array>
+        				<string>com.googleusercontent.apps.1016061063081-b9v5lg0qjmvsjl9fr3la44j3fljapmud</string>
+        			</array>
+        		</dict>
+        	</array>
+
+        </dict>
+        </plist>

@@ -253,6 +253,34 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _handleAppleSignIn() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final success = await _authService.loginWithApple();
+      if (mounted) {
+        if (success) {
+          UiUtils.showSnackBar(context, "Login com Apple realizado com sucesso!");
+        } else {
+          UiUtils.showSnackBar(context, "Login cancelado.", isError: true);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        final errorStr = e.toString().toLowerCase();
+        if (errorStr.contains('canceled') || errorStr.contains('cancelled') || errorStr.contains('user cancel')) {
+          UiUtils.showSnackBar(context, "Login cancelado.", isError: true);
+        } else {
+          UiUtils.showSnackBar(context, "Erro no Apple Login: $e", isError: true);
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -284,7 +312,7 @@ class _LoginPageState extends State<LoginPage> {
                   SocialAuthSection(
                     isLoading: _isLoading,
                     onGoogleSignIn: _handleGoogleSignIn,
-                    onAppleSignIn: () {},
+                    onAppleSignIn: _handleAppleSignIn,
                   ),
                   const SizedBox(height: 32),
                   LoginFooter(

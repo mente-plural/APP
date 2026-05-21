@@ -18,6 +18,7 @@ class SocialAuthSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isAppleVisible = kIsWeb || Platform.isIOS || Platform.isMacOS;
 
     return Column(
       children: [
@@ -29,7 +30,7 @@ class SocialAuthSection extends StatelessWidget {
           onPressed: onGoogleSignIn,
           isLoading: isLoading,
         ),
-        if (!kIsWeb && Platform.isIOS) ...[
+        if (isAppleVisible) ...[
           const SizedBox(height: 12),
           _SocialAuthButton(
             icon: Icons.apple,

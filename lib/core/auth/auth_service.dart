@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/user_model.dart';
@@ -180,6 +181,37 @@ class AuthService {
 
       final auth = googleUser.authentication;
       final credential = GoogleAuthProvider.credential(idToken: auth.idToken);
+      final userCredential = await _auth.signInWithCredential(credential);
+      final firebaseUser = userCredential.user;
+
+      if (firebaseUser != null) {
+        await _firebaseLoginWithApi(firebaseUser);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      _isSocialLoginInProgress = false;
+      rethrow;
+    } finally {
+      Future.delayed(const Duration(seconds: 2), () => _isSocialLoginInProgress = false);
+    }
+  }
+
+  Future<bool> loginWithApple() async {
+    _isSocialLoginInProgress = true;
+    try {
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      final OAuthCredential credential = OAuthProvider('apple.com').credential(
+        idToken: appleCredential.identityToken,
+        rawNonce: appleCredential.state,
+      );
+
       final userCredential = await _auth.signInWithCredential(credential);
       final firebaseUser = userCredential.user;
 
