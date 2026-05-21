@@ -1,5 +1,7 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
+
 import '../../models/user_model.dart';
 import '../network/api_base_client.dart';
 
@@ -106,7 +108,7 @@ class UserClient extends ApiBaseClient {
       final uri = Uri.parse('$baseUrl/v1/content/learn').replace(
         queryParameters: {
           if (query != null && query.isNotEmpty) 'search': query,
-          'category': ?category,
+          if (category != null && category.isNotEmpty) 'category': category,
         },
       );
       
@@ -121,6 +123,40 @@ class UserClient extends ApiBaseClient {
       } else {
         handleErrorResponse(response);
         return [];
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<bool> deleteUser({
+    required String email,
+    String? password,
+    String? idToken,
+  }) async {
+    try {
+      final body = {
+        'email': email,
+        if (password != null) 'password': password,
+        if (idToken != null) 'idToken': idToken,
+      };
+
+
+      final headers = await getHeaders();
+
+      headers['Content-Type'] = 'application/json';
+
+      final response = await http.delete(
+        Uri.parse('$baseUrl/v1/auth/delete'),
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return true;
+      } else {
+        handleErrorResponse(response);
+        return false;
       }
     } catch (e) {
       rethrow;

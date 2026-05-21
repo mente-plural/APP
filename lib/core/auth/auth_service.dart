@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../models/user_model.dart';
 import '../../models/user_preferences.dart';
 import '../token_manager.dart';
@@ -242,6 +244,49 @@ class AuthService {
     _userController.add(null);
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user_session');
+  }
+
+  Future<void> deleteAccount({String? password}) async {
+    if (_currentUser == null) return;
+
+    try {
+      String? firebaseToken;
+
+      if (_currentUser!.firebaseUid != null &&
+          _currentUser!.firebaseUid!.isNotEmpty) {
+        if (_auth.currentUser != null) {
+          firebaseToken = await _auth.currentUser!.getIdToken(true);
+        }
+        if (firebaseToken == null) {
+          throw Exception(
+              "Não foi possível gerar a assinatura de segurança do Firebase. Faça login novamente.");
+        }
+      }
+
+
+      final success = await _userClient.deleteUser(
+        email: _currentUser!.email,
+        password: password,
+        idToken: firebaseToken,
+      );
+
+      if (success) {
+        try {
+          if (_auth.currentUser != null) {
+            await _auth.currentUser!.delete();
+          }
+        } catch (e) {
+          debugPrint(
+              "Erro ao limpar dados remotos do Firebase no Client-side: $e");
+        }
+
+        await logout();
+      } else {
+        throw Exception("Falha ao deletar conta no servidor.");
+      }
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> sendPasswordResetEmail(String email) async {

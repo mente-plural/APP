@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+
 import '../../core/auth/auth_service.dart';
 import '../../models/user_model.dart';
 import '../../shared/utils/ui_utils.dart';
-import '../../shared/widgets/page_header.dart';
 import '../../shared/widgets/custom_text_field.dart';
-import 'widgets/profile_avatar.dart';
+import '../../shared/widgets/page_header.dart';
 import 'widgets/info_row.dart';
+import 'widgets/neurodivergencies_section.dart';
+import 'widgets/profile_avatar.dart';
 import 'widgets/profile_badge.dart';
 import 'widgets/profile_section.dart';
-import 'widgets/neurodivergencies_section.dart';
 import 'widgets/profile_type_selector.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -188,6 +189,112 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     }
   }
 
+  Future<void> _confirmDeleteAccount() async {
+    final theme = Theme.of(context);
+    final user = _authService.currentUser;
+    if (user == null) return;
+
+
+    final isNativeUser = user.firebaseUid == null || user.firebaseUid!.isEmpty;
+    final TextEditingController passwordConfirmController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) =>
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: AlertDialog(
+                backgroundColor: theme.colorScheme.surface,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
+                title: const Text('Excluir sua conta?',
+                    style: TextStyle(
+                        color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                content: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                          'Esta ação é permanente e todos os seus dados serão perdidos. Tem certeza que deseja continuar?'),
+                      if (isNativeUser) ...[
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: passwordConfirmController,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            labelText: 'Confirme sua senha atual',
+                            hintText: 'Digite sua senha',
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          validator: (value) {
+                            if (value == null || value
+                                .trim()
+                                .isEmpty) {
+                              return 'A senha é obrigatória para exclusão.';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      passwordConfirmController.dispose();
+                      Navigator.pop(ctx, false);
+                    },
+                    child: Text('Cancelar', style: TextStyle(
+                        color: theme.textTheme.bodyMedium?.color)),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (isNativeUser && !formKey.currentState!.validate()) {
+                        return;
+                      }
+                      Navigator.pop(ctx, true);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Excluir Permanentemente'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+    );
+
+    if (confirm == true && mounted) {
+      try {
+        await _authService.deleteAccount(
+          password: isNativeUser ? passwordConfirmController.text.trim() : null,
+        );
+
+        if (mounted) {
+          UiUtils.showSnackBar(context, 'Sua conta foi excluída com sucesso.');
+        }
+      } catch (e) {
+        if (mounted) {
+          UiUtils.showSnackBar(
+              context, 'Erro ao excluir conta: $e', isError: true);
+        }
+      } finally {
+        passwordConfirmController.dispose();
+      }
+    } else {
+      passwordConfirmController.dispose();
+    }
+  }
+
   String _getProfileLabel(String? type) {
     switch (type) {
       case 'FOR_ME': return 'Para Mim';
@@ -230,6 +337,8 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                             _buildMainCard(user, theme),
                             const SizedBox(height: 24),
                             _buildLogoutButton(theme),
+                            const SizedBox(height: 12),
+                            _buildDeleteAccountButton(theme),
                           ] else ...[
                             _buildEditForm(user, theme),
                           ],
@@ -450,6 +559,24 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
               style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 16),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeleteAccountButton(ThemeData theme) {
+    return Center(
+      child: TextButton(
+        onPressed: _confirmDeleteAccount,
+        style: TextButton.styleFrom(
+          foregroundColor: theme.textTheme.bodySmall?.color,
+        ),
+        child: const Text(
+          "Excluir minha conta permanentemente",
+          style: TextStyle(
+            decoration: TextDecoration.underline,
+            fontSize: 13,
+          ),
         ),
       ),
     );

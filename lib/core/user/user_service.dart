@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:app/core/user/user_client.dart';
 import 'package:flutter/material.dart';
+
 import '../../models/user_model.dart';
 
 class UserService {
@@ -109,6 +111,30 @@ class UserService {
     }
   }
 
+
+  Future<bool> deleteAccount({
+    required String email,
+    String? password,
+    String? idToken,
+  }) async {
+    try {
+      final success = await _userClient.deleteUser(
+        email: email,
+        password: password,
+        idToken: idToken,
+      );
+
+      if (success) {
+        _currentUser = null;
+        _userController.add(null);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint("❌ [UserService] Erro ao deletar conta: $e");
+      return false;
+    }
+  }
 
   void dispose() {
     _userController.close();

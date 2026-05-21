@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../app_theme.dart';
 import '../../core/auth/auth_service.dart';
-import './widgets/selection_card.dart';
-import './widgets/profile_selection_header.dart';
 import './widgets/profile_selection_footer.dart';
+import './widgets/profile_selection_header.dart';
+import './widgets/selection_card.dart';
 
 class ProfileSelectionPage extends StatefulWidget {
   const ProfileSelectionPage({super.key});
@@ -14,7 +16,6 @@ class ProfileSelectionPage extends StatefulWidget {
 
 class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
   int currentStep = 1;
-  bool isSaving = false;
   final TextEditingController _nameController = TextEditingController();
   String? selectedRole;
   String? selectedColor;
@@ -47,7 +48,6 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
         return;
       }
 
-      setState(() => isSaving = true);
       debugPrint("Finalizando Onboarding. Enviando Perfil: $selectedRole, Cor: $selectedColor");
 
       try {
@@ -61,12 +61,10 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
         if (mounted) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('seen_onboarding', true);
-
         }
       } catch (e) {
         if (mounted) {
           _showError("Erro ao salvar perfil: $e");
-          setState(() => isSaving = false);
         }
       }
     }
@@ -86,43 +84,33 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: AppColors.bgEscuro,
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 800),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ProfileSelectionHeader(
-                    currentStep: currentStep,
-                    title: _getHeaderTitle(),
-                  ),
-                  const SizedBox(height: 40),
-                  Expanded(
-                    child: isSaving 
-                      ? Center(child: CircularProgressIndicator(color: theme.colorScheme.primary))
-                      : SingleChildScrollView(
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 300),
-                            child: _buildCurrentStepContent(),
-                          ),
-                        ),
-                  ),
-                  if (!isSaving)
-                    ProfileSelectionFooter(
-                      currentStep: currentStep,
-                      onNext: nextStep,
-                      onPrevious: previousStep,
-                    ),
-                ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ProfileSelectionHeader(
+                currentStep: currentStep,
+                title: _getHeaderTitle(),
               ),
-            ),
+              const SizedBox(height: 40),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: _buildCurrentStepContent(),
+                  ),
+                ),
+              ),
+              ProfileSelectionFooter(
+                currentStep: currentStep,
+                onNext: nextStep,
+                onPrevious: previousStep,
+              ),
+            ],
           ),
         ),
       ),
@@ -150,32 +138,31 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
   }
 
   Widget _stepName() {
-    final theme = Theme.of(context);
     return Column(
       key: const ValueKey(1),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           "Qual o seu nome ou apelido?",
-          style: TextStyle(color: theme.textTheme.bodyMedium?.color, fontSize: 16),
+          style: TextStyle(color: AppColors.textSecundarioEscuro, fontSize: 16),
         ),
         const SizedBox(height: 24),
         TextField(
           controller: _nameController,
-          style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 18),
-          textCapitalization: TextCapitalization.words,
+          style: const TextStyle(color: Colors.white, fontSize: 18),
           decoration: InputDecoration(
             filled: true,
-            fillColor: theme.colorScheme.surface,
+            fillColor: AppColors.surfaceEscuro,
             hintText: "Digite seu nome",
-            hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color?.withValues(alpha:0.5)),
+            hintStyle: const TextStyle(color: AppColors.textSecundarioEscuro),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+              borderSide: const BorderSide(
+                  color: AppColors.primaryEscuro, width: 2),
             ),
             contentPadding: const EdgeInsets.all(20),
           ),
@@ -186,20 +173,26 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
 
   Widget _stepRole() {
     final options = [
-      {'label': 'Para mim', 'value': 'FOR_ME'},
-      {'label': 'Tutor ou Familiar', 'value': 'TUTOR'},
-      {'label': 'Aprender Mais / Geral', 'value': 'LEARN_MORE'},
+      {'label': 'Paciente', 'value': 'FOR_ME'},
+      {'label': 'Tutor', 'value': 'TUTOR'},
+      {'label': 'Usuário geral', 'value': 'LEARN_MORE'},
     ];
 
     return Column(
       key: const ValueKey(2),
       children: options.map((opt) {
         final String value = opt['value'] as String;
+        final bool isPaciente = value == 'FOR_ME';
 
         return SelectionCard(
           title: opt['label'] as String,
           isSelected: selectedRole == value,
-          onTap: () => setState(() => selectedRole = value),
+          isDevelopment: !isPaciente,
+          onTap: () {
+            if (isPaciente) {
+              setState(() => selectedRole = value);
+            }
+          },
         );
       }).toList(),
     );
@@ -207,26 +200,34 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
 
   Widget _stepColor() {
     final options = [
-      'Verde',
-      'Azul',
-      'Roxo',
-      'Laranja'
+      'Tema Claro',
+      'Tema Escuro',
+      'Alto Contraste',
+      'Cores Suaves/Tons Pastéis'
     ];
 
     return Column(
       key: const ValueKey(3),
       children: options.map((opt) {
+        final bool isTemaPronto =
+            opt == 'Tema Claro' || opt == 'Tema Escuro' ||
+                opt == 'Alto Contraste';
+
         return SelectionCard(
           title: opt,
           isSelected: selectedColor == opt,
-          onTap: () => setState(() => selectedColor = opt),
+          isDevelopment: !isTemaPronto,
+          onTap: () {
+            if (isTemaPronto) {
+              setState(() => selectedColor = opt);
+            }
+          },
         );
       }).toList(),
     );
   }
 
   Widget _stepNeuro() {
-    final theme = Theme.of(context);
     final options = [
       'Autismo (TEA)',
       'TDAH',
@@ -240,25 +241,25 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
       key: const ValueKey(4),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           "Você se identifica com qual(is) destas neurodivergências? (Pode marcar mais de uma)",
-          style: TextStyle(color: theme.textTheme.bodyMedium?.color, fontSize: 16),
+          style: TextStyle(color: AppColors.textSecundarioEscuro, fontSize: 16),
         ),
         const SizedBox(height: 20),
         ...options.map((opt) => SelectionCard(
-              title: opt,
-              isSelected: selectedNeuro.contains(opt),
-              onTap: () {
-                setState(() {
-                  if (selectedNeuro.contains(opt)) {
-                    selectedNeuro.remove(opt);
-                  } else {
-                    selectedNeuro.add(opt);
-                  }
-                });
-              },
-              isMulti: true,
-            )),
+          title: opt,
+          isSelected: selectedNeuro.contains(opt),
+          onTap: () {
+            setState(() {
+              if (selectedNeuro.contains(opt)) {
+                selectedNeuro.remove(opt);
+              } else {
+                selectedNeuro.add(opt);
+              }
+            });
+          },
+          isMulti: true,
+        )),
       ],
     );
   }
