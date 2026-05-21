@@ -207,10 +207,15 @@ class AuthService {
         ],
       );
 
-      final OAuthCredential credential = OAuthProvider('apple.com').credential(
+      final fullName =
+      '${appleCredential.givenName ?? ''} ${appleCredential.familyName ?? ''}'
+          .trim();
+
+      final OAuthCredential credential = OAuthProvider("apple.com").credential(
         idToken: appleCredential.identityToken,
-        rawNonce: appleCredential.state,
+        accessToken: appleCredential.authorizationCode,
       );
+
 
       final userCredential = await _auth.signInWithCredential(credential);
       final firebaseUser = userCredential.user;
