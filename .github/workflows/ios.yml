@@ -40,7 +40,7 @@ jobs:
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
         run: |
           # Aqui você pode adicionar seus --dart-define normalmente se precisar
-          flutter build ipa --release --export-options-plist=ios/ExportOptions.plist --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
+          flutter build ipa --release --no-codesign --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
       - name: Enviar o build para o TestFlight
         uses: apple-actions/upload-testflight-build@v1
         with:
