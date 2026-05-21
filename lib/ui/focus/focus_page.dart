@@ -58,58 +58,81 @@ class _TempoFocoPageState extends State<TempoFocoPage> {
   void _showSettingsSheet(BuildContext context, FocusProvider focusProvider) {
     final theme = Theme.of(context);
 
-    showModalBottomSheet(context: context,
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
       backgroundColor: theme.scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) {
-        return Center(
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: StatefulBuilder(builder: (context, setModalState) {
-              return Container(padding: const EdgeInsets.all(24),
-                child: Column(mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Configurar Cronômetro",
-                      style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold),),
-                    const SizedBox(height: 24),
-                    _buildSettingSlider(context, label: "Tempo de Foco",
-                      value: focusProvider.focusMinutes.toDouble(),
-                      min: 1,
-                      max: 60,
-                      onChanged: (val) {
-                        focusProvider.setFocusMinutes(val.toInt());
-                        setModalState(() {});
-                      },),
-                    const SizedBox(height: 16),
-                    _buildSettingSlider(context, label: "Pausa Curta",
-                      value: focusProvider.shortBreakMinutes.toDouble(),
-                      min: 1,
-                      max: 15,
-                      onChanged: (val) {
-                        focusProvider.setShortBreakMinutes(val.toInt());
-                        setModalState(() {});
-                      },),
-                    const SizedBox(height: 16),
-                    _buildSettingSlider(context, label: "Pausa Longa",
-                      value: focusProvider.longBreakMinutes.toDouble(),
-                      min: 5,
-                      max: 45,
-                      onChanged: (val) {
-                        focusProvider.setLongBreakMinutes(val.toInt());
-                        setModalState(() {});
-                      },),
-                    const SizedBox(height: 24),
-                    SizedBox(width: double.infinity,
-                      child: ElevatedButton(onPressed: () => Navigator.pop(context),
-                        child: const Text("Salvar Configurações"),),),
-                  ],),);
-            }),
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.7,
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Configurar Cronômetro",
+                    style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 24),
+                  _buildSettingSlider(
+                    context,
+                    label: "Tempo de Foco",
+                    value: focusProvider.focusMinutes.toDouble(),
+                    min: 1,
+                    max: 60,
+                    onChanged: (val) {
+                      focusProvider.setFocusMinutes(val.toInt());
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSettingSlider(
+                    context,
+                    label: "Pausa Curta",
+                    value: focusProvider.shortBreakMinutes.toDouble(),
+                    min: 1,
+                    max: 15,
+                    onChanged: (val) {
+                      focusProvider.setShortBreakMinutes(val.toInt());
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSettingSlider(
+                    context,
+                    label: "Pausa Longa",
+                    value: focusProvider.longBreakMinutes.toDouble(),
+                    min: 5,
+                    max: 45,
+                    onChanged: (val) {
+                      focusProvider.setLongBreakMinutes(val.toInt());
+                    },
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Salvar Configurações"),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
-      },);
+      },
+    );
   }
 
   Widget _buildSettingSlider(BuildContext context,
@@ -131,88 +154,148 @@ class _TempoFocoPageState extends State<TempoFocoPage> {
           onChanged: onChanged,),
       ],);
   }
-
   void _showTaskSelectionSheet(BuildContext context, FocusProvider focusProvider) {
     final theme = Theme.of(context);
     final routineService = RoutineService();
 
-    showModalBottomSheet(context: context,
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
       backgroundColor: theme.scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),),
-      builder: (context) =>
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: StreamBuilder<List<RoutineTaskModel>>(
-                stream: routineService.tasksStream,
-                initialData: routineService.cachedTasks,
-                builder: (context, snapshot) {
-                  final tasks = snapshot.data ?? [];
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
+        ),
+        child: StreamBuilder<List<RoutineTaskModel>>(
+          stream: routineService.tasksStream,
+          initialData: routineService.cachedTasks,
+          builder: (context, snapshot) {
+            final tasks = snapshot.data ?? [];
 
-                  return Container(padding: const EdgeInsets.all(24),
-                    child: Column(mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            return Container(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Escolha seu foco",
+                        style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 💡 Bloco Condicional Corrigido
+                  if (tasks.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      child: Center(
+                        child: Column(
                           children: [
-                            Text("Escolha seu foco",
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold),),
-                            IconButton(onPressed: () => Navigator.pop(context),
-                              icon: const Icon(Icons.close),),
-                          ],),
-                        const SizedBox(height: 16),
-                        if (tasks.isEmpty)Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 32),
-                          child: Center(child: Column(children: [
-                            Icon(Icons.assignment_late_outlined, size: 48,
-                                color: theme.disabledColor),
+                            Icon(Icons.assignment_late_outlined,
+                                size: 48, color: theme.disabledColor),
                             const SizedBox(height: 16),
                             const Text("Nenhuma tarefa encontrada para hoje."),
-                          ],),),) else
-                          Flexible(child: ListView.separated(shrinkWrap: true,
-                            itemCount: tasks.length,
-                            separatorBuilder: (_, v) => const SizedBox(height: 12),
-                            itemBuilder: (context, index) {
-                              final task = tasks[index];
-                              final isSelected = focusProvider.selectedTask?.id == task.id;
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Flexible(
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: tasks.length,
+                        separatorBuilder: (_, v) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final task = tasks[index];
+                          final isSelected = focusProvider.selectedTask?.id == task.id;
 
-                              return InkWell(onTap: () {
-                                focusProvider.setSelectedTask(task);
-                                Navigator.pop(context);
-                              },
+                          return InkWell(
+                            onTap: () {
+                              focusProvider.setSelectedTask(task);
+                              Navigator.pop(context);
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? theme.colorScheme.primary.withOpacity(0.1)
+                                    : theme.colorScheme.surface,
                                 borderRadius: BorderRadius.circular(16),
-                                child: Container(padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: isSelected ? theme.colorScheme.primary.withValues(alpha:0.1) : theme.colorScheme.surface,
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: isSelected ? theme.colorScheme.primary : theme.dividerColor.withValues(alpha:0.1)),),
-                                  child: Row(children: [
-                                    Icon(isSelected ? Icons.check_circle : Icons.circle_outlined, color: isSelected ? theme.colorScheme.primary : theme.disabledColor),
-                                    const SizedBox(width: 12),
-                                    Expanded(child: Column(
+                                border: Border.all(
+                                  color: isSelected
+                                      ? theme.colorScheme.primary
+                                      : theme.dividerColor.withOpacity(0.1),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    isSelected ? Icons.check_circle : Icons.circle_outlined,
+                                    color: isSelected ? theme.colorScheme.primary : theme.disabledColor,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(task.title, style: TextStyle(
-                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                          color: theme.colorScheme.onSurface,),),
-                                        if (task.time.isNotEmpty)Text(task.time, style: theme.textTheme.bodySmall,),
-                                      ],),),
-                                  ],),),);
-                            },),),
-                        const SizedBox(height: 16),
-                        if (focusProvider.selectedTask != null)SizedBox(
-                          width: double.infinity, child: TextButton(onPressed: () {
+                                        Text(
+                                          task.title,
+                                          style: TextStyle(
+                                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                            color: theme.colorScheme.onSurface,
+                                          ),
+                                        ),
+                                        if (task.time.isNotEmpty)
+                                          Text(task.time, style: theme.textTheme.bodySmall),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ), // 🔍 Fim do else / Flexible
+
+                  // 💡 Elementos movidos para a raiz da Column
+                  const SizedBox(height: 16),
+                  if (focusProvider.selectedTask != null)
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton(
+                        onPressed: () {
                           focusProvider.setSelectedTask(null);
                           Navigator.pop(context);
-                        }, child: const Text("Remover tarefa selecionada"),),),
-                      ],),);
-                },),
-            ),
-          ),);
+                        },
+                        child: const Text(
+                          "Remover tarefa selecionada",
+                          style: TextStyle(color: Colors.redAccent),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
   }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -272,7 +355,7 @@ class _TempoFocoPageState extends State<TempoFocoPage> {
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: theme.dividerColor.withValues(alpha:0.1)),
+            border: Border.all(color: theme.dividerColor.withOpacity(0.1)),
           ),
           child: Material(
             color: Colors.transparent,
@@ -281,7 +364,7 @@ class _TempoFocoPageState extends State<TempoFocoPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.refresh, color: theme.textTheme.bodyMedium?.color?.withValues(alpha:0.7), size: 24),
+                  Icon(Icons.refresh, color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7), size: 24),
                   const SizedBox(width: 12),
                   Text(
                     "Recomeçar Tempo",
@@ -339,10 +422,10 @@ class _TempoFocoPageState extends State<TempoFocoPage> {
       child: Container(padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: hasTask ? theme.colorScheme.primary.withValues(alpha:0.5) : theme.dividerColor.withValues(alpha:0.1), width: hasTask ? 1.5 : 1),),
+          border: Border.all(color: hasTask ? theme.colorScheme.primary.withOpacity(0.5) : theme.dividerColor.withOpacity(0.1), width: hasTask ? 1.5 : 1),),
         child: Row(children: [
           Container(padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha:0.1),
+            decoration: BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(14),),
             child: Icon(focusProvider.status == PomodoroStatus.focus ? Icons.menu_book_outlined : Icons.self_improvement,
               color: theme.colorScheme.primary, size: 24,),),
@@ -350,7 +433,7 @@ class _TempoFocoPageState extends State<TempoFocoPage> {
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(focusProvider.status == PomodoroStatus.focus ? "FOCO ATUAL" : "STATUS", 
-                style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withValues(alpha:0.6),
+                style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                 fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 1.2,),),
               const SizedBox(height: 4),
               Text(focusProvider.status == PomodoroStatus.focus ? (hasTask ? focusProvider.selectedTask!.title : "Toque para escolher uma tarefa") : "Hora de descansar",

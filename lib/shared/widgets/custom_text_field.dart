@@ -51,7 +51,7 @@ class CustomTextField extends StatelessWidget {
           label,
           style: theme.textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.w500,
-            color: theme.colorScheme.onSurface.withValues(alpha:0.8),
+            color: theme.colorScheme.onSurface.withOpacity(0.8),
           ),
         ),
         const SizedBox(height: 8),
@@ -70,17 +70,17 @@ class CustomTextField extends StatelessWidget {
           style: TextStyle(
             color: enabled 
                 ? theme.colorScheme.onSurface 
-                : theme.colorScheme.onSurface.withValues(alpha:0.5)
+                : theme.colorScheme.onSurface.withOpacity(0.5)
           ),
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: icon != null ? Icon(icon, size: 20, color: theme.colorScheme.primary.withValues(alpha:0.7)) : null,
+            prefixIcon: icon != null ? Icon(icon, size: 20, color: theme.colorScheme.primary.withOpacity(0.7)) : null,
             hintStyle: TextStyle(
-              color: theme.colorScheme.onSurface.withValues(alpha:0.4),
+              color: theme.colorScheme.onSurface.withOpacity(0.4),
               fontSize: 14,
             ),
             filled: true,
-            fillColor: enabled ? theme.colorScheme.surface : theme.dividerColor.withValues(alpha:0.05),
+            fillColor: enabled ? theme.colorScheme.surface : theme.dividerColor.withOpacity(0.05),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 18,
@@ -92,13 +92,13 @@ class CustomTextField extends StatelessWidget {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSizes.radiusLG),
               borderSide: BorderSide(
-                color: theme.dividerColor.withValues(alpha:0.1),
+                color: theme.dividerColor.withOpacity(0.1),
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSizes.radiusLG),
               borderSide: BorderSide(
-                color: theme.colorScheme.primary.withValues(alpha:0.5),
+                color: theme.colorScheme.primary.withOpacity(0.5),
                 width: 2,
               ),
             ),

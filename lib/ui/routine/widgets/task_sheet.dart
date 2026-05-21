@@ -104,7 +104,7 @@ class _TaskSheetState extends State<TaskSheet> {
             Text(
               'HORÁRIO',
               style: TextStyle(
-                  color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.5),
@@ -115,7 +115,7 @@ class _TaskSheetState extends State<TaskSheet> {
             Text(
               'PRIORIDADE',
               style: TextStyle(
-                  color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.5),
@@ -139,7 +139,7 @@ class _TaskSheetState extends State<TaskSheet> {
                     child: Container(
                       height: 48,
                       decoration: BoxDecoration(
-                        color: theme.dividerColor.withValues(alpha: 0.1),
+                        color: theme.dividerColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: theme.dividerColor),
                       ),
@@ -197,7 +197,7 @@ class _TaskSheetState extends State<TaskSheet> {
               ),
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: isSel ? color.withValues(alpha: 0.15) : theme.dividerColor.withValues(alpha: 0.05),
+                color: isSel ? color.withOpacity(0.15) : theme.dividerColor.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isSel ? color : theme.dividerColor,
@@ -208,7 +208,7 @@ class _TaskSheetState extends State<TaskSheet> {
                 child: Text(
                   label,
                   style: TextStyle(
-                    color: isSel ? color : theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
+                    color: isSel ? color : theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                     fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
                     fontSize: 13,
                   ),
@@ -274,7 +274,7 @@ class _TaskSheetState extends State<TaskSheet> {
             child: Text(
               label(i),
               style: TextStyle(
-                color: sel ? theme.colorScheme.primary : theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+                color: sel ? theme.colorScheme.primary : theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
                 fontSize: sel ? 22 : 16,
                 fontWeight: sel ? FontWeight.bold : FontWeight.normal,
               ),
@@ -299,7 +299,7 @@ class _TaskSheetState extends State<TaskSheet> {
               margin: const EdgeInsets.symmetric(vertical: 4),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: sel ? theme.colorScheme.primary : theme.dividerColor.withValues(alpha: 0.1),
+                color: sel ? theme.colorScheme.primary : theme.dividerColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: sel ? theme.colorScheme.primary : theme.dividerColor),
               ),
@@ -341,7 +341,7 @@ class _Field extends StatelessWidget {
       children: [
         Text(label,
             style: TextStyle(
-                color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5)),
@@ -360,7 +360,7 @@ class _Field extends StatelessWidget {
             decoration: InputDecoration(
               hintText: hint,
               hintStyle:
-              TextStyle(color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.4), fontSize: 14),
+              TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.4), fontSize: 14),
               prefixIcon: Icon(icon, color: theme.colorScheme.primary, size: 18),
               border: InputBorder.none,
               contentPadding:

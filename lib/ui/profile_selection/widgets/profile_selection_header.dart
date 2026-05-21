@@ -43,7 +43,7 @@ class ProfileSelectionHeader extends StatelessWidget {
           height: 6,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: theme.dividerColor.withValues(alpha: 0.1),
+            color: theme.dividerColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: FractionallySizedBox(

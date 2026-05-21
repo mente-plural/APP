@@ -17,7 +17,7 @@ class HomeBottomNavigation extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: theme.dividerColor.withValues(alpha:0.1), width: 1),
+          top: BorderSide(color: theme.dividerColor.withOpacity(0.1), width: 1),
         ),
       ),
       child: BottomNavigationBar(
@@ -26,7 +26,7 @@ class HomeBottomNavigation extends StatelessWidget {
         backgroundColor: theme.scaffoldBackgroundColor,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: theme.colorScheme.primary,
-        unselectedItemColor: theme.textTheme.bodyMedium?.color?.withValues(alpha:0.5),
+        unselectedItemColor: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
         selectedFontSize: 11,
         unselectedFontSize: 11,
         elevation: 0,

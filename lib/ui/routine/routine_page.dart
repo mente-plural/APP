@@ -69,7 +69,8 @@ class _RoutinePageState extends State<RoutinePage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (sheetCtx) => Center(
+      builder: (sheetCtx) => Align(
+        alignment: Alignment.bottomCenter,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
           child: AnimatedPadding(
@@ -229,7 +230,7 @@ class _RoutinePageState extends State<RoutinePage> {
                 ),
                 if (_isActionLoading)
                   Container(
-                    color: Colors.black.withValues(alpha:0.25),
+                    color: Colors.black.withOpacity(0.25),
                     child: const Center(child: CircularProgressIndicator()),
                   ),
               ],
@@ -259,7 +260,7 @@ class _RoutinePageState extends State<RoutinePage> {
                   width: 72,
                   height: 72,
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha:0.15),
+                    color: theme.colorScheme.primary.withOpacity(0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(Icons.celebration_rounded, color: theme.colorScheme.primary, size: 40),
@@ -274,7 +275,7 @@ class _RoutinePageState extends State<RoutinePage> {
                   'Parabéns! Você finalizou todas as tarefas da sua rotina de hoje.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: theme.textTheme.bodyMedium?.color?.withValues(alpha:0.7),
+                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                     fontSize: 15,
                     height: 1.4,
                   ),
@@ -290,7 +291,7 @@ class _RoutinePageState extends State<RoutinePage> {
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: theme.colorScheme.primary.withValues(alpha:0.3),
+                          color: theme.colorScheme.primary.withOpacity(0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -321,9 +322,9 @@ class _RoutinePageState extends State<RoutinePage> {
       margin: const EdgeInsets.only(top: 32, bottom: 8, left: 48, right: 48),
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
       decoration: BoxDecoration(
-        color: primaryColor.withValues(alpha:0.05),
+        color: primaryColor.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: primaryColor.withValues(alpha:0.1)),
+        border: Border.all(color: primaryColor.withOpacity(0.1)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -331,7 +332,7 @@ class _RoutinePageState extends State<RoutinePage> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: primaryColor.withValues(alpha:0.1),
+              color: primaryColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(Icons.stars_rounded, color: primaryColor, size: 28),
@@ -342,7 +343,7 @@ class _RoutinePageState extends State<RoutinePage> {
           Text(
             'Você cumpriu todos os seus objetivos para hoje. Bom trabalho!',
             textAlign: TextAlign.center,
-            style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withValues(alpha:0.7), fontSize: 16, height: 1.3),
+            style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7), fontSize: 16, height: 1.3),
           ),
         ],
       ),

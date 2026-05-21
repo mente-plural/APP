@@ -159,6 +159,16 @@ class FocusProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clear() {
+    _pauseTimer();
+    _status = PomodoroStatus.focus;
+    _completedCycles = 0;
+    _selectedTask = null;
+    _shouldShowCompletionPrompt = false;
+    _setInitialTime();
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     _timer?.cancel();

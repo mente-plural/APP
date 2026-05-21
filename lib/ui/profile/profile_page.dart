@@ -212,37 +212,37 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                 title: const Text('Excluir sua conta?',
                     style: TextStyle(
                         color: Colors.redAccent, fontWeight: FontWeight.bold)),
-                content: Form(
-                  key: formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                          'Esta ação é permanente e todos os seus dados serão perdidos. Tem certeza que deseja continuar?'),
-                      if (isNativeUser) ...[
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: passwordConfirmController,
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            labelText: 'Confirme sua senha atual',
-                            hintText: 'Digite sua senha',
-                            prefixIcon: const Icon(Icons.lock_outline),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12)),
+                content: SingleChildScrollView(
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                            'Esta ação é permanente e todos os seus dados serão perdidos. Tem certeza que deseja continuar?'),
+                        if (isNativeUser) ...[
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: passwordConfirmController,
+                            obscureText: true,
+                            decoration: InputDecoration(
+                              labelText: 'Confirme sua senha atual',
+                              hintText: 'Digite sua senha',
+                              prefixIcon: const Icon(Icons.lock_outline),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'A senha é obrigatória para exclusão.';
+                              }
+                              return null;
+                            },
                           ),
-                          validator: (value) {
-                            if (value == null || value
-                                .trim()
-                                .isEmpty) {
-                              return 'A senha é obrigatória para exclusão.';
-                            }
-                            return null;
-                          },
-                        ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
                 actions: [
@@ -545,9 +545,9 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.redAccent.withValues(alpha:0.1),
+          color: Colors.redAccent.withOpacity(0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.redAccent.withValues(alpha:0.2)),
+          border: Border.all(color: Colors.redAccent.withOpacity(0.2)),
         ),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,

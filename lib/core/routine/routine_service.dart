@@ -121,6 +121,11 @@ class RoutineService {
     _sortAndEmit();
   }
 
+  void clear() {
+    _cachedTasks = [];
+    _tasksController.add([]);
+  }
+
   void dispose() {
     _tasksController.close();
   }

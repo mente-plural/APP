@@ -136,6 +136,11 @@ class UserService {
     }
   }
 
+  void clear() {
+    _currentUser = null;
+    _userController.add(null);
+  }
+
   void dispose() {
     _userController.close();
   }

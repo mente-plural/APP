@@ -31,18 +31,19 @@ class _TaskRowState extends State<TaskRow> {
 
   void _handleLongPress() {
     setState(() => _pressed = true);
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.55),
-      barrierDismissible: true,
-      builder: (_) => Center(
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Align(
+        alignment: Alignment.bottomCenter,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 400),
+          constraints: const BoxConstraints(maxWidth: 600),
           child: ContextMenu(
             task:      widget.task,
-            onEdit:    () { Navigator.pop(context); widget.onEdit(); },
-            onDelete:  () { Navigator.pop(context); widget.onDelete(); },
-            onDismiss: () => Navigator.pop(context),
+            onEdit:    () { Navigator.pop(ctx); widget.onEdit(); },
+            onDelete:  () { Navigator.pop(ctx); widget.onDelete(); },
+            onDismiss: () => Navigator.pop(ctx),
           ),
         ),
       ),
@@ -75,7 +76,7 @@ class _TaskRowState extends State<TaskRow> {
       width: 36,
       child: Column(
         children: [
-
+          // Linha conectora superior
           Expanded(
             child: Container(
               width: 2,
@@ -83,6 +84,7 @@ class _TaskRowState extends State<TaskRow> {
             ),
           ),
 
+          // Círculo indicador com o número ou check
           AnimatedScale(
             scale: _pressed ? 1.04 : 1.0,
             duration: const Duration(milliseconds: 180),
@@ -90,12 +92,17 @@ class _TaskRowState extends State<TaskRow> {
               onTap: widget.onToggle,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
-                width: 32, height: 32,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: widget.task.isCompleted ? theme.colorScheme.primary.withValues(alpha: 0.2) : theme.colorScheme.surface,
+                  color: widget.task.isCompleted
+                      ? theme.colorScheme.primary.withOpacity(0.2)
+                      : theme.colorScheme.surface,
                   border: Border.all(
-                    color: widget.task.isCompleted ? theme.colorScheme.primary : (theme.dividerColor),
+                    color: widget.task.isCompleted
+                        ? theme.colorScheme.primary
+                        : theme.dividerColor,
                     width: 1.5,
                   ),
                 ),
@@ -105,29 +112,25 @@ class _TaskRowState extends State<TaskRow> {
                       : Text(
                     '${widget.index + 1}',
                     style: TextStyle(
-                        color: (theme.textTheme.bodyMedium?.color)?.withValues(alpha: 0.7),
-                        fontSize: 13,
-                        fontWeight: widget.isHighlighted ? FontWeight.bold : FontWeight.w600),
+                      color: (theme.textTheme.bodyMedium?.color)?.withOpacity(0.7),
+                      fontSize: 13,
+                      fontWeight: widget.isHighlighted ? FontWeight.bold : FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
 
-            Expanded(
-              child: Container(
-                width: 2,
-                color: widget.isLast ? Colors.transparent : theme.dividerColor,
-              ),
-            ),
-
-
-          if (!widget.isLast)
-            Container(
+          // Linha conectora inferior dinâmica (absorve o espaço restante perfeitamente)
+          Expanded(
+            child: Container(
               width: 2,
-              height: 12,
-              color: theme.dividerColor,
+              color: widget.isLast ? Colors.transparent : theme.dividerColor,
             ),
+          ),
+
+          // 💡 O contêiner fixo de 12px foi removido daqui para eliminar o overflow!
         ],
       ),
     );
@@ -149,56 +152,54 @@ class _TaskRowState extends State<TaskRow> {
               width: widget.isHighlighted ? 1.5 : 1,
             ),
           ),
-          child: Column(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.task.title,
-                          style: TextStyle(
-                            color: widget.task.isCompleted
-                                ? theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6)
-                                : theme.colorScheme.onSurface,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            decoration: widget.task.isCompleted ? TextDecoration.lineThrough : null,
-                            decorationColor: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          widget.task.description,
-                          style: TextStyle(
-                            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: theme.scaffoldBackgroundColor,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      widget.task.time,
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.task.title,
                       style: TextStyle(
-                        color: theme.colorScheme.primary,
+                        color: widget.task.isCompleted
+                            ? theme.textTheme.bodyMedium?.color?.withOpacity(0.6)
+                            : theme.colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
+                        decoration: widget.task.isCompleted ? TextDecoration.lineThrough : null,
+                        decorationColor: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                       ),
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.task.description,
+                      style: TextStyle(
+                        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Bloco do Horário (Mantido perfeitamente alinhado)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: theme.scaffoldBackgroundColor,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  widget.task.time,
+                  style: TextStyle(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
-                ],
+                ),
               ),
             ],
           ),

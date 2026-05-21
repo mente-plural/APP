@@ -20,7 +20,7 @@ class ChatIntroductionWidget extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withValues(alpha:0.1),
+              color: theme.colorScheme.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -47,7 +47,7 @@ class ChatIntroductionWidget extends StatelessWidget {
             decoration: BoxDecoration(
               color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: theme.colorScheme.primary.withValues(alpha:0.3)),
+              border: Border.all(color: theme.colorScheme.primary.withOpacity(0.3)),
             ),
             child: Row(
               children: [

@@ -27,9 +27,9 @@ class StepPomodoro extends StatelessWidget {
           decoration: BoxDecoration(
             color: isActive ? primary : theme.colorScheme.surface,
             shape: BoxShape.circle,
-            border: isActive ? null : Border.all(color: theme.dividerColor.withValues(alpha:0.1)),
+            border: isActive ? null : Border.all(color: theme.dividerColor.withOpacity(0.1)),
             boxShadow: isActive
-                ? [BoxShadow(color: primary.withValues(alpha:0.3), blurRadius: 15, spreadRadius: 2)]
+                ? [BoxShadow(color: primary.withOpacity(0.3), blurRadius: 15, spreadRadius: 2)]
                 : null,
           ),
           child: Center(
@@ -58,7 +58,7 @@ class StepPomodoro extends StatelessWidget {
         Text(
           time,
           style: TextStyle(
-            color: theme.textTheme.bodyMedium?.color?.withValues(alpha:0.6),
+            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
             fontSize: 12,
           ),
         ),

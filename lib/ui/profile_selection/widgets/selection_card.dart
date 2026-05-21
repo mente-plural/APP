@@ -33,13 +33,13 @@ class SelectionCard extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: isSelected
-                ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                ? theme.colorScheme.primary.withOpacity(0.1)
                 : theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: isSelected
                   ? theme.colorScheme.primary
-                  : theme.dividerColor.withValues(alpha: 0.5),
+                  : theme.dividerColor.withOpacity(0.5),
               width: 2,
             ),
           ),
@@ -65,7 +65,7 @@ class SelectionCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    color: theme.colorScheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -85,7 +85,7 @@ class SelectionCard extends StatelessWidget {
               if (!isSelected && isMulti && !isDevelopment)
                 Icon(
                   Icons.check_box_outline_blank,
-                  color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
                 ),
             ],
           ),

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'package:provider/provider.dart';
+
 import '../../core/auth/auth_service.dart';
+import '../../core/providers/focus_provider.dart';
+import '../../core/providers/navigation_provider.dart';
 import '../../shared/utils/ui_utils.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../register/register_page.dart';
@@ -43,6 +47,13 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       debugPrint("LoginPage: Iniciando login para $email");
+      
+      // Resetar estados locais de navegação e foco antes/durante o login para garantir limpeza
+      if (mounted) {
+        Provider.of<NavigationProvider>(context, listen: false).reset();
+        Provider.of<FocusProvider>(context, listen: false).clear();
+      }
+
       await _authService.loginWithEmail(email, password);
       debugPrint("LoginPage: loginWithEmail concluído");
 

@@ -54,7 +54,7 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.bgClaro,
       dividerColor: AppColors.borderClaro,
-      disabledColor: AppColors.textMutedClaro.withValues(alpha:0.5),
+      disabledColor: AppColors.textMutedClaro.withOpacity(0.5),
       textTheme: TextTheme(
         bodyLarge: TextStyle(color: AppColors.textPrimaryClaro, fontSize: 16 * fontSizeMultiplier),
         headlineMedium: TextStyle(
@@ -86,7 +86,7 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.bgEscuro,
       dividerColor: AppColors.borderEscuro,
-      disabledColor: AppColors.textSecundarioEscuro.withValues(alpha:0.5),
+      disabledColor: AppColors.textSecundarioEscuro.withOpacity(0.5),
       textTheme: TextTheme(
         bodyLarge: TextStyle(color: AppColors.textAccentEscuro, fontSize: 16 * fontSizeMultiplier),
         headlineMedium: TextStyle(
@@ -132,7 +132,7 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: Colors.black,
       dividerColor: Colors.white,
-      disabledColor: Colors.white.withValues(alpha:0.5),
+      disabledColor: Colors.white.withOpacity(0.5),
       textTheme: TextTheme(
         bodyLarge: TextStyle(
           color: Colors.white,
