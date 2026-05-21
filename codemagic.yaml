@@ -1,0 +1,38 @@
+workflows:
+  ios-release:
+    name: iOS Release
+
+    instance_type: mac_mini_m2
+
+    environment:
+      flutter: stable
+
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.maoamiga.app
+
+      vars:
+        BUNDLE_ID: "com.maoamiga.app.app"
+
+      groups:
+        - app_store_credentials
+
+    scripts:
+      - name: Flutter pub get
+        script: |
+          flutter clean
+          flutter pub get
+
+      - name: Build IPA
+        script: |
+          flutter build ipa --release \
+            --dart-define=GEMINI_API_KEY=$GEMINI_API_KEY
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+
+    publishing:
+      app_store_connect:
+        auth: integration
+
+        submit_to_testflight: true
