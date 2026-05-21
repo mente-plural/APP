@@ -48,7 +48,6 @@ class ThemeProvider with ChangeNotifier {
     } else if (preferredColor == 'Tema Escuro') {
       _themeMode = ThemeMode.dark;
     }
-
     notifyListeners();
   }
 
