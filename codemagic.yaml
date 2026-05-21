@@ -9,13 +9,13 @@ workflows:
 
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.maoamiga.app
+        bundle_identifier: com.maoamiga.app.app
 
       vars:
         BUNDLE_ID: "com.maoamiga.app.app"
 
       groups:
-        - app_store_credentials
+        - apple_auth
 
     scripts:
       - name: Flutter pub get
