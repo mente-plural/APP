@@ -216,12 +216,17 @@ class AuthService {
         accessToken: appleCredential.authorizationCode,
       );
 
-
       final userCredential = await _auth.signInWithCredential(credential);
-      final firebaseUser = userCredential.user;
+      var firebaseUser = userCredential.user;
 
       if (firebaseUser != null) {
-        await _firebaseLoginWithApi(firebaseUser);
+        if (fullName.isNotEmpty && (firebaseUser.displayName == null || firebaseUser.displayName!.isEmpty)) {
+          await firebaseUser.updateDisplayName(fullName);
+          await firebaseUser.reload();
+          firebaseUser = _auth.currentUser;
+        }
+
+        await _firebaseLoginWithApi(firebaseUser!);
         return true;
       }
       return false;
