@@ -7,7 +7,7 @@ on:
 jobs:
   deploy-ios:
     name: Build & Upload para TestFlight
-    runs-on: macos-15 # Garante o Xcode 15+ estável no ambiente do GitHub
+    runs-on: macos-15
     environment: production
 
     steps:
@@ -32,15 +32,16 @@ jobs:
           mkdir -p ios/Flutter
           flutter pub get
 
-      - name: Compilar o pacote IPA do Flutter
+      - name: Compilar e Assinar o pacote IPA automaticamente
         env:
-          # 💡 O Xcode lê essas variáveis de ambiente para fazer a assinatura automática via API Key
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
           APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
         run: |
-          # Aqui você pode adicionar seus --dart-define normalmente se precisar
-          flutter build ipa --release --no-codesign --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
+          # Usamos o 'build ipa' padrão. O Flutter vai usar as variáveis de ambiente 'APP_STORE_CONNECT_...'
+          # injetadas acima para assinar e criar o arquivo .ipa de distribuição original.
+          flutter build ipa --release --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
+
       - name: Enviar o build para o TestFlight
         uses: apple-actions/upload-testflight-build@v1
         with:
