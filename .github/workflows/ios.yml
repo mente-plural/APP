@@ -26,12 +26,15 @@ jobs:
 
       - name: Instalar Dependências do Flutter
         run: |
+          # 1. Limpa o espaço de trabalho local do Runner
           flutter clean
-          flutter pub get
-          # 💡 SOLUÇÃO: Força a criação das pastas base para evitar que o rsync do firebase_auth falhe no Runner
+          
+          # 2. 💡 CRUCIAL: Cria a árvore de diretórios ANTES que qualquer hook nativo tente ler ou escrever
           mkdir -p build/ios/SourcePackages
           mkdir -p ios/Flutter
-
+          
+          # 3. Executa a resolução das dependências do pubspec
+          flutter pub get
       - name: Importar Certificado de Distribuição (.p12)
         uses: apple-actions/import-codesign-certs@v3
         with:
