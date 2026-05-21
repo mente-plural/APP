@@ -164,8 +164,8 @@ class _ChatPageState extends State<ChatPage> {
               onSubmitted: (_) => _sendMessage(),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(
-                    RegExp(r'[a-zA-ZáàâãéèêíïóôõúçÁÀÂÃÉÈÊÍÏÓÔÕÚÇ ´`^~¨ ]')
-                ),
+                  RegExp(r'[a-zA-ZáàâãéèêíïóôõúçÁÀÂÃÉÈÊÍÏÓÔÕÚÇ0-9\s!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?~`´¨ªº§]'),
+                )
               ],
             ),
           ),
