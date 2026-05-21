@@ -3,12 +3,20 @@ import 'package:http/http.dart' as http;
 import '../network/api_base_client.dart';
 
 class AuthClient extends ApiBaseClient {
-  Future<Map<String, dynamic>> firebaseAuth(String idToken) async {
+  Future<Map<String, dynamic>> firebaseAuth({
+    required String idToken,
+    required String email,
+    required String photoUrl,
+  }) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/v1/auth/firebase'),
         headers: await getHeaders(),
-        body: jsonEncode({ 'idToken': idToken }),
+        body: jsonEncode({
+          'idToken': idToken,
+          'email': email,
+          'photoUrl': photoUrl,
+        }),
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {

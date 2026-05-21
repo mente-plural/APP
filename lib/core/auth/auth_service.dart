@@ -243,7 +243,21 @@ class AuthService {
     if (idToken == null) throw 'Falha ao obter ID Token do Firebase';
 
     try {
-      final response = await _authClient.firebaseAuth(idToken);
+      final seguroEmail = (user.email != null && user.email!.isNotEmpty)
+          ? user.email!
+          : "${user.uid}@apple.relay";
+
+      String seguroPhoto = user.photoURL ?? '';
+      if (seguroPhoto.isEmpty || seguroPhoto.toLowerCase() == 'null') {
+        seguroPhoto = "https://auth.services.apple.com/assets/default_avatar.png";
+      }
+
+      final response = await _authClient.firebaseAuth(
+        idToken: idToken,
+        email: seguroEmail,
+        photoUrl: seguroPhoto,
+      );
+
       final String? apiToken = response['data']?['token'] ?? response['token'];
       if (apiToken != null) await _tokenManager.saveToken(apiToken);
       await _syncUserWithApi(user);
