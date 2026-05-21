@@ -32,13 +32,15 @@ jobs:
           mkdir -p ios/Flutter
           flutter pub get
 
-      - name: Compilar o pacote IPA do Flutter e Assinar via API
+      - name: Compilar o pacote IPA do Flutter
+        env:
+          # 💡 O Xcode lê essas variáveis de ambiente para fazer a assinatura automática via API Key
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
         run: |
-          flutter build ipa --release \
-            --api-key-id=${{ secrets.APP_STORE_KEY_ID }} \
-            --issuer-id=${{ secrets.APP_STORE_ISSUER_ID }} \
-            --api-private-key="${{ secrets.APP_STORE_CONNECT_KEY }}"
-
+          # Aqui você pode adicionar seus --dart-define normalmente se precisar
+          flutter build ipa --release --export-options-plist=ios/ExportOptions.plist --dart-define=GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
       - name: Enviar o build para o TestFlight
         uses: apple-actions/upload-testflight-build@v1
         with:
