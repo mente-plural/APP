@@ -29,7 +29,7 @@ class UserClient extends ApiBaseClient {
         'email': user.email,
         'name': user.name ?? 'Usuário',
         'phone': user.phone,
-        'photoUrl': user.photoUrl, // Backend usa camelCase
+        'photoUrl': user.photoUrl,
         'preferences': user.preferences.toMap(),
       };
 
@@ -82,7 +82,7 @@ class UserClient extends ApiBaseClient {
       );
       
       final headers = await getHeaders();
-      headers.remove('Content-Type'); // O MultipartRequest define o Content-Type correto com o boundary
+      headers.remove('Content-Type');
       request.headers.addAll(headers);
       
       request.files.add(await http.MultipartFile.fromPath('photo', filePath));
@@ -106,7 +106,7 @@ class UserClient extends ApiBaseClient {
       final uri = Uri.parse('$baseUrl/v1/content/learn').replace(
         queryParameters: {
           if (query != null && query.isNotEmpty) 'search': query,
-          if (category != null) 'category': category,
+          'category': ?category,
         },
       );
       

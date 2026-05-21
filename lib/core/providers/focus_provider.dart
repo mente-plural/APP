@@ -133,9 +133,7 @@ class FocusProvider extends ChangeNotifier {
 
   void _handleCycleComplete() {
     _pauseTimer();
-    final previousStatus = _status;
-    
-    // Provide haptic feedback
+
     HapticFeedback.heavyImpact();
 
     if (_status == PomodoroStatus.focus) {

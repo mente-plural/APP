@@ -55,7 +55,7 @@ class RoutineClient extends ApiBaseClient {
       final response = await http.delete(
         Uri.parse('$baseUrl/v1/routines/$taskId'),
         headers: await getHeaders(),
-        body: jsonEncode({}), // OBRIGATÓRIO para evitar erro 400 no Fastify
+        body: jsonEncode({}),
       );
       if (response.statusCode != 200 && response.statusCode != 204) {
         handleErrorResponse(response);

@@ -34,7 +34,7 @@ class HomeHeader extends StatelessWidget {
               tooltip: 'Meu Perfil',
               onTap: () {
                 final navProvider = Provider.of<NavigationProvider>(context, listen: false);
-                navProvider.setIndex(4); // Perfil index
+                navProvider.setIndex(4);
               },
             ),
           ],

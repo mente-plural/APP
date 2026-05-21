@@ -228,14 +228,14 @@ class _ScanLineState extends State<_ScanLine>
     final theme = Theme.of(context);
     return AnimatedBuilder(
       animation: _anim,
-      builder: (_, __) => Positioned(
+      builder: (_, v) => Positioned(
         top: _anim.value * 196,
         left: 0,
         right: 0,
         child: Container(
           height: 2,
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withOpacity(0.75),
+            color: theme.colorScheme.primary.withValues(alpha:0.75),
             borderRadius: BorderRadius.circular(1),
           ),
         ),

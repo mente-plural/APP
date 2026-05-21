@@ -37,9 +37,9 @@ class _ExternalProfilePageState extends State<ExternalProfilePage> {
         _isLoading = true;
         _error = null;
       });
-      
+
       final user = await _userService.getUserProfile(widget.userId);
-      
+
       if (mounted) {
         if (user != null) {
           setState(() {
@@ -80,11 +80,16 @@ class _ExternalProfilePageState extends State<ExternalProfilePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
-        child: _buildBody(theme),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: _buildBody(theme),
+          ),
+        ),
       ),
     );
   }
@@ -154,7 +159,11 @@ class _ExternalProfilePageState extends State<ExternalProfilePage> {
             icon: Icons.share_rounded,
             onTap: () {
               if (_user != null) {
-                Share.share('Confira o perfil de ${_user!.name ?? 'Usuário'} no NeuroGuia!\nContato: ${_user!.email}');
+                SharePlus.instance.share(
+                  ShareParams(
+                    text: 'Confira o perfil de ${_user!.name ?? 'Usuário'} no NeuroGuia!\nContato: ${_user!.email}',
+                  ),
+                );
               }
             },
           ),
@@ -200,7 +209,7 @@ class _ExternalProfilePageState extends State<ExternalProfilePage> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
+              color: theme.colorScheme.primary.withValues(alpha:0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(Icons.qr_code_scanner_rounded, size: 20, color: theme.colorScheme.primary),
@@ -235,7 +244,7 @@ class _ExternalProfilePageState extends State<ExternalProfilePage> {
               label: 'E-mail',
               value: user.email,
               onTap: () => _copyToClipboard(user.email, 'E-mail'),
-              trailing: Icon(Icons.copy_all_rounded, size: 18, color: theme.colorScheme.primary.withOpacity(0.5)),
+              trailing: Icon(Icons.copy_all_rounded, size: 18, color: theme.colorScheme.primary.withValues(alpha:0.5)),
             ),
             if (user.phone != null && user.phone!.isNotEmpty)
               InfoRow(
@@ -243,7 +252,7 @@ class _ExternalProfilePageState extends State<ExternalProfilePage> {
                 label: 'Telefone / WhatsApp',
                 value: user.phone!,
                 onTap: () => _copyToClipboard(user.phone!, 'Telefone'),
-                trailing: Icon(Icons.copy_all_rounded, size: 18, color: theme.colorScheme.primary.withOpacity(0.5)),
+                trailing: Icon(Icons.copy_all_rounded, size: 18, color: theme.colorScheme.primary.withValues(alpha:0.5)),
               ),
           ],
         ),

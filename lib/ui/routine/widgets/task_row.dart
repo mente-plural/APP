@@ -35,11 +35,16 @@ class _TaskRowState extends State<TaskRow> {
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.55),
       barrierDismissible: true,
-      builder: (_) => ContextMenu(
-        task:      widget.task,
-        onEdit:    () { Navigator.pop(context); widget.onEdit(); },
-        onDelete:  () { Navigator.pop(context); widget.onDelete(); },
-        onDismiss: () => Navigator.pop(context),
+      builder: (_) => Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: ContextMenu(
+            task:      widget.task,
+            onEdit:    () { Navigator.pop(context); widget.onEdit(); },
+            onDelete:  () { Navigator.pop(context); widget.onDelete(); },
+            onDismiss: () => Navigator.pop(context),
+          ),
+        ),
       ),
     ).then((_) {
       if (mounted) setState(() => _pressed = false);
@@ -70,14 +75,14 @@ class _TaskRowState extends State<TaskRow> {
       width: 36,
       child: Column(
         children: [
-          // Linha superior
+
           Expanded(
             child: Container(
               width: 2,
               color: widget.index == 0 ? Colors.transparent : theme.dividerColor,
             ),
           ),
-          // Indicador circular
+
           AnimatedScale(
             scale: _pressed ? 1.04 : 1.0,
             duration: const Duration(milliseconds: 180),
@@ -116,7 +121,7 @@ class _TaskRowState extends State<TaskRow> {
               ),
             ),
 
-          // Espaçamento para compensar o margin bottom de 12 do card
+
           if (!widget.isLast)
             Container(
               width: 2,
@@ -185,7 +190,7 @@ class _TaskRowState extends State<TaskRow> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      widget.task.time ?? "--:--",
+                      widget.task.time,
                       style: TextStyle(
                         color: theme.colorScheme.primary,
                         fontWeight: FontWeight.bold,

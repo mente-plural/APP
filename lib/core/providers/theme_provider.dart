@@ -40,13 +40,16 @@ class ThemeProvider with ChangeNotifier {
   void _updateFromPreferences(String? preferredColor, bool highContrast, double fontSizeMultiplier) {
     _highContrast = highContrast;
     _fontSizeMultiplier = fontSizeMultiplier;
-    _preferredColor = preferredColor;
 
-    // Se preferência for um tema específico, ajustamos o modo
+
     if (preferredColor == 'Tema Claro') {
       _themeMode = ThemeMode.light;
+      _preferredColor = null;
     } else if (preferredColor == 'Tema Escuro') {
       _themeMode = ThemeMode.dark;
+      _preferredColor = null;
+    } else {
+      _preferredColor = preferredColor;
     }
     notifyListeners();
   }

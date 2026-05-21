@@ -72,7 +72,7 @@ class _SocialAuthButton extends StatelessWidget {
       label: Text(
         label,
         style: TextStyle(
-          color: theme.colorScheme.onSurface.withOpacity(
+          color: theme.colorScheme.onSurface.withValues(alpha:
             isLoading ? 0.5 : 1.0,
           ),
         ),

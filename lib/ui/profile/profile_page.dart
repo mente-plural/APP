@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import '../../app_theme.dart';
 import '../../core/auth/auth_service.dart';
 import '../../models/user_model.dart';
 import '../../shared/utils/ui_utils.dart';
@@ -95,7 +94,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
         highContrast: _highContrast,
         fontSizeMultiplier: _fontSizeMultiplier,
       );
-      
+
       if (mounted) {
         UiUtils.showSnackBar(context, 'Perfil atualizado com sucesso!');
         setState(() => _isEditing = false);
@@ -108,33 +107,40 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
       if (mounted) setState(() => _isSaving = false);
     }
   }
-
   Future<void> _pickAndUploadImage() async {
+    final theme = Theme.of(context);
     final picker = ImagePicker();
+
     final XFile? image = await showModalBottomSheet<XFile?>(
       context: context,
-      backgroundColor: AppColors.surfaceEscuro,
+      backgroundColor: theme.colorScheme.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => SafeArea(
+      builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.camera_alt, color: Colors.white),
-              title: const Text('Tirar Foto', style: TextStyle(color: Colors.white)),
-              onTap: () async => Navigator.pop(context, await picker.pickImage(source: ImageSource.camera, imageQuality: 70)),
+              leading: Icon(Icons.camera_alt, color: theme.colorScheme.onSurface),
+              title: Text('Tirar Foto', style: TextStyle(color: theme.colorScheme.onSurface)),
+              onTap: () async {
+                final pickedFile = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+                if (ctx.mounted) Navigator.pop(ctx, pickedFile);
+              },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Colors.white),
-              title: const Text('Galeria', style: TextStyle(color: Colors.white)),
-              onTap: () async => Navigator.pop(context, await picker.pickImage(source: ImageSource.gallery, imageQuality: 70)),
+              leading: Icon(Icons.photo_library, color: theme.colorScheme.onSurface),
+              title: Text('Galeria', style: TextStyle(color: theme.colorScheme.onSurface)),
+              onTap: () async {
+                final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+                if (ctx.mounted) Navigator.pop(ctx, pickedFile);
+              },
             ),
           ],
         ),
       ),
     );
 
-    if (image != null) {
+    if (image != null && mounted) {
       setState(() => _isUploading = true);
       try {
         await _authService.uploadProfilePhoto(image.path);
@@ -146,29 +152,34 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
       }
     }
   }
-
   Future<void> _confirmLogout() async {
+    final theme = Theme.of(context);
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surfaceEscuro,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Sair da conta?',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        content: const Text('Você precisará fazer login novamente.',
-            style: TextStyle(color: AppColors.textSecundarioEscuro)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar',
-                style: TextStyle(color: AppColors.textSecundarioEscuro)),
+      builder: (ctx) => Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: AlertDialog(
+            backgroundColor: theme.colorScheme.surface,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text('Sair da conta?',
+                style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
+            content: Text('Você precisará fazer login novamente.',
+                style: TextStyle(color: theme.textTheme.bodyMedium?.color)),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text('Cancelar',
+                    style: TextStyle(color: theme.textTheme.bodyMedium?.color)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Sair',
+                    style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Sair',
-                style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
-          ),
-        ],
+        ),
       ),
     );
 
@@ -191,43 +202,47 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: SafeArea(
-        child: StreamBuilder<UserModel?>(
-          stream: _authService.userStream,
-          builder: (context, snapshot) {
-            final user = snapshot.data;
+      body: StreamBuilder<UserModel?>(
+        stream: _authService.userStream,
+        builder: (context, snapshot) {
+          final user = snapshot.data;
 
-            if (user == null) {
-              return Center(child: CircularProgressIndicator(color: theme.colorScheme.primary));
-            }
+          if (user == null) {
+            return Center(child: CircularProgressIndicator(color: theme.colorScheme.primary));
+          }
 
-            return Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildHeader(theme, user),
-                        const SizedBox(height: 32),
-                        if (!_isEditing) ...[
-                          _buildMainCard(user, theme),
-                          const SizedBox(height: 24),
-                          _buildLogoutButton(theme),
-                        ] else ...[
-                          _buildEditForm(user, theme),
+          return Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildHeader(theme, user),
+                          const SizedBox(height: 32),
+                          if (!_isEditing) ...[
+                            _buildMainCard(user, theme),
+                            const SizedBox(height: 24),
+                            _buildLogoutButton(theme),
+                          ] else ...[
+                            _buildEditForm(user, theme),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
-                ),
-                if (_isEditing) _buildEditActions(theme),
-              ],
-            );
-          },
-        ),
+                  if (_isEditing) _buildEditActions(theme),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -421,9 +436,9 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.redAccent.withOpacity(0.1),
+          color: Colors.redAccent.withValues(alpha:0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.redAccent.withOpacity(0.2)),
+          border: Border.all(color: Colors.redAccent.withValues(alpha:0.2)),
         ),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,

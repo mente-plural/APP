@@ -51,14 +51,14 @@ class _QrPageState extends State<QrPage> {
     setState(() => _isProcessing = true);
     debugPrint("🔍 QR Detectado: $uid");
     
-    // Para o scanner imediatamente
+
     _scannerController.stop();
 
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => ExternalProfilePage(userId: uid)),
     ).then((_) {
       setState(() => _isProcessing = false);
-      // Reinicia o scanner ao voltar, se ainda estiver na aba de scan
+
       if (_mode == _QrMode.scan) {
         _scannerController.start();
       }
@@ -71,28 +71,33 @@ class _QrPageState extends State<QrPage> {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-              child: PageHeader(
-                title: _mode == _QrMode.myQr ? 'QR Code' : 'Escanear',
-                leading: BackButton(color: theme.colorScheme.onSurface),
-              ),
-            ),
-            _buildToggle(theme),
-            Expanded(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                child: _mode == _QrMode.myQr
-                    ? MyQrView(authService: _authService)
-                    : ScanView(
-                    onDetected: _onQrDetected,
-                    controller: _scannerController
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+                  child: PageHeader(
+                    title: _mode == _QrMode.myQr ? 'QR Code' : 'Escanear',
+                    leading: BackButton(color: theme.colorScheme.onSurface),
+                  ),
                 ),
-              ),
+                _buildToggle(theme),
+                Expanded(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    child: _mode == _QrMode.myQr
+                        ? MyQrView(authService: _authService)
+                        : ScanView(
+                        onDetected: _onQrDetected,
+                        controller: _scannerController
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

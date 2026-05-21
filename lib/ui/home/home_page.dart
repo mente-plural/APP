@@ -31,13 +31,40 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: IndexedStack(
-        index: navProvider.currentIndex,
-        children: _pages,
+      body: SafeArea(
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: IndexedStack(
+              index: navProvider.currentIndex,
+              children: _pages,
+            ),
+          ),
+        ),
       ),
-      bottomNavigationBar: HomeBottomNavigation(
-        currentIndex: navProvider.currentIndex,
-        onTap: (index) => navProvider.setIndex(index),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: theme.scaffoldBackgroundColor,
+          border: Border(
+            top: BorderSide(
+              color: theme.dividerColor.withValues(alpha:0.1),
+              width: 1,
+            ),
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            heightFactor: 1.0,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: HomeBottomNavigation(
+                currentIndex: navProvider.currentIndex,
+                onTap: (index) => navProvider.setIndex(index),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

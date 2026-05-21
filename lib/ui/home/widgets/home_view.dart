@@ -1,3 +1,4 @@
+import 'package:app/shared/utils/responsive.dart';
 import 'package:app/ui/home/widgets/proxima_rotina_section.dart';
 import 'package:flutter/material.dart';
 import 'home_header.dart';
@@ -10,21 +11,36 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    
 
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const HomeHeader(),
-            const SizedBox(height: 32),
-            MomentoFocoCard(theme: theme),
-            const SizedBox(height: 32),
-            ProximoRotinaSection(theme: theme),
-            const SizedBox(height: 32),
-            DicaTdahSection(theme: theme),
-          ],
+    final horizontalPadding = context.responsiveSize(20.0, tabletSize: 40.0, desktopSize: 60.0);
+
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 1200),
+        child: SingleChildScrollView(
+
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const HomeHeader(),
+              const SizedBox(height: 24),
+
+
+              MomentoFocoCard(theme: theme),
+              const SizedBox(height: 24),
+              
+              ProximoRotinaSection(theme: theme),
+              const SizedBox(height: 24),
+              
+              DicaTdahSection(theme: theme),
+              
+
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );

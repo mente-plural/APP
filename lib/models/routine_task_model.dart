@@ -4,7 +4,7 @@ class RoutineTaskModel {
   final String description;
   final String time;
   final bool isCompleted;
-  final int priority; // 1: Baixa, 2: Média, 3: Alta
+  final int priority;
 
   const RoutineTaskModel({
     required this.id,

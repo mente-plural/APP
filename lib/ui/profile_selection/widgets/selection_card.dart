@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../app_theme.dart';
 
 class SelectionCard extends StatelessWidget {
   final String title;
@@ -21,7 +20,9 @@ class SelectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final bool effectiveClickable = clickable && !isDevelopment;
+    
     return GestureDetector(
       onTap: effectiveClickable ? onTap : null,
       child: AnimatedOpacity(
@@ -32,15 +33,13 @@ class SelectionCard extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppColors.primaryEscuro.withValues(alpha: 0.1)
-                : AppColors.surfaceEscuro,
+                ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                : theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: isSelected
-                  ? AppColors.primaryEscuro
-                  : (isDevelopment
-                      ? AppColors.borderEscuro.withValues(alpha: 0.5)
-                      : AppColors.borderEscuro),
+                  ? theme.colorScheme.primary
+                  : theme.dividerColor.withValues(alpha: 0.5),
               width: 2,
             ),
           ),
@@ -54,7 +53,7 @@ class SelectionCard extends StatelessWidget {
                     Text(
                       title,
                       style: TextStyle(
-                        color: isSelected ? Colors.white : AppColors.textSecundarioEscuro,
+                        color: isSelected ? theme.colorScheme.onSurface : theme.textTheme.bodyMedium?.color,
                         fontSize: 18,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                       ),
@@ -66,27 +65,27 @@ class SelectionCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryEscuro.withValues(alpha: 0.1),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Text(
+                  child: Text(
                     "Em breve",
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primaryEscuro,
+                      color: theme.colorScheme.primary,
                     ),
                   ),
                 ),
               if (isSelected)
                 Icon(
                   isMulti ? Icons.check_box : Icons.check_circle,
-                  color: AppColors.primaryEscuro,
+                  color: theme.colorScheme.primary,
                 ),
               if (!isSelected && isMulti && !isDevelopment)
                 Icon(
                   Icons.check_box_outline_blank,
-                  color: AppColors.textSecundarioEscuro.withValues(alpha: 0.5),
+                  color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
                 ),
             ],
           ),

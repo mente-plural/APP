@@ -28,23 +28,28 @@ class _AuthGateState extends State<AuthGate> {
       stream: authService.userStream,
       initialData: authService.currentUser,
       builder: (context, snapshot) {
+
+        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+          return const _AuthLoadingScreen();
+        }
+
         final user = snapshot.data;
         final connectionState = snapshot.connectionState;
 
         debugPrint("AuthGate REBUILD: state=$connectionState, user=${user?.email}, id=${user?.id}");
 
-        // 1. Fluxo de Não Autenticado
+
         if (user == null) {
           return const LoginPage();
         }
 
-        // 2. Fluxo de Autenticado - Verificação de Perfil (Onboarding)
+
         if (_isProfileIncomplete(user)) {
           debugPrint("AuthGate: Redirecionando para ProfileSelection");
           return const ProfileSelectionPage();
         }
 
-        // 3. Fluxo Principal
+
         debugPrint("AuthGate: Redirecionando para HomePage");
         return const HomePage();
       },
@@ -52,35 +57,47 @@ class _AuthGateState extends State<AuthGate> {
   }
 
   bool _isProfileIncomplete(UserModel user) {
-    final profileType = user.preferences.profileType?.toString().trim().toLowerCase();
-    if (profileType == null || profileType == 'null' || profileType.isEmpty) {
+    final preferences = user.preferences;
+    final profileType = preferences.profileType?.toString().trim();
+    
+    debugPrint("AuthGate: Verificando Perfil - ID: ${user.id}, Type: $profileType, Name: ${user.name}");
+
+
+    if (profileType == null || profileType.isEmpty || profileType == 'null') {
       return true;
     }
+    
+    if (user.name == null || user.name!.isEmpty || user.name == 'null') {
+      return true;
+    }
+
     return false;
   }
 }
 
-/// Tela de loading padronizada para o processo de autenticação.
+
 class _AuthLoadingScreen extends StatelessWidget {
   const _AuthLoadingScreen();
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: AppColors.bgEscuro,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      backgroundColor: isDark ? AppColors.bgEscuro : AppColors.bgClaro,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CircularProgressIndicator(
-              color: AppColors.primaryEscuro,
+              color: isDark ? AppColors.primaryEscuro : AppColors.primaryClaro,
               strokeWidth: 3,
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             Text(
               "Preparando seu ambiente...",
               style: TextStyle(
-                color: Colors.white70,
+                color: isDark ? Colors.white70 : AppColors.textMutedClaro,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),

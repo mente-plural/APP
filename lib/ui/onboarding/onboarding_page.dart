@@ -63,33 +63,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GestureDetector(
-        onHorizontalDragEnd: (details) {
-          if (details.primaryVelocity! < 0) {
-            _nextPage();
-          } else if (details.primaryVelocity! > 0) {
-            _previousPage();
-          }
-        },
-        child: Stack(
-          children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 600),
-              child: OnboardingPageContent(
-                key: ValueKey<int>(_currentPage),
-                data: _pagesData[_currentPage],
-              ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: GestureDetector(
+            onHorizontalDragEnd: (details) {
+              if (details.primaryVelocity! < 0) {
+                _nextPage();
+              } else if (details.primaryVelocity! > 0) {
+                _previousPage();
+              }
+            },
+            child: Stack(
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 600),
+                  child: OnboardingPageContent(
+                    key: ValueKey<int>(_currentPage),
+                    data: _pagesData[_currentPage],
+                  ),
+                ),
+                const FixedOnboardingTitle(title: 'NeuroGuia'),
+                OnboardingNavigation(
+                  itemCount: _pagesData.length,
+                  currentIndex: _currentPage,
+                  onNext: _nextPage,
+                  nextButtonLabel: _currentPage == _pagesData.length - 1 
+                      ? "Começar" 
+                      : "Próximo",
+                ),
+              ],
             ),
-            const FixedOnboardingTitle(title: 'NeuroGuia'),
-            OnboardingNavigation(
-              itemCount: _pagesData.length,
-              currentIndex: _currentPage,
-              onNext: _nextPage,
-              nextButtonLabel: _currentPage == _pagesData.length - 1 
-                  ? "Começar" 
-                  : "Próximo",
-            ),
-          ],
+          ),
         ),
       ),
     );

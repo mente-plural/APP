@@ -82,34 +82,39 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const RegisterHeader(),
-              const SizedBox(height: 40),
-              RegisterForm(
-                nomeController: _nomeController,
-                emailController: _emailController,
-                telefoneController: _telefoneController,
-                senhaController: _senhaController,
-                confirmarSenhaController: _confirmarSenhaController,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const RegisterHeader(),
+                  const SizedBox(height: 40),
+                  RegisterForm(
+                    nomeController: _nomeController,
+                    emailController: _emailController,
+                    telefoneController: _telefoneController,
+                    senhaController: _senhaController,
+                    confirmarSenhaController: _confirmarSenhaController,
+                  ),
+                  const SizedBox(height: 40),
+                  PrimaryButton(
+                    label: 'Criar Conta',
+                    onPressed: _handleEmailSignUp,
+                    isLoading: _isLoading,
+                  ),
+                  const SizedBox(height: 32),
+                  RegisterFooter(
+                    onLoginPressed: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(height: 20),
+                ],
               ),
-              const SizedBox(height: 40),
-              PrimaryButton(
-                label: 'Criar Conta',
-                onPressed: _handleEmailSignUp,
-                isLoading: _isLoading,
-              ),
-              const SizedBox(height: 32),
-              RegisterFooter(
-                onLoginPressed: () => Navigator.of(context).pop(),
-              ),
-              const SizedBox(height: 20),
-            ],
+            ),
           ),
         ),
       ),

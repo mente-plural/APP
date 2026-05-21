@@ -7,11 +7,11 @@ class AuthClient extends ApiBaseClient {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/v1/auth/firebase'),
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getHeaders(),
         body: jsonEncode({ 'idToken': idToken }),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         return jsonDecode(response.body);
       } else {
         handleErrorResponse(response);
@@ -35,8 +35,8 @@ class AuthClient extends ApiBaseClient {
         body: jsonEncode({
           'email': email,
           'password': password,
-          if (name != null) 'name': name,
-          if (phone != null) 'phone': phone
+          'name': name,
+          'phone': phone
         }),
       );
 
@@ -61,10 +61,10 @@ class AuthClient extends ApiBaseClient {
         headers: await getHeaders(),
         body: jsonEncode({
           'email': email,
-          'password': password.toString(),
+          'password': password,
         }),
       );
-      if (response.statusCode == 200) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         return jsonDecode(response.body);
       } else {
         handleErrorResponse(response);
@@ -79,8 +79,7 @@ class AuthClient extends ApiBaseClient {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/v1/auth/forgot-password'),
-        // 💡 Rota pública: headers simples evitam dependência de tokens
-        headers: {'Content-Type': 'application/json'},
+        headers: await getHeaders(),
         body: jsonEncode({'email': email}),
       ).timeout(const Duration(seconds: 15));
 
@@ -104,7 +103,7 @@ class AuthClient extends ApiBaseClient {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/v1/auth/reset-password'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await getHeaders(),
         body: jsonEncode({
           'token': token,
           'newPassword': newPassword,

@@ -34,7 +34,7 @@ class OnboardingIndicator extends StatelessWidget {
       decoration: BoxDecoration(
         color: isSelected
             ? theme.colorScheme.primary
-            : theme.dividerColor.withValues(alpha: 0.3),
+            : theme.dividerColor.withValues(alpha:0.3),
         borderRadius: BorderRadius.circular(AppSizes.radiusLG),
       ),
     );

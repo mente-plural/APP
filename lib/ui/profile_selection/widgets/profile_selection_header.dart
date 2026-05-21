@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../app_theme.dart';
 
 class ProfileSelectionHeader extends StatelessWidget {
   final int currentStep;
@@ -13,6 +12,7 @@ class ProfileSelectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -22,8 +22,8 @@ class ProfileSelectionHeader extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
-                  color: AppColors.textAccentEscuro,
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -31,8 +31,8 @@ class ProfileSelectionHeader extends StatelessWidget {
             ),
             Text(
               "$currentStep de 4",
-              style: const TextStyle(
-                color: AppColors.primaryEscuro,
+              style: TextStyle(
+                color: theme.colorScheme.primary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -43,7 +43,7 @@ class ProfileSelectionHeader extends StatelessWidget {
           height: 6,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColors.surfaceEscuro,
+            color: theme.dividerColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: FractionallySizedBox(
@@ -51,7 +51,7 @@ class ProfileSelectionHeader extends StatelessWidget {
             widthFactor: currentStep / 4,
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.primaryEscuro,
+                color: theme.colorScheme.primary,
                 borderRadius: BorderRadius.circular(10),
               ),
             ),

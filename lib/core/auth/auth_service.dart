@@ -8,7 +8,6 @@ import '../../models/user_model.dart';
 import '../../models/user_preferences.dart';
 import '../token_manager.dart';
 import '../user/user_client.dart';
-import '../user/user_service.dart';
 import 'auth_client.dart';
 
 class AuthService {
@@ -27,11 +26,11 @@ class AuthService {
 
   UserModel? get currentUser => _currentUser;
 
-  // 💡 Stream que garante que o novo ouvinte receba o valor atual IMEDIATAMENTE.
-  // Isso resolve o problema de o AuthGate perder o evento de login.
+
+
   Stream<UserModel?> get userStream async* {
-    yield _currentUser; // Emite o estado atual logo de cara
-    yield* _userController.stream; // Depois ouve as mudanças futuras
+    yield _currentUser;
+    yield* _userController.stream;
   }
 
   User? get currentFirebaseUser => _auth.currentUser;
@@ -48,14 +47,14 @@ class AuthService {
     _auth.authStateChanges().listen((User? firebaseUser) async {
       if (firebaseUser != null) {
         if (_isSocialLoginInProgress) return;
-        // Se temos um usuário local e ele já bate com o do Firebase, não sincronizamos de novo
+
         if (_currentUser != null && _currentUser!.firebaseUid == firebaseUser.uid) {
           return;
         }
         await _syncUserWithApi(firebaseUser);
       } else {
-        // Se o Firebase está nulo, mas temos um usuário logado via e-mail (sem firebaseUid),
-        // NÃO limpamos a sessão.
+
+
         final bool isSocialUser = _currentUser?.firebaseUid != null && 
                                  _currentUser!.firebaseUid!.isNotEmpty;
 
@@ -92,10 +91,10 @@ class AuthService {
 
     debugPrint("AuthService: _currentUser setado para ID: ${_currentUser?.id}, Email: ${_currentUser?.email}");
 
-    // Primeiro salvamos a sessão
+
     await _saveSession(_currentUser!);
     
-    // Notificamos os ouvintes (StreamBuilder)
+
     _userController.add(_currentUser);
     
     debugPrint("AuthService: Login E-mail concluído para ${_currentUser?.id}");
@@ -173,13 +172,9 @@ class AuthService {
   Future<bool> loginWithGoogle() async {
     _isSocialLoginInProgress = true;
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.authenticate();
-      if (googleUser == null) {
-        _isSocialLoginInProgress = false;
-        return false;
-      }
+      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
 
-      final auth = await googleUser.authentication;
+      final auth = googleUser.authentication;
       final credential = GoogleAuthProvider.credential(idToken: auth.idToken);
       final userCredential = await _auth.signInWithCredential(credential);
       final firebaseUser = userCredential.user;
@@ -358,11 +353,11 @@ class AuthService {
       name: user.displayName,
       phone: user.phoneNumber,
       photoUrl: user.photoURL,
-      // 💡 CORREÇÃO: Garanta que o modelo local espelhe o padrão do backend ('FOR_ME')
-      // para que o AuthGate libere a HomePage direto no primeiro login social!
+
+
       preferences: UserPreferences(
         userId: user.uid,
-        profileType: null, // ou UserProfileType.FOR_ME se for um Enum no seu Dart
+        profileType: null,
         preferredColor: null,
         neurodivergencies: [],
         highContrast: false,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app_theme.dart';
+import '../../../shared/utils/responsive.dart';
 import './onboarding_indicator.dart';
 
 class OnboardingNavigation extends StatelessWidget {
@@ -18,9 +19,7 @@ class OnboardingNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final size = MediaQuery.of(context).size;
-    final isTablet = size.width > 600;
+    final isTablet = context.isTablet || context.isDesktop;
 
     return Positioned(
       bottom: isTablet ? AppSizes.radiusLG * 4 : AppSizes.radiusLG * 2.5,
@@ -28,9 +27,10 @@ class OnboardingNavigation extends StatelessWidget {
       right: 0,
       child: Center(
         child: Container(
-          constraints: BoxConstraints(maxWidth: isTablet ? 450 : double.infinity),
-          padding: const EdgeInsets.symmetric(horizontal: AppSizes.radiusLG),
+          constraints: BoxConstraints(maxWidth: isTablet ? 450 : 600),
+          padding: const EdgeInsets.symmetric(horizontal: AppSizes.radiusLG * 2),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               OnboardingIndicator(
                 itemCount: itemCount,

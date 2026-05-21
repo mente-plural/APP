@@ -20,10 +20,10 @@ class FocusCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
+        border: Border.all(color: theme.dividerColor.withValues(alpha:0.08)),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.primary.withValues(alpha: 0.03),
+            color: colorScheme.primary.withValues(alpha:0.03),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -40,7 +40,7 @@ class FocusCard extends StatelessWidget {
                   Text(
                     "CICLO ATUAL",
                     style: TextStyle(
-                      color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.5),
+                      color: theme.textTheme.bodySmall?.color?.withValues(alpha:0.5),
                       fontWeight: FontWeight.w800,
                       fontSize: 10,
                       letterSpacing: 1.5,
@@ -62,7 +62,7 @@ class FocusCard extends StatelessWidget {
                       Text(
                         " / 4",
                         style: TextStyle(
-                          color: theme.disabledColor.withValues(alpha: 0.5),
+                          color: theme.disabledColor.withValues(alpha:0.5),
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),
@@ -112,7 +112,7 @@ class FocusCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: (isFocus ? Colors.orange : colorScheme.primary).withValues(alpha: 0.1),
+        color: (isFocus ? Colors.orange : colorScheme.primary).withValues(alpha:0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Icon(

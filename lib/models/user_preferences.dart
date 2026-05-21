@@ -18,20 +18,20 @@ class UserPreferences {
   });
 
   factory UserPreferences.fromMap(Map<String, dynamic> map) {
-    // Detecta se os dados estão aninhados em 'preferences' ou na raiz
+
     final preferencesData = map['preferences'];
     final Map<String, dynamic> data = (preferencesData is Map) 
         ? Map<String, dynamic>.from(preferencesData) 
         : Map<String, dynamic>.from(map);
 
-    // Função auxiliar para extrair strings limpando valores "null" ou vazios
+
     String? cleanString(dynamic value) {
       if (value == null) return null;
       final s = value.toString().trim();
       return (s.isEmpty || s == 'null') ? null : s;
     }
 
-    // Busca valores tentando camelCase e snake_case tanto no mapa local quanto no raiz
+
     dynamic findValue(String camel, String snake) {
       return data[camel] ?? data[snake] ?? map[camel] ?? map[snake];
     }
@@ -56,7 +56,7 @@ class UserPreferences {
     return {
       if (id != null) 'id': id,
       if (userId != null) 'userId': userId,
-      // Somente envia se o valor for válido para o Enum do backend
+
       if (preferredColor != null && preferredColor != 'null' && preferredColor!.isNotEmpty)
         'preferredColor': preferredColor,
       if (profileType != null && profileType != 'null' && profileType!.isNotEmpty)

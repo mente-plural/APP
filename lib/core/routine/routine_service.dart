@@ -52,14 +52,14 @@ class RoutineService {
     }
   }
 
-  /// Gerencia modificações completas ou parciais (incluindo status e edições textuais)
+
   Future<bool> editTask(String taskId, RoutineTaskModel updatedData) async {
     final index = _cachedTasks.indexWhere((t) => t.id == taskId);
     if (index == -1) return false;
 
     final oldTask = _cachedTasks[index];
 
-    // Atualização Otimista na interface
+
     _cachedTasks[index] = updatedData;
     _sortAndEmit();
     debugPrint(updatedData.time);
@@ -84,7 +84,7 @@ class RoutineService {
     }
   }
 
-  /// Atalho rápido para inverter apenas o status de conclusão
+
   Future<bool> toggleTaskCompletion(String taskId, bool isCompleted) async {
     final index = _cachedTasks.indexWhere((t) => t.id == taskId);
     if (index == -1) return false;
@@ -97,7 +97,7 @@ class RoutineService {
     try {
       await _routineClient.deleteTask(taskId);
       _cachedTasks.removeWhere((t) => t.id == taskId);
-      _sortAndEmit(); // Notifica todos os ouvintes (Home, Routine Page, etc)
+      _sortAndEmit();
       return true;
     } catch (e) {
       debugPrint("❌ [RoutineService] Falha ao deletar tarefa: $e");
@@ -112,7 +112,7 @@ class RoutineService {
 
   void _sortAndEmit() {
     _cachedTasks.sort((a, b) => a.time.compareTo(b.time));
-    // Emitimos uma cópia da lista para garantir que o StreamBuilder detecte a mudança de estado
+
     _tasksController.add(List.from(_cachedTasks));
   }
 

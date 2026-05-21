@@ -18,9 +18,9 @@ class PageHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Usamos NavigationToolbar para garantir que o título possa ser centralizado 
-    // em relação à largura total do container, ignorando o tamanho dos ícones laterais (se couber).
-    // Isso é o comportamento padrão de uma AppBar e garante um alinhamento visual correto.
+
+
+
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -82,11 +82,11 @@ class HeaderActionIcon extends StatelessWidget {
                 color: theme.colorScheme.surface,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: theme.dividerColor.withValues(alpha: 0.1),
+                  color: theme.dividerColor.withValues(alpha:0.1),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
+                    color: Colors.black.withValues(alpha:0.03),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),

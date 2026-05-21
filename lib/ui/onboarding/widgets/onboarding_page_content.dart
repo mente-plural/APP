@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app_theme.dart';
+import '../../../shared/utils/responsive.dart';
 import '../models/onboarding_data.dart';
 
 class OnboardingPageContent extends StatelessWidget {
@@ -15,23 +16,22 @@ class OnboardingPageContent extends StatelessWidget {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
     final bgColor = theme.scaffoldBackgroundColor;
-    final size = MediaQuery.of(context).size;
-    final isTablet = size.width > 600;
-
+    final isTablet = context.isTablet || context.isDesktop;
+    
     return Container(
       color: bgColor,
       width: double.infinity,
       height: double.infinity,
       child: SingleChildScrollView(
         child: Container(
-          constraints: BoxConstraints(minHeight: size.height),
+          constraints: BoxConstraints(minHeight: context.screenHeight),
           padding: EdgeInsets.symmetric(
-            horizontal: isTablet ? size.width * 0.15 : AppSizes.radiusLG * 1.5,
+            horizontal: isTablet ? 48.0 : AppSizes.radiusLG * 1.5,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(height: isTablet ? 140 : 100), // Espaço para o título fixo
+              SizedBox(height: isTablet ? 140 : 100),
               Icon(
                 data.icon,
                 size: isTablet ? 180 : 120,
@@ -55,7 +55,7 @@ class OnboardingPageContent extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: isTablet ? 200 : 140), // Espaço para os controles inferiores
+              const SizedBox(height: 140),
             ],
           ),
         ),

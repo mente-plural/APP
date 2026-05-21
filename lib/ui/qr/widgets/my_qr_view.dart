@@ -154,7 +154,12 @@ class MyQrView extends StatelessWidget {
                           fontSize: 15, fontWeight: FontWeight.bold)),
                   onPressed: () {
                     if (user?.id != null) {
-                      Share.share('Olá! Este é meu ID de suporte no NeuroGuia: ${user!.id}');
+
+                      SharePlus.instance.share(
+                        ShareParams(
+                          text: 'Olá! Este é meu ID de suporte no NeuroGuia: ${user!.id}',
+                        ),
+                      );
                     }
                   },
                 ),
@@ -174,9 +179,12 @@ class MyQrView extends StatelessWidget {
                   label: const Text('Copiar meu ID',
                       style: TextStyle(
                           fontSize: 15, fontWeight: FontWeight.w600)),
-                  onPressed: () {
+                  onPressed: () async {
                     if (user?.id != null) {
-                      Clipboard.setData(ClipboardData(text: user!.id));
+                      await Clipboard.setData(ClipboardData(text: user!.id));
+
+                      if (!context.mounted) return;
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('ID copiado para a área de transferência')),
                       );
