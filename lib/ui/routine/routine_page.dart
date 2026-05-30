@@ -201,14 +201,8 @@ class _RoutinePageState extends State<RoutinePage> {
                     Expanded(
                       child: tasks.isEmpty
                           ? const RoutineEmptyState()
-                          : GridView.builder(
+                          : ListView.builder(
                               padding: EdgeInsets.fromLTRB(horizontalPadding, 0, horizontalPadding, 32),
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 1,
-                                mainAxisExtent: 80,
-                                crossAxisSpacing: 20,
-                                mainAxisSpacing: 12,
-                              ),
                               itemCount: tasks.length + (allCompleted ? 1 : 0),
                               itemBuilder: (_, i) {
                                 if (i == tasks.length) {
